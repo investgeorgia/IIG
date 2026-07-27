@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useRouter } from 'next/navigation'
 
 function AccessModal({ user, onClose, queryClient }: any) {
   const modules = ['Amenities', 'Customers', 'Developers', 'Media', 'PaymentPlans', 'Projects', 'Settings', 'Templates', 'Units', 'Users']
@@ -173,10 +174,17 @@ function ResetPasswordModal({ user, onClose }: { user: any; onClose: () => void 
 export default function UsersPage() {
   const queryClient = useQueryClient()
   const { hasPermission, isLoading: permissionsLoading } = usePermissions()
+  const router = useRouter()
   const [isAdding, setIsAdding] = useState(false)
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [passwordUser, setPasswordUser] = useState<any>(null)
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', roleId: '' })
+
+  useEffect(() => {
+    if (!permissionsLoading && !hasPermission('Users', 'VIEW')) {
+      router.push('/dashboard')
+    }
+  }, [permissionsLoading, hasPermission, router])
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -251,11 +259,7 @@ export default function UsersPage() {
   if (permissionsLoading) return <div className="p-8 text-center text-neutral-400">Loading...</div>
   
   if (!hasPermission('Users', 'VIEW')) {
-    return (
-      <div className="p-8 text-center text-red-600 font-medium">
-        You do not have permission to access User Management.
-      </div>
-    )
+    return null
   }
 
   const canEdit = hasPermission('Users', 'EDIT')

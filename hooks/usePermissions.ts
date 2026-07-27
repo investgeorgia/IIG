@@ -30,6 +30,11 @@ export function usePermissions() {
       return true
     }
 
+    // Strict check: sensitive system modules are only ever accessible by Admin
+    if (moduleName === 'Users' || moduleName === 'Settings' || moduleName === 'Pages') {
+      return user.role.name === 'Admin'
+    }
+
     // 1. Admins bypass all restrictions
     if (user.role.name === 'Admin') return true
 
@@ -40,9 +45,6 @@ export function usePermissions() {
     }
 
     // 3. Fallback to Role-based defaults
-    if (moduleName === 'Users' || moduleName === 'Settings') {
-      return false
-    }
 
     if (user.role.name === 'Marketing') {
       return levelPower['EDIT'] >= levelPower[requiredLevel]

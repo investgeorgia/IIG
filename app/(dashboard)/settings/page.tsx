@@ -1,22 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { UserCircle, Building2, Bell, Key, Loader2 } from 'lucide-react'
+import { usePermissions } from '@/hooks/usePermissions'
+import { useRouter } from 'next/navigation'
 
 export default function SettingsPage() {
+  const { hasPermission, isLoading: permissionsLoading } = usePermissions()
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'company' | 'notifications'>('profile')
+
+  useEffect(() => {
+    if (!permissionsLoading && !hasPermission('Settings', 'VIEW')) {
+      router.push('/dashboard')
+    }
+  }, [permissionsLoading, hasPermission, router])
 
   // Password state
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+
+  if (permissionsLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-neutral-500" />
+      </div>
+    )
+  }
+
+  if (!hasPermission('Settings', 'VIEW')) {
+    return null
+  }
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault()
