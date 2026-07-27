@@ -23,7 +23,14 @@ export const projectsData: Project[] = [
     size: "From 48.2 m²",
     roi: "10%",
     completion: "Q2 2028",
-    images: ["media/ortachala/1.jpg", "media/ortachala/2.jpg", "media/ortachala/3.jpg"],
+    images: [
+      "media/ortachala/1.jpg",
+      "media/ortachala/2.jpg",
+      "media/ortachala/3.jpg",
+      "media/ortachala/4.jpg",
+      "media/ortachala/5.jpg",
+      "media/ortachala/6.jpg"
+    ],
     thumbnail: "media/ortachala/thumb.jpg"
   },
   {
@@ -36,7 +43,11 @@ export const projectsData: Project[] = [
     size: "From 600+ m²",
     roi: "10",
     completion: "Q4 2026",
-    images: ["media/lisi/1.jpg", "media/lisi/2.jpg", "media/lisi/3.jpg"],
+    images: [
+      "media/lisi/1.jpg",
+      "media/lisi/2.jpg",
+      "media/lisi/3.jpg"
+    ],
     thumbnail: "media/lisi/thumb.jpg"
   },
   {
@@ -49,7 +60,9 @@ export const projectsData: Project[] = [
     size: "From 600+ m²",
     roi: "10",
     completion: "Q4 2026",
-    images: ["media/shindisi/1.jpg", "media/shindisi/2.jpg", "media/shindisi/3.jpg"],
+    images: [
+      "media/shindisi/1.jpg"
+    ],
     thumbnail: "media/shindisi/thumb.jpg"
   },
   {
@@ -62,7 +75,14 @@ export const projectsData: Project[] = [
     size: "From 36 m²",
     roi: "12%",
     completion: "Q4 2027",
-    images: ["media/oval/1.jpg", "media/oval/2.jpg", "media/oval/3.jpg"],
+    images: [
+      "media/oval/1.jpg",
+      "media/oval/2.jpg",
+      "media/oval/3.jpg",
+      "media/oval/4.jpg",
+      "media/oval/5.jpg",
+      "media/oval/6.jpg"
+    ],
     thumbnail: "media/oval/thumb.jpg"
   },
   {
@@ -75,8 +95,40 @@ export const projectsData: Project[] = [
     size: "From 32 m²",
     roi: "10%",
     completion: "Q2 2028",
-    images: ["media/parallel/1.jpg", "media/parallel/2.jpg", "media/parallel/3.jpg"],
+    images: [
+      "media/parallel/1.jpg",
+      "media/parallel/2.jpg",
+      "media/parallel/3.jpg",
+      "media/parallel/4.jpg",
+      "media/parallel/5.jpg",
+      "media/parallel/6.jpg",
+      "media/parallel/7.jpg",
+      "media/parallel/8.jpg"
+    ],
     thumbnail: "media/parallel/thumb.jpg"
+  },
+  {
+    id: 6,
+    name: "Cube",
+    location: "Batumi",
+    startingPrice: "$154,000",
+    type: "Studio, 1 & 2 BR Apartments",
+    paymentPlan: "15 / 65 / 20",
+    size: "From 51 m²",
+    roi: "12%",
+    completion: "Q4 2027",
+    images: [
+      "media/cube/1.jpg",
+      "media/cube/2.jpg",
+      "media/cube/3.jpg",
+      "media/cube/4.jpg",
+      "media/cube/5.jpg",
+      "media/cube/6.jpg",
+      "media/cube/7.jpg",
+      "media/cube/8.jpg",
+      "media/cube/9.jpg"
+    ],
+    thumbnail: "media/cube/thumb.jpg"
   },
   {
     id: 7,
@@ -88,7 +140,21 @@ export const projectsData: Project[] = [
     size: "From 27.5 m²",
     roi: "14%",
     completion: "Q3 2028",
-    images: ["media/forest-beach/1.jpg", "media/forest-beach/2.jpg", "media/forest-beach/3.jpg"],
+    images: [
+      "media/forest-beach/1.jpg",
+      "media/forest-beach/2.jpg",
+      "media/forest-beach/4.jpg",
+      "media/forest-beach/5.jpg",
+      "media/forest-beach/6.jpg",
+      "media/forest-beach/7.jpg",
+      "media/forest-beach/8.jpg",
+      "media/forest-beach/9.jpg",
+      "media/forest-beach/10.jpg",
+      "media/forest-beach/11.jpg",
+      "media/forest-beach/12.jpg",
+      "media/forest-beach/13.jpg",
+      "media/forest-beach/14.jpg"
+    ],
     thumbnail: "media/forest-beach/thumb.jpg"
   },
   {
@@ -101,7 +167,14 @@ export const projectsData: Project[] = [
     size: "From 43.7 m²",
     roi: "12%",
     completion: "Q1 2027",
-    images: ["media/krtsanisi-resort/1.jpg", "media/krtsanisi-resort/2.jpg", "media/krtsanisi-resort/3.jpg"],
+    images: [
+      "media/krtsanisi-resort/1.jpg",
+      "media/krtsanisi-resort/2.jpg",
+      "media/krtsanisi-resort/3.jpg",
+      "media/krtsanisi-resort/4.jpg",
+      "media/krtsanisi-resort/5.jpg",
+      "media/krtsanisi-resort/6.jpg"
+    ],
     thumbnail: "media/krtsanisi-resort/thumb.jpg"
   },
   {
@@ -114,7 +187,15 @@ export const projectsData: Project[] = [
     size: "From 34.11 m²",
     roi: "12%",
     completion: "Q4 2028",
-    images: ["media/hisni/1.jpg", "media/hisni/2.jpg", "media/hisni/3.jpg"],
+    images: [
+      "media/hisni/1.jpg",
+      "media/hisni/2.jpg",
+      "media/hisni/3.jpg",
+      "media/hisni/4.jpg",
+      "media/hisni/5.jpg",
+      "media/hisni/6.jpg",
+      "media/hisni/7.jpg"
+    ],
     thumbnail: "media/hisni/thumb.jpg"
   },
   {
@@ -127,7 +208,20 @@ export const projectsData: Project[] = [
     size: "From 34.11 m²",
     roi: "12%",
     completion: "Q4 2026",
-    images: ["media/sakeni/1.jpg", "media/sakeni/2.jpg", "media/sakeni/3.jpg"],
+    images: [
+      "media/sakeni/1.jpg",
+      "media/sakeni/2.jpg",
+      "media/sakeni/3.jpg",
+      "media/sakeni/4.jpg",
+      "media/sakeni/5.jpg",
+      "media/sakeni/6.jpg",
+      "media/sakeni/7.jpg",
+      "media/sakeni/8.jpg",
+      "media/sakeni/9.jpg",
+      "media/sakeni/10.jpg",
+      "media/sakeni/11.jpg",
+      "media/sakeni/12.jpg"
+    ],
     thumbnail: "media/sakeni/thumb.jpg"
   },
   {
@@ -140,7 +234,14 @@ export const projectsData: Project[] = [
     size: "From 38.26 m²",
     roi: "12%",
     completion: "Q4 2029",
-    images: ["media/gardani/1.jpg", "media/gardani/2.jpg", "media/gardani/3.jpg"],
+    images: [
+      "media/gardani/1.jpg",
+      "media/gardani/2.jpg",
+      "media/gardani/3.jpg",
+      "media/gardani/4.jpg",
+      "media/gardani/5.jpg",
+      "media/gardani/6.jpg"
+    ],
     thumbnail: "media/gardani/thumb.jpg"
   },
   {
@@ -153,7 +254,15 @@ export const projectsData: Project[] = [
     size: "From 31.1 m²",
     roi: "14%",
     completion: "Ready",
-    images: ["media/neo/1.jpg", "media/neo/2.jpg", "media/neo/3.jpg"],
+    images: [
+      "media/neo/1.jpg",
+      "media/neo/2.jpg",
+      "media/neo/3.jpg",
+      "media/neo/4.jpg",
+      "media/neo/5.jpg",
+      "media/neo/6.jpg",
+      "media/neo/7.jpg"
+    ],
     thumbnail: "media/neo/thumb.jpg"
   },
   {
@@ -166,7 +275,23 @@ export const projectsData: Project[] = [
     size: "From 49.10 m²",
     roi: "10%",
     completion: "Ready",
-    images: ["media/marina-club/1.jpg", "media/marina-club/2.jpg", "media/marina-club/3.jpg"],
+    images: [
+      "media/marina-club/1.jpg",
+      "media/marina-club/2.jpg",
+      "media/marina-club/3.jpg",
+      "media/marina-club/4.jpg",
+      "media/marina-club/5.jpg",
+      "media/marina-club/6.jpg",
+      "media/marina-club/7.jpg",
+      "media/marina-club/8.jpg",
+      "media/marina-club/9.jpg",
+      "media/marina-club/10.jpg",
+      "media/marina-club/11.jpg",
+      "media/marina-club/12.jpg",
+      "media/marina-club/13.jpg",
+      "media/marina-club/14.jpg",
+      "media/marina-club/15.jpg"
+    ],
     thumbnail: "media/marina-club/thumb.jpg"
   },
   {
@@ -179,7 +304,37 @@ export const projectsData: Project[] = [
     size: "From 218 m²",
     roi: "10%",
     completion: "Ready",
-    images: ["media/green-gardens/1.jpg", "media/green-gardens/2.jpg", "media/green-gardens/3.jpg"],
+    images: [
+      "media/green-gardens/1.jpg",
+      "media/green-gardens/2.jpg",
+      "media/green-gardens/3.jpg",
+      "media/green-gardens/4.jpg",
+      "media/green-gardens/5.jpg",
+      "media/green-gardens/7.jpg",
+      "media/green-gardens/8.jpg",
+      "media/green-gardens/9.jpg",
+      "media/green-gardens/10.jpg",
+      "media/green-gardens/11.jpg",
+      "media/green-gardens/12.jpg",
+      "media/green-gardens/13.jpg",
+      "media/green-gardens/14.jpg",
+      "media/green-gardens/15.jpg",
+      "media/green-gardens/16.jpg",
+      "media/green-gardens/17.jpg",
+      "media/green-gardens/18.jpg",
+      "media/green-gardens/19.jpg",
+      "media/green-gardens/20.jpg",
+      "media/green-gardens/21.jpg",
+      "media/green-gardens/22.jpg",
+      "media/green-gardens/23.jpg",
+      "media/green-gardens/24.jpg",
+      "media/green-gardens/25.jpg",
+      "media/green-gardens/26.jpg",
+      "media/green-gardens/27.jpg",
+      "media/green-gardens/28.jpg",
+      "media/green-gardens/29.jpg",
+      "media/green-gardens/30.jpg"
+    ],
     thumbnail: "media/green-gardens/thumb.jpg"
   },
   {
@@ -192,7 +347,14 @@ export const projectsData: Project[] = [
     size: "From 30.08 m²",
     roi: "10%",
     completion: "December 2028",
-    images: ["media/oxy/1.jpg", "media/oxy/2.jpg", "media/oxy/3.jpg"],
+    images: [
+      "media/oxy/1.jpg",
+      "media/oxy/2.jpg",
+      "media/oxy/3.jpg",
+      "media/oxy/4.jpg",
+      "media/oxy/5.jpg",
+      "media/oxy/6.jpg"
+    ],
     thumbnail: "media/oxy/thumb.jpg"
   }
 ];
