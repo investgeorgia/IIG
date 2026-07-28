@@ -10,9 +10,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useSearchParams } from 'next/navigation'
+import { X } from 'lucide-react'
 
-export default function ProjectsPage() {
+import { Suspense } from 'react'
+
+function ProjectsList() {
   const queryClient = useQueryClient()
+  const searchParams = useSearchParams()
+  const devParam = searchParams.get('developer')
+  const developerFilterId = devParam ? Number(devParam) : null
+
   const { hasPermission, isLoading: permissionsLoading } = usePermissions()
   const [isAdding, setIsAdding] = useState(false)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
@@ -30,6 +38,18 @@ export default function ProjectsPage() {
     },
     enabled: hasPermission('Projects', 'VIEW')
   })
+
+  // Filter projects by developerId query param if present
+  const filteredProjects = projects ? projects.filter((p: any) => {
+    if (developerFilterId) {
+      return p.developerId === developerFilterId
+    }
+    return true
+  }) : []
+
+  const activeDeveloperName = filteredProjects.length > 0 && developerFilterId 
+    ? filteredProjects[0].developer?.name 
+    : 'Developer'
 
   const { data: developers = [] } = useQuery({
     queryKey: ['developers'],
@@ -95,10 +115,10 @@ export default function ProjectsPage() {
   })
 
   const toggleSelectAll = () => {
-    if (projects && selectedIds.length === projects.length) {
+    if (filteredProjects && selectedIds.length === filteredProjects.length) {
       setSelectedIds([])
-    } else if (projects) {
-      setSelectedIds(projects.map((p: any) => p.id))
+    } else if (filteredProjects) {
+      setSelectedIds(filteredProjects.map((p: any) => p.id))
     }
   }
 
@@ -176,11 +196,20 @@ export default function ProjectsPage() {
         </Card>
       )}
 
+      {developerFilterId && (
+        <div className="flex items-center gap-2 p-2 bg-neutral-100 rounded-lg text-sm text-neutral-700 w-fit">
+          <span>Filtered by Developer: <strong>{activeDeveloperName}</strong></span>
+          <Link href="/cms/projects" className="p-0.5 hover:bg-neutral-200 rounded-full">
+            <X className="w-3.5 h-3.5 text-neutral-500" />
+          </Link>
+        </div>
+      )}
+
       <Card className="shadow-sm border-neutral-200">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-8 text-center text-neutral-500">Loading projects...</div>
-          ) : projects?.length === 0 ? (
+          ) : filteredProjects?.length === 0 ? (
             <div className="p-8 text-center text-neutral-500">No projects found. Add one to get started.</div>
           ) : (
             <table className="w-full text-sm text-left">
@@ -189,7 +218,7 @@ export default function ProjectsPage() {
                   {canEdit && (
                     <th className="px-6 py-3 w-12 font-medium">
                       <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                        checked={projects?.length > 0 && selectedIds.length === projects.length} 
+                        checked={filteredProjects?.length > 0 && selectedIds.length === filteredProjects.length} 
                         onChange={toggleSelectAll} 
                       />
                     </th>
@@ -202,7 +231,7 @@ export default function ProjectsPage() {
                 </tr>
               </thead>
               <tbody>
-                {projects?.map((project: any) => (
+                {filteredProjects?.map((project: any) => (
                   <tr key={project.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
                     {canEdit && (
                       <td className="px-6 py-4">
@@ -212,7 +241,11 @@ export default function ProjectsPage() {
                         />
                       </td>
                     )}
-                    <td className="px-6 py-4 font-medium text-neutral-900">{project.name}</td>
+                    <td className="px-6 py-4 font-medium text-neutral-900">
+                      <Link href={`/cms/projects/${project.id}`} className="text-red-600 hover:underline">
+                        {project.name}
+                      </Link>
+                    </td>
                     <td className="px-6 py-4 text-neutral-500">{project.developer?.name}</td>
                     <td className="px-6 py-4 text-neutral-500">{project.city}</td>
                     <td className="px-6 py-4">
@@ -242,5 +275,13 @@ export default function ProjectsPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function ProjectsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-neutral-400">Loading projects view...</div>}>
+      <ProjectsList />
+    </Suspense>
   )
 }

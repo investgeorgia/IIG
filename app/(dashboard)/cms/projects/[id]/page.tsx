@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
-import { ArrowLeft, Building2, MapPin, Calendar, Globe, Loader2, Plus, Trash2, Upload, X, CheckSquare, Square } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Globe, Loader2, Plus, Trash2, Upload, X, CheckSquare, Square, Download } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,6 +45,7 @@ export default function ProjectDetailPage() {
   const [planName, setPlanName] = useState('')
   const [planDesc, setPlanDesc] = useState('')
   const [planSchedule, setPlanSchedule] = useState<{label: string, percentage: string, dueDays: string}[]>([])
+  const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([])
 
   // -- Queries --
   const { data: project, isLoading } = useQuery({
@@ -655,62 +656,202 @@ export default function ProjectDetailPage() {
       )}
 
       {/* ─── TAB: MEDIA ─── */}
-      {activeTab === 'media' && (
-        <div className="space-y-4">
-          {/* Media type sub-tabs */}
-          <div className="flex gap-2 flex-wrap">
-            {MEDIA_TABS.map(type => (
-              <button key={type} onClick={() => setMediaType(type)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${mediaType === type ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}>
-                {type.replace('_', ' ')}
-              </button>
-            ))}
-          </div>
+      {activeTab === 'media' && (() => {
+        const filteredMedia = mediaFiles.filter((m: any) => m.type === mediaType)
+        const selectedCount = selectedMediaIds.length
 
-          {/* Upload zone */}
-          {canEdit && (
-            <Card className="shadow-sm border-2 border-dashed border-neutral-200 hover:border-red-300 transition-colors">
-              <CardContent className="p-8 text-center">
-                <input type="file" id="file-upload" className="hidden" multiple accept="image/*,.pdf" onChange={handleFileUpload} />
-                <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2">
-                  {uploading ? (
-                    <><Loader2 className="w-8 h-8 animate-spin text-neutral-400" /><p className="text-sm text-neutral-500">Uploading...</p></>
-                  ) : (
-                    <><Upload className="w-8 h-8 text-neutral-400" /><p className="text-sm font-medium text-neutral-700">Click to upload {mediaType.replace('_', ' ').toLowerCase()}s</p><p className="text-xs text-neutral-400">JPG, PNG, WebP, PDF — max 10MB each</p></>
-                  )}
-                </label>
-              </CardContent>
-            </Card>
-          )}
+        const toggleSelectAll = () => {
+          if (selectedCount === filteredMedia.length) {
+            setSelectedMediaIds([])
+          } else {
+            setSelectedMediaIds(filteredMedia.map((m: any) => m.id))
+          }
+        }
 
-          {/* Media grid */}
-          {filteredMedia.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredMedia.map((file: any) => (
-                <div key={file.id} className="group relative rounded-xl overflow-hidden border border-neutral-200 bg-neutral-50 aspect-square">
-                  {file.mimeType?.startsWith('image/') ? (
-                    <Image src={file.url} alt={file.name || 'media'} fill className="object-cover" />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-                      <span className="text-3xl">📄</span>
-                      <p className="text-xs text-neutral-600 mt-2 line-clamp-2">{file.name}</p>
-                    </div>
-                  )}
-                  {canEdit && (
-                    <button
-                      onClick={() => deleteMediaMutation.mutate(file.id)}
-                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
+        const toggleSelectMedia = (id: number) => {
+          setSelectedMediaIds(prev =>
+            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+          )
+        }
+
+        const handleBulkDelete = async () => {
+          if (!confirm(`Are you sure you want to delete ${selectedCount} file(s)?`)) return
+          try {
+            const res = await fetch('/api/cms/media/bulk-delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ids: selectedMediaIds })
+            })
+            if (!res.ok) throw new Error('Bulk delete failed')
+            toast.success('Files deleted successfully')
+            setSelectedMediaIds([])
+            queryClient.invalidateQueries({ queryKey: ['media', id] })
+          } catch (err: any) {
+            toast.error(err.message || 'Failed to delete files')
+          }
+        }
+
+        const handleBulkDownload = async () => {
+          const selectedFiles = mediaFiles.filter((m: any) => selectedMediaIds.includes(m.id))
+          if (selectedFiles.length === 0) return
+
+          // Download each file individually by creating a temporary link
+          selectedFiles.forEach((file: any) => {
+            const link = document.createElement('a')
+            link.href = file.url
+            link.download = file.name || file.url.split('/').pop() || 'download'
+            link.target = '_blank'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+          })
+          toast.success('Downloads triggered')
+        }
+
+        // Return thumbnail/icon based on MIME type or tab type
+        const renderThumbnail = (file: any) => {
+          const isImg = file.mimeType?.startsWith('image/') || file.type === 'IMAGE' || file.type === 'FLOOR_PLAN' || file.type === 'MASTER_PLAN'
+          if (isImg) {
+            return (
+              <div className="relative w-full h-full">
+                <img src={file.url} alt={file.name || 'media'} className="w-full h-full object-cover" />
+              </div>
+            )
+          }
+
+          // Use generic icons for non-image files
+          let icon = '📄'
+          let label = 'File'
+          if (file.type === 'BROCHURE') { icon = '📖'; label = 'Brochure' }
+          else if (file.type === 'PRESENTATION') { icon = '📊'; label = 'Presentation' }
+          else if (file.type === 'DOCUMENT') { icon = '📝'; label = 'Document' }
+
+          return (
+            <div className="flex flex-col items-center justify-center h-full p-4 text-center bg-neutral-100">
+              <span className="text-4xl mb-2">{icon}</span>
+              <p className="text-xs font-semibold text-neutral-700 line-clamp-1 px-2">{label}</p>
+              <p className="text-[10px] text-neutral-400 mt-1 line-clamp-2 break-all px-2">{file.name}</p>
+            </div>
+          )
+        }
+
+        return (
+          <div className="space-y-4">
+            {/* Media type sub-tabs */}
+            <div className="flex gap-2 flex-wrap">
+              {MEDIA_TABS.map(type => (
+                <button
+                  key={type}
+                  onClick={() => {
+                    setMediaType(type)
+                    setSelectedMediaIds([]) // Clear selection when switching tabs
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${mediaType === type ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}
+                >
+                  {type.replace('_', ' ')}
+                </button>
               ))}
             </div>
-          )}
-          {filteredMedia.length === 0 && <p className="text-center text-sm text-neutral-400 py-4">No {mediaType.replace('_', ' ').toLowerCase()}s uploaded yet.</p>}
-        </div>
-      )}
+
+            {/* Bulk actions and multi-select bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-neutral-50 rounded-xl border border-neutral-200">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="select-all-media"
+                  className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4"
+                  checked={filteredMedia.length > 0 && selectedCount === filteredMedia.length}
+                  onChange={toggleSelectAll}
+                />
+                <label htmlFor="select-all-media" className="text-sm font-medium text-neutral-700 select-none cursor-pointer">
+                  Select All ({filteredMedia.length})
+                </label>
+              </div>
+
+              {selectedCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={handleBulkDownload}>
+                    <Download className="w-4 h-4 mr-1.5" /> Download ({selectedCount})
+                  </Button>
+                  {canEdit && (
+                    <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                      <Trash2 className="w-4 h-4 mr-1.5" /> Delete ({selectedCount})
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Upload zone */}
+            {canEdit && (
+              <Card className="shadow-sm border-2 border-dashed border-neutral-200 hover:border-red-300 transition-colors">
+                <CardContent className="p-8 text-center">
+                  <input type="file" id="file-upload" className="hidden" multiple onChange={handleFileUpload} />
+                  <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                    {uploading ? (
+                      <><Loader2 className="w-8 h-8 animate-spin text-neutral-400" /><p className="text-sm text-neutral-500">Uploading...</p></>
+                    ) : (
+                      <><Upload className="w-8 h-8 text-neutral-400" /><p className="text-sm font-medium text-neutral-700">Click to upload {mediaType.replace('_', ' ').toLowerCase()}s</p><p className="text-xs text-neutral-400">Images, PDFs, Documents, Presentations, Spreadsheets (Max 50MB)</p></>
+                    )}
+                  </label>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Media grid */}
+            {filteredMedia.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredMedia.map((file: any) => {
+                  const isSelected = selectedMediaIds.includes(file.id)
+                  return (
+                    <div
+                      key={file.id}
+                      onClick={() => toggleSelectMedia(file.id)}
+                      className={`group relative rounded-xl overflow-hidden border bg-neutral-50 aspect-square cursor-pointer transition-all ${isSelected ? 'border-red-500 ring-2 ring-red-200' : 'border-neutral-200 hover:border-neutral-300'}`}
+                    >
+                      {/* Checkbox badge */}
+                      <div className={`absolute top-2 left-2 z-10 flex items-center justify-center rounded-md border h-5 w-5 bg-white transition-opacity ${isSelected ? 'border-red-500 opacity-100' : 'border-neutral-300 opacity-0 group-hover:opacity-100'}`}>
+                        {isSelected && <span className="text-red-600 font-bold text-xs">✓</span>}
+                      </div>
+
+                      {/* File Rendering */}
+                      {renderThumbnail(file)}
+
+                      {/* Individual Actions (Hover) */}
+                      <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <a
+                          href={file.url}
+                          download={file.name || 'download'}
+                          onClick={e => e.stopPropagation()}
+                          className="bg-white hover:bg-neutral-100 text-neutral-700 rounded-lg p-1.5 shadow-md border border-neutral-200"
+                          title="Download"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </a>
+                        {canEdit && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (confirm('Delete this file?')) deleteMediaMutation.mutate(file.id)
+                            }}
+                            className="bg-red-600 hover:bg-red-700 text-white rounded-lg p-1.5 shadow-md"
+                            title="Delete"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            {filteredMedia.length === 0 && <p className="text-center text-sm text-neutral-400 py-4">No {mediaType.replace('_', ' ').toLowerCase()}s uploaded yet.</p>}
+          </div>
+        )
+      })()}
     </div>
   )
 }

@@ -42,13 +42,8 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
   const headerHtml = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;">
       <div style="font-size:22px;font-weight:800;letter-spacing:0.05em;color:#1a1a1a;">SALES OFFER</div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:42px;height:42px;border:2px solid #cb2c39;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#cb2c39;letter-spacing:-1px;box-sizing:border-box;">IG</div>
-        <div style="display:flex;flex-direction:column;justify-content:center;">
-          <div style="font-size:12px;font-weight:800;letter-spacing:0.06em;color:#1a1a1a;line-height:1.1;">INVEST</div>
-          <div style="font-size:12px;font-weight:800;letter-spacing:0.06em;color:#1a1a1a;line-height:1.1;">GEORGIA</div>
-          <div style="font-size:10px;font-weight:500;color:#888;letter-spacing:0.1em;margin-top:2px;line-height:1;">UAE</div>
-        </div>
+      <div style="display:flex;align-items:center;">
+        <img src="${baseUrl}/logo-black.svg" style="height:45px;width:auto;object-fit:contain;" alt="Invest Georgia" />
       </div>
     </div>`
 

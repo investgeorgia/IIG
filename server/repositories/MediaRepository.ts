@@ -13,6 +13,10 @@ export class MediaRepository {
     return prisma.media.create({ data })
   }
 
+  static async findById(id: number) {
+    return prisma.media.findUnique({ where: { id } })
+  }
+
   static async delete(id: number) {
     return prisma.media.delete({ where: { id } })
   }

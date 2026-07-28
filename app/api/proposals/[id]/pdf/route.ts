@@ -38,17 +38,24 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     })
 
     // Save PDF to disk
-    const pdfDir = path.join(process.cwd(), 'public', 'uploads', 'proposals')
+    const envPath = process.env.MEDIA_STORAGE_PATH
+    const pdfDir = envPath 
+      ? path.join(envPath, 'proposals')
+      : path.join(process.cwd(), 'public', 'media', 'proposals')
+
     if (!existsSync(pdfDir)) await mkdir(pdfDir, { recursive: true })
     const filename = `proposal-${id}-${Date.now()}.pdf`
     await writeFile(path.join(pdfDir, filename), pdfBuffer)
 
-    const pdfUrl = `/uploads/proposals/${filename}`
+    const pdfUrl = envPath
+      ? `/media/proposals/${filename}`
+      : `/media/proposals/${filename}`
     await ProposalService.linkPdf(id, pdfUrl)
 
     return NextResponse.json({ pdfUrl })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[PDF Generation Error]', error)
+    return NextResponse.json({ error: `Failed to generate PDF: ${error.message}` }, { status: 500 })
   } finally {
     if (browser) await browser.close()
   }

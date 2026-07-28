@@ -66,17 +66,8 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
       <div>
         <div style={{ fontSize: '22px', fontWeight: '800', letterSpacing: '0.05em', color: '#1a1a1a' }}>SALES OFFER</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{
-          width: '42px', height: '42px', border: '2px solid #cb2c39',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '18px', fontWeight: '900', color: '#cb2c39', letterSpacing: '-1px', boxSizing: 'border-box'
-        }}>IG</div>
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '0.06em', color: '#1a1a1a', lineHeight: '1.1' }}>INVEST</div>
-          <div style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '0.06em', color: '#1a1a1a', lineHeight: '1.1' }}>GEORGIA</div>
-          <div style={{ fontSize: '10px', fontWeight: '500', color: '#888', letterSpacing: '0.1em', marginTop: '2px', lineHeight: '1' }}>UAE</div>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <img src="/logo-black.svg" style={{ height: '45px', width: 'auto', objectFit: 'contain' }} alt="Invest Georgia" />
       </div>
     </div>
   )

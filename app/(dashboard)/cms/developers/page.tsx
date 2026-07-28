@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { usePermissions } from '@/hooks/usePermissions'
+import Link from 'next/link'
 
 export default function DevelopersPage() {
   const queryClient = useQueryClient()
@@ -142,7 +143,12 @@ export default function DevelopersPage() {
                           autoFocus
                         />
                       ) : (
-                        dev.name
+                        <Link
+                          href={`/cms/projects?developer=${dev.id}`}
+                          className="text-red-600 hover:underline font-semibold"
+                        >
+                          {dev.name}
+                        </Link>
                       )}
                     </td>
                     <td className="px-6 py-4 text-neutral-500">{new Date(dev.createdAt).toLocaleDateString()}</td>

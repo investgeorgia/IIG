@@ -16,6 +16,7 @@ export default function CustomersPage() {
   const queryClient = useQueryClient()
   const { hasPermission, isLoading: permissionsLoading } = usePermissions()
   const [isAdding, setIsAdding] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [form, setForm] = useState({ name: '', email: '', phone: '', nationality: '', source: '', notes: '', assignedToId: '' })
   const [selectedIds, setSelectedIds] = useState<number[]>([])
 
@@ -39,7 +40,7 @@ export default function CustomersPage() {
     enabled: hasPermission('Users', 'VIEW')
   })
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async () => {
       const payload = { ...form }
       if (payload.assignedToId) {
@@ -47,21 +48,24 @@ export default function CustomersPage() {
       } else {
         delete (payload as any).assignedToId
       }
-      const res = await fetch('/api/cms/customers', {
-        method: 'POST',
+      const url = editingId ? `/api/cms/customers/${editingId}` : '/api/cms/customers'
+      const method = editingId ? 'PUT' : 'POST'
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      if (!res.ok) throw new Error('Failed to create customer')
+      if (!res.ok) throw new Error('Failed to save customer')
       return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] })
       setForm({ name: '', email: '', phone: '', nationality: '', source: '', notes: '', assignedToId: '' })
       setIsAdding(false)
-      toast.success('Customer added')
+      setEditingId(null)
+      toast.success(editingId ? 'Lead updated' : 'Customer added')
     },
-    onError: () => toast.error('Failed to add customer')
+    onError: () => toast.error('Failed to save customer')
   })
 
   const deleteMutation = useMutation({
@@ -114,6 +118,20 @@ export default function CustomersPage() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])
   }
 
+  const handleEditClick = (customer: any) => {
+    setEditingId(customer.id)
+    setForm({
+      name: customer.name || '',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      nationality: customer.nationality || '',
+      source: customer.source || '',
+      notes: customer.notes || '',
+      assignedToId: customer.assignedToId?.toString() || ''
+    })
+    setIsAdding(true)
+  }
+
   if (permissionsLoading) return <div className="p-8 text-center text-neutral-400">Loading...</div>
   
   if (!hasPermission('Customers', 'VIEW')) {
@@ -141,8 +159,16 @@ export default function CustomersPage() {
             </Button>
           )}
           {canEdit && (
-            <Button onClick={() => setIsAdding(!isAdding)} className="bg-red-600 hover:bg-red-700">
-              <Plus className="w-4 h-4 mr-2" /> Add Lead
+            <Button onClick={() => {
+              if (isAdding && editingId) {
+                // if we are editing, clicking this resets to clean add state
+                setEditingId(null)
+                setForm({ name: '', email: '', phone: '', nationality: '', source: '', notes: '', assignedToId: '' })
+              } else {
+                setIsAdding(!isAdding)
+              }
+            }} className="bg-red-600 hover:bg-red-700">
+              <Plus className="w-4 h-4 mr-2" /> {editingId ? 'Add Instead' : isAdding ? 'Close Panel' : 'Add Lead'}
             </Button>
           )}
         </div>
@@ -150,7 +176,7 @@ export default function CustomersPage() {
 
       {isAdding && canEdit && (
         <Card className="shadow-sm">
-          <CardHeader><CardTitle className="text-lg">New Customer</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">{editingId ? 'Edit Lead' : 'New Customer'}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1"><Label>Full Name *</Label><Input placeholder="Ahmed Al-Rashidi" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
@@ -176,10 +202,10 @@ export default function CustomersPage() {
               <div className="space-y-1"><Label>Notes</Label><Input placeholder="Any notes about this lead..." value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></div>
             </div>
             <div className="flex gap-3">
-              <Button onClick={() => createMutation.mutate()} disabled={!form.name || createMutation.isPending} className="bg-red-600 hover:bg-red-700">
-                {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Customer
+              <Button onClick={() => saveMutation.mutate()} disabled={!form.name || saveMutation.isPending} className="bg-red-600 hover:bg-red-700">
+                {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Customer
               </Button>
-              <Button variant="outline" onClick={() => setIsAdding(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setIsAdding(false); setEditingId(null); setForm({ name: '', email: '', phone: '', nationality: '', source: '', notes: '', assignedToId: '' }) }}>Cancel</Button>
             </div>
           </CardContent>
         </Card>
@@ -250,9 +276,14 @@ export default function CustomersPage() {
                     <td className="px-6 py-4 text-neutral-600 font-medium">{c._count?.proposals || 0}</td>
                     <td className="px-6 py-4 text-right">
                       {canEdit ? (
-                        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => deleteMutation.mutate(c.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex justify-end items-center gap-2">
+                          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 h-8 px-2" onClick={() => handleEditClick(c)}>
+                            Edit
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600 h-8 w-8" onClick={() => deleteMutation.mutate(c.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       ) : (
                         <span className="text-neutral-400 text-xs">Read-only</span>
                       )}
