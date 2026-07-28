@@ -1,6 +1,7 @@
 import { ProposalService } from '@/server/services/ProposalService'
 import { Suspense } from 'react'
 import PrintTrigger from './PrintTrigger'
+import PrintButton from './PrintButton'
 
 const USD_TO_AED = 3.6725
 
@@ -81,22 +82,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
 
       {/* Manual print button — hidden when printing */}
       <div style={{ textAlign: 'center', marginBottom: '24px' }} className="no-print">
-        <button
-          onClick={() => typeof window !== 'undefined' && window.print()}
-          style={{
-            background: '#c0392b',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '10px 28px',
-            fontSize: '14px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            letterSpacing: '0.02em'
-          }}
-        >
-          🖨️ Print / Save as PDF
-        </button>
+        <PrintButton />
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════ */}
