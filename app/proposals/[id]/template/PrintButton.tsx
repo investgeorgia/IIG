@@ -47,9 +47,9 @@ export default function PrintButton() {
       }
 
       pdf.save('proposal.pdf')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to generate PDF:', error)
-      alert('Failed to generate PDF. Please try again.')
+      alert(`Failed to generate PDF: ${error.message || String(error)}`)
     } finally {
       setIsGenerating(false)
     }

@@ -68,7 +68,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
         <div style={{ fontSize: '22px', fontWeight: '800', letterSpacing: '0.05em', color: '#1a1a1a' }}>SALES OFFER</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <img src="/logo-black.svg" style={{ height: '45px', width: 'auto', objectFit: 'contain' }} alt="Invest Georgia" />
+        <img src="/logo-black.svg" style={{ height: '45px', width: 'auto', objectFit: 'contain' }} alt="Invest Georgia" crossOrigin="anonymous" />
       </div>
     </div>
   )
@@ -258,7 +258,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
             width: '100%', height: '360px', border: '1px solid #ddd', borderRadius: '6px',
             overflow: 'hidden', marginBottom: '36px', backgroundColor: '#f0f0ef'
           }}>
-            <img src={snap.unit.floorPlanUrl} alt="Unit Floor Plan" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src={snap.unit.floorPlanUrl} alt="Unit Floor Plan" style={{ width: '100%', height: '100%', objectFit: 'contain' }} crossOrigin="anonymous" />
           </div>
         ) : (
           <div style={{
@@ -303,7 +303,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
                 aspectRatio: '16/9', overflow: 'hidden', borderRadius: '6px',
                 border: '1px solid #ddd', backgroundColor: '#f0f0ef'
               }}>
-                <img src={url} alt={`Property ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={url} alt={`Property ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} crossOrigin="anonymous" />
               </div>
             ))}
           </div>
