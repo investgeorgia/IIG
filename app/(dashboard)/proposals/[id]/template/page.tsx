@@ -19,7 +19,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
   const snap = proposal.snapshot as any
 
   // Calculate prices
-  const basePrice = Number(snap.unit.price)
+  const basePrice = Number(snap?.unit?.price || 0)
   const discountAmount = proposal.discountPercent ? basePrice * (proposal.discountPercent / 100) : 0
   const finalPriceNum = proposal.customPrice ? Number(proposal.customPrice) : (basePrice - discountAmount)
   const finalPriceUSD = finalPriceNum
@@ -37,12 +37,12 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
 
   // Custom payment plan from snapshot
   const customPaymentPlan: { id: number, milestone: string, percentage: number, date: string }[] =
-    (snap.customPaymentPlan && Array.isArray(snap.customPaymentPlan)) ? snap.customPaymentPlan : []
+    (snap?.customPaymentPlan && Array.isArray(snap.customPaymentPlan)) ? snap.customPaymentPlan : []
 
-  const amenities: string[] = snap.amenities || []
+  const amenities: string[] = snap?.amenities || []
   const consultantName = proposal.createdBy?.name || ''
   const consultantPhone = proposal.createdBy?.phone || ''
-  const completionDate = snap.project.completionDate
+  const completionDate = snap?.project?.completionDate
     ? new Date(snap.project.completionDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     : ''
 
