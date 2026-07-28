@@ -1,6 +1,4 @@
 import { ProposalService } from '@/server/services/ProposalService'
-import { Suspense } from 'react'
-import PrintTrigger from './PrintTrigger'
 import PrintButton from './PrintButton'
 
 const USD_TO_AED = 3.6725
@@ -77,8 +75,6 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
 
   return (
     <div style={{ background: '#f0eeea', padding: '40px 0' }}>
-      {/* Auto-trigger print when ?print=1 */}
-      <Suspense fallback={null}><PrintTrigger /></Suspense>
 
       {/* Manual print button — hidden when printing */}
       <div style={{ textAlign: 'center', marginBottom: '24px' }} className="no-print">
@@ -88,7 +84,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {/* PAGE 1 */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
-      <div style={pageStyle}>
+      <div style={pageStyle} className="pdf-page">
         {headerSection}
 
         {/* Salutation */}
@@ -210,7 +206,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {/* PAGE 2 */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
-      <div style={{ ...pageStyle, marginTop: '40px', pageBreakBefore: 'always' as const }}>
+      <div style={{ ...pageStyle, marginTop: '40px', pageBreakBefore: 'always' as const }} className="pdf-page">
         {headerSection}
 
         {/* Project + Developer Heading */}
@@ -294,7 +290,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
       {/* PAGE 3 – PROPERTY IMAGES */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {selectedImages.length > 0 && (
-        <div style={{ ...pageStyle, marginTop: '40px', pageBreakBefore: 'always' as const }}>
+        <div style={{ ...pageStyle, marginTop: '40px', pageBreakBefore: 'always' as const }} className="pdf-page">
           {headerSection}
 
           <h2 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '20px', borderBottom: '1.5px solid #1a1a1a', paddingBottom: '10px' }}>
