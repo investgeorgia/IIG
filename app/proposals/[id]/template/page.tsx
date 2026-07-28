@@ -75,6 +75,17 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
 
   return (
     <div style={{ background: '#f0eeea', padding: '40px 0' }}>
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* Override Tailwind v4 oklch defaults for html2canvas compatibility */
+        *, ::before, ::after {
+          border-color: transparent;
+          outline-color: transparent;
+        }
+        body {
+          background-color: #f0eeea;
+          color: #1a1a1a;
+        }
+      `}} />
 
       {/* Manual print button — hidden when printing */}
       <div style={{ textAlign: 'center', marginBottom: '24px' }} className="no-print">
