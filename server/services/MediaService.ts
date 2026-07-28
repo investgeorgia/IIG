@@ -2,15 +2,18 @@ import { MediaRepository } from '../repositories/MediaRepository'
 import { Prisma } from '@prisma/client'
 import path from 'path'
 import fs from 'fs'
+import os from 'os'
 
 /**
  * Returns the root directory for media storage.
- * Uses MEDIA_STORAGE_PATH from .env on the server, falls back to public/media for local dev.
+ * On Linux servers: uses MEDIA_STORAGE_PATH from .env
+ * On Windows/local dev: always uses public/uploads
  */
 function getMediaRoot(): string {
   const envPath = process.env.MEDIA_STORAGE_PATH
-  if (envPath) return envPath
-  return path.join(process.cwd(), 'public', 'media')
+  const isWindows = os.platform() === 'win32'
+  if (envPath && !isWindows) return envPath
+  return path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads')
 }
 
 export class MediaService {
@@ -23,21 +26,20 @@ export class MediaService {
   }
 
   static async delete(id: number, url?: string) {
-    // Delete physical file if it's a local upload
     if (url) {
       let filePath: string | null = null
 
       if (url.startsWith('/media/')) {
-        // New-style path: /media/<type>/<projectId>/<filename>
+        // Server path: /media/<type>/<projectId>/<filename>
         const relativePath = url.replace(/^\/media\//, '')
         filePath = path.join(getMediaRoot(), relativePath)
       } else if (url.startsWith('/uploads/')) {
-        // Legacy path: /uploads/<type>/<projectId>/<filename>
+        // Local/legacy path under public/uploads/
         filePath = path.join(process.cwd(), 'public', url)
       }
 
       if (filePath && fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
+        try { fs.unlinkSync(filePath) } catch { /* ignore if file already gone */ }
       }
     }
     return MediaRepository.delete(id)

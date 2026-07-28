@@ -713,8 +713,24 @@ export default function ProjectDetailPage() {
           const isImg = file.mimeType?.startsWith('image/') || file.type === 'IMAGE' || file.type === 'FLOOR_PLAN' || file.type === 'MASTER_PLAN'
           if (isImg) {
             return (
-              <div className="relative w-full h-full">
-                <img src={file.url} alt={file.name || 'media'} className="w-full h-full object-cover" />
+              <div className="relative w-full h-full bg-neutral-100">
+                <img
+                  src={file.url}
+                  alt={file.name || 'media'}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.currentTarget
+                    target.style.display = 'none'
+                    const placeholder = target.nextElementSibling as HTMLElement
+                    if (placeholder) placeholder.style.display = 'flex'
+                  }}
+                />
+                {/* Fallback shown when image fails to load */}
+                <div className="absolute inset-0 hidden flex-col items-center justify-center p-4 text-center bg-neutral-100">
+                  <span className="text-4xl mb-2">🖼️</span>
+                  <p className="text-xs font-semibold text-neutral-700 line-clamp-1 px-2">Image</p>
+                  <p className="text-[10px] text-neutral-400 mt-1 line-clamp-2 break-all px-2">{file.name}</p>
+                </div>
               </div>
             )
           }

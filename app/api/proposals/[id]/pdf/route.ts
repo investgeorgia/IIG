@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server'
 import { ProposalService } from '@/server/services/ProposalService'
-import { generateSalesOfferHtml } from '@/server/services/SalesOfferHtmlService'
-import puppeteer from 'puppeteer'
-import path from 'path'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
 
 export const runtime = 'nodejs'
 
+/**
+ * Instead of Puppeteer (which needs Chromium — unavailable on shared hosting),
+ * we return the template URL so the client can open it in a new tab and print it
+ * as a PDF using the browser's native print dialog.
+ */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let browser = null
   try {
     const id = Number((await params).id)
     const proposal = await ProposalService.getById(id)
@@ -19,44 +18,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const protocol = request.headers.get('x-forwarded-proto') || 'http'
     const baseUrl = `${protocol}://${host}`
 
-    // Generate HTML directly server-side — no browser navigation needed, bypasses auth
-    const html = generateSalesOfferHtml(proposal, baseUrl)
+    // Return the template URL with ?print=1 so the page auto-triggers print dialog
+    const templateUrl = `${baseUrl}/proposals/${id}/template?print=1`
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-    })
-    const page = await browser.newPage()
-
-    // Set content directly instead of navigating to URL (bypasses auth middleware)
-    await page.setContent(html, { waitUntil: 'load', timeout: 30000 })
-
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '0', right: '0', bottom: '0', left: '0' }
-    })
-
-    // Save PDF to disk
-    const envPath = process.env.MEDIA_STORAGE_PATH
-    const pdfDir = envPath 
-      ? path.join(envPath, 'proposals')
-      : path.join(process.cwd(), 'public', 'media', 'proposals')
-
-    if (!existsSync(pdfDir)) await mkdir(pdfDir, { recursive: true })
-    const filename = `proposal-${id}-${Date.now()}.pdf`
-    await writeFile(path.join(pdfDir, filename), pdfBuffer)
-
-    const pdfUrl = envPath
-      ? `/media/proposals/${filename}`
-      : `/media/proposals/${filename}`
-    await ProposalService.linkPdf(id, pdfUrl)
-
-    return NextResponse.json({ pdfUrl })
+    return NextResponse.json({ pdfUrl: templateUrl })
   } catch (error: any) {
     console.error('[PDF Generation Error]', error)
-    return NextResponse.json({ error: `Failed to generate PDF: ${error.message}` }, { status: 500 })
-  } finally {
-    if (browser) await browser.close()
+    return NextResponse.json({ error: `Failed: ${error.message}` }, { status: 500 })
   }
 }

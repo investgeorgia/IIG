@@ -78,16 +78,11 @@ export default function ProposalDetailsPage() {
 
   const generatePdfMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/proposals/${id}/pdf`, { method: 'POST' })
-      if (!res.ok) throw new Error('Failed to generate PDF')
-      const { pdfUrl } = await res.json()
-      if (!pdfUrl) throw new Error('Failed to get PDF URL')
-      window.open(pdfUrl, '_blank')
+      // Open the template in a new tab with ?print=1 — browser auto-triggers print dialog
+      const templateUrl = `/proposals/${id}/template?print=1`
+      window.open(templateUrl, '_blank')
     },
-    onSuccess: () => {
-      toast.success('PDF Generated and Downloaded')
-      queryClient.invalidateQueries({ queryKey: ['proposal', id] })
-    },
+    onSuccess: () => toast.success('Print dialog opened — choose "Save as PDF"'),
     onError: (e: any) => toast.error(e.message)
   })
 

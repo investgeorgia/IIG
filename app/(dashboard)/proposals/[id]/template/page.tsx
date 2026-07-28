@@ -1,4 +1,6 @@
 import { ProposalService } from '@/server/services/ProposalService'
+import { Suspense } from 'react'
+import PrintTrigger from './PrintTrigger'
 
 const USD_TO_AED = 3.6725
 
@@ -74,6 +76,28 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
 
   return (
     <div style={{ background: '#f0eeea', padding: '40px 0' }}>
+      {/* Auto-trigger print when ?print=1 */}
+      <Suspense fallback={null}><PrintTrigger /></Suspense>
+
+      {/* Manual print button — hidden when printing */}
+      <div style={{ textAlign: 'center', marginBottom: '24px' }} className="no-print">
+        <button
+          onClick={() => typeof window !== 'undefined' && window.print()}
+          style={{
+            background: '#c0392b',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '10px 28px',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            letterSpacing: '0.02em'
+          }}
+        >
+          🖨️ Print / Save as PDF
+        </button>
+      </div>
 
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {/* PAGE 1 */}
@@ -309,6 +333,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
         @media print {
           body { margin: 0; background: white; }
           @page { size: A4; margin: 0; }
+          .no-print { display: none !important; }
         }
       `}</style>
     </div>

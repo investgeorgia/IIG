@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { existsSync } from 'fs'
+import os from 'os'
 
 export const runtime = 'nodejs'
 
@@ -24,13 +25,23 @@ const ALLOWED_MIME_TYPES = [
 
 /**
  * Returns the root directory for media storage.
- * Uses MEDIA_STORAGE_PATH from .env on the server, falls back to public/media for local dev.
+ * - On Linux servers: uses MEDIA_STORAGE_PATH from .env
+ * - On Windows/local dev: always uses public/uploads (served statically by Next.js)
  */
-function getMediaRoot(): string {
+function getMediaRoot(): { dir: string; urlBase: string } {
   const envPath = process.env.MEDIA_STORAGE_PATH
-  if (envPath) return envPath
-  // Local dev fallback
-  return path.join(process.cwd(), 'public', 'media')
+  const isWindows = os.platform() === 'win32'
+
+  // Use env path only on Linux (production server)
+  if (envPath && !isWindows) {
+    return { dir: envPath, urlBase: '/media' }
+  }
+
+  // Local development: serve from public/uploads (Next.js static serving)
+  return {
+    dir: path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads'),
+    urlBase: '/uploads'
+  }
 }
 
 export async function POST(request: Request) {
@@ -52,13 +63,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // Max 50MB (presentations / brochures can be large)
+    // Max 50MB
     if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json({ error: 'File too large (max 50MB)' }, { status: 400 })
     }
 
-    // Build directory path under MEDIA_STORAGE_PATH
-    const mediaRoot = getMediaRoot()
+    const { dir: mediaRoot, urlBase } = getMediaRoot()
+
+    // Build directory: <mediaRoot>/<type>/<projectId>/
     const subDir = path.join(type.toLowerCase(), projectId || 'general')
     const uploadDir = path.join(mediaRoot, subDir)
     if (!existsSync(uploadDir)) {
@@ -74,8 +86,8 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await file.arrayBuffer())
     await writeFile(filePath, buffer)
 
-    // URL path served statically as /media/...
-    const url = `/media/${type.toLowerCase()}/${projectId || 'general'}/${safeName}`
+    // URL served statically
+    const url = `${urlBase}/${type.toLowerCase()}/${projectId || 'general'}/${safeName}`
 
     return NextResponse.json({
       url,
