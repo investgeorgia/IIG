@@ -30,11 +30,10 @@ export async function GET(
   try {
     const pathArray = (await params).path
     const envPath = process.env.MEDIA_STORAGE_PATH
-    const isWindows = os.platform() === 'win32'
     
     // Determine where media is stored
     let baseDir = ''
-    if (envPath && !isWindows) {
+    if (envPath) {
       baseDir = envPath
     } else {
       // Local dev fallback

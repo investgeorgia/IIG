@@ -11,8 +11,7 @@ import os from 'os'
  */
 function getMediaRoot(): string {
   const envPath = process.env.MEDIA_STORAGE_PATH
-  const isWindows = os.platform() === 'win32'
-  if (envPath && !isWindows) return envPath
+  if (envPath) return envPath
   return path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads')
 }
 

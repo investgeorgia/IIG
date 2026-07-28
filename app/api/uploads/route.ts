@@ -30,14 +30,12 @@ const ALLOWED_MIME_TYPES = [
  */
 function getMediaRoot(): { dir: string; urlBase: string } {
   const envPath = process.env.MEDIA_STORAGE_PATH
-  const isWindows = os.platform() === 'win32'
 
-  // Use env path only on Linux (production server)
-  if (envPath && !isWindows) {
+  if (envPath) {
     return { dir: envPath, urlBase: '/media' }
   }
 
-  // Local development: serve from public/uploads (Next.js static serving)
+  // Local fallback if no env variable is set
   return {
     dir: path.join(/*turbopackIgnore: true*/ process.cwd(), 'public', 'uploads'),
     urlBase: '/uploads'
