@@ -136,9 +136,9 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
             </thead>
             <tbody>
               <tr>
-                <td style={{ textAlign: 'center', padding: '12px 6px', fontWeight: '500' }}>{snap.project.name}</td>
-                <td style={{ textAlign: 'center', padding: '12px 6px' }}>{snap.unit.towerBlock || '—'}</td>
-                <td style={{ textAlign: 'center', padding: '12px 6px' }}>{snap.unit.unitNumber}</td>
+                <td style={{ textAlign: 'center', padding: '12px 6px', fontWeight: '500' }}>{snap?.project?.name || '—'}</td>
+                <td style={{ textAlign: 'center', padding: '12px 6px' }}>{snap?.unit?.towerBlock || '—'}</td>
+                <td style={{ textAlign: 'center', padding: '12px 6px' }}>{snap?.unit?.unitNumber || '—'}</td>
                 <td style={{ textAlign: 'center', padding: '12px 6px' }}>{completionDate || '—'}</td>
               </tr>
             </tbody>
@@ -159,7 +159,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
               <tr>
                 <td style={{ textAlign: 'center', padding: '12px 6px', fontWeight: '500' }}>{formatNum(finalPriceUSD)}</td>
                 <td style={{ textAlign: 'center', padding: '12px 6px' }}>{formatNum(finalPriceAED)}</td>
-                <td style={{ textAlign: 'center', padding: '12px 6px' }}>{snap.project.roi ? `${snap.project.roi}%` : '—'}</td>
+                <td style={{ textAlign: 'center', padding: '12px 6px' }}>{snap?.project?.roi ? `${snap.project.roi}%` : '—'}</td>
               </tr>
             </tbody>
           </table>
@@ -175,7 +175,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '12px' }}>
             <span style={{ fontSize: '15px', fontWeight: '700' }}>Standard Payment Plan</span>
-            {snap.paymentPlans && snap.paymentPlans.length > 0 && (
+            {snap?.paymentPlans && snap.paymentPlans.length > 0 && (
               <span style={{ fontSize: '13px', color: '#555' }}>
                 {snap.paymentPlans.map((p: any) => p.name).join(', ')}
               </span>
@@ -229,8 +229,8 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
 
         {/* Project + Developer Heading */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '20px', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '22px', fontWeight: '800', margin: 0 }}>{snap.project.name}</h2>
-          {snap.developer?.name && (
+          <h2 style={{ fontSize: '22px', fontWeight: '800', margin: 0 }}>{snap?.project?.name || 'Project Name'}</h2>
+          {snap?.developer?.name && (
             <span style={{ fontSize: '14px', color: '#555', fontWeight: '500' }}>{snap.developer.name}</span>
           )}
         </div>
@@ -263,7 +263,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
         )}
 
         {/* Unit Condition */}
-        {snap.unit.condition && (
+        {snap?.unit?.condition && (
           <div style={{ display: 'flex', gap: '16px', alignItems: 'baseline', marginBottom: '20px' }}>
             <span style={{ fontSize: '14px', fontWeight: '700' }}>Unit Condition</span>
             <span style={{ fontSize: '14px', color: '#555' }}>{snap.unit.condition}</span>
@@ -271,7 +271,7 @@ export default async function ProposalTemplatePage({ params }: { params: Promise
         )}
 
         {/* Floor Plan */}
-        {snap.unit.floorPlanUrl ? (
+        {snap?.unit?.floorPlanUrl ? (
           <div style={{
             width: '100%', height: '360px', border: '1px solid #ddd', borderRadius: '6px',
             overflow: 'hidden', marginBottom: '36px', backgroundColor: '#f0f0ef'
