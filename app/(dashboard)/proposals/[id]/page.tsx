@@ -478,11 +478,11 @@ export default function ProposalDetailsPage() {
                   Proposal Accepted 🎉
                 </div>
               )}
-              <Link href={`/proposals/${id}/template`} target="_blank">
+              <a href={`/proposals/${id}/template`} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" className="w-full mt-3">
                   <FileText className="w-4 h-4 mr-2" /> View HTML Template
                 </Button>
-              </Link>
+              </a>
             </CardContent>
           </Card>
         </div>
