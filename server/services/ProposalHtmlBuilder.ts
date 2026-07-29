@@ -178,6 +178,13 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const consultantPhone = proposal.createdBy?.phone || ''
   const consultantEmail = proposal.createdBy?.email || 'info@investgeorgia.ae'
 
+  // --- Unit details ---
+  const unitType = snap?.unit?.type ? String(snap.unit.type).toLowerCase() : '—'
+  const unitSize = snap?.unit?.size ? String(snap.unit.size) : '—'
+  const unitFloor = snap?.unit?.floor !== undefined && snap?.unit?.floor !== null ? String(snap.unit.floor) : '—'
+  const unitBedrooms = snap?.unit?.bedrooms !== undefined && snap?.unit?.bedrooms !== null ? String(snap.unit.bedrooms) : '—'
+  const unitBathrooms = snap?.unit?.bathrooms !== undefined && snap?.unit?.bathrooms !== null ? String(snap.unit.bathrooms) : '—'
+
   const defaultCustomerMessage =
     'Taking into consideration your preferences and key investment goals, we have carefully selected the following opportunity that aligns with your criteria and demonstrates exceptional growth potential.'
 
@@ -204,6 +211,17 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{consultantPhone}}/g, consultantPhone)
     .replace(/{{consultantEmail}}/g, consultantEmail)
     .replace(/{{baseUrl}}/g, baseUrl)
+    // Unit Specs
+    .replace(/{{unitType}}/g, unitType)
+    .replace(/{{type}}/g, unitType)
+    .replace(/{{unitSize}}/g, unitSize)
+    .replace(/{{size}}/g, unitSize)
+    .replace(/{{unitFloor}}/g, unitFloor)
+    .replace(/{{floor}}/g, unitFloor)
+    .replace(/{{unitBedrooms}}/g, unitBedrooms)
+    .replace(/{{bedrooms}}/g, unitBedrooms)
+    .replace(/{{unitBathrooms}}/g, unitBathrooms)
+    .replace(/{{bathrooms}}/g, unitBathrooms)
     // Dynamic HTML blocks
     .replace(/{{paymentPlanRows}}/g, paymentPlanRows)
     .replace(/{{floorPlanHtml}}/g, floorPlanHtml)
