@@ -179,7 +179,21 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const consultantEmail = proposal.createdBy?.email || 'info@investgeorgia.ae'
 
   // --- Unit details ---
-  const unitType = snap?.unit?.type ? String(snap.unit.type).toLowerCase() : '—'
+  const unitTypeMap: Record<string, string> = {
+    STUDIO: 'Studio',
+    ONE_BHK: '1 BHK',
+    TWO_BHK: '2 BHK',
+    THREE_BHK: '3 BHK',
+    FOUR_BHK: '4 BHK',
+    APARTMENT: 'Apartment',
+    VILLA: 'Villa',
+    TOWNHOUSE: 'Townhouse',
+    PENTHOUSE: 'Penthouse',
+    PLOT: 'Plot',
+    COMMERCIAL: 'Commercial',
+  }
+  const rawType = snap?.unit?.type ? String(snap.unit.type).toUpperCase() : ''
+  const unitType = unitTypeMap[rawType] || (snap?.unit?.type ? String(snap.unit.type).replace(/_/g, ' ') : '—')
   const unitSize = snap?.unit?.size ? String(snap.unit.size) : '—'
   const unitFloor = snap?.unit?.floor !== undefined && snap?.unit?.floor !== null ? String(snap.unit.floor) : '—'
   const unitBedrooms = snap?.unit?.bedrooms !== undefined && snap?.unit?.bedrooms !== null ? String(snap.unit.bedrooms) : '—'

@@ -27,6 +27,20 @@ const UNIT_STATUS_COLORS: Record<string, string> = {
   SOLD: 'bg-red-50 text-red-700',
 }
 
+const UNIT_TYPE_LABELS: Record<string, string> = {
+  STUDIO: 'Studio',
+  ONE_BHK: '1 BHK',
+  TWO_BHK: '2 BHK',
+  THREE_BHK: '3 BHK',
+  FOUR_BHK: '4 BHK',
+  APARTMENT: 'Apartment',
+  VILLA: 'Villa',
+  TOWNHOUSE: 'Townhouse',
+  PENTHOUSE: 'Penthouse',
+  PLOT: 'Plot',
+  COMMERCIAL: 'Commercial',
+}
+
 const MEDIA_TABS = ['IMAGE', 'FLOOR_PLAN', 'BROCHURE', 'MASTER_PLAN', 'DOCUMENT', 'PRESENTATION']
 
 type Tab = 'overview' | 'units' | 'amenities' | 'payment-plans' | 'media'
@@ -437,7 +451,9 @@ export default function ProjectDetailPage() {
                     <div className="space-y-1"><Label>Type *</Label>
                       <select {...regUnit('type', { required: true })} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
                         <option value="">Select...</option>
-                        {['APARTMENT','VILLA','TOWNHOUSE','PENTHOUSE','PLOT','COMMERCIAL'].map(t => <option key={t} value={t}>{t.charAt(0)+t.slice(1).toLowerCase()}</option>)}
+                        {Object.entries(UNIT_TYPE_LABELS).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
                       </select>
                     </div>
                     <div className="space-y-1"><Label>Status</Label>
@@ -502,7 +518,7 @@ export default function ProjectDetailPage() {
                           {unit.unitNumber}
                           {unit.floorPlanUrl && <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-blue-600 hover:underline mt-1">View Plan</a>}
                         </td>
-                        <td className="px-6 py-4 capitalize text-neutral-600">{unit.type.toLowerCase()}</td>
+                        <td className="px-6 py-4 text-neutral-600">{UNIT_TYPE_LABELS[unit.type] || unit.type?.toLowerCase()}</td>
                         <td className="px-6 py-4 text-neutral-600">{unit.floor ?? '—'}</td>
                         <td className="px-6 py-4 text-neutral-600">{unit.bedrooms} / {unit.bathrooms}</td>
                         <td className="px-6 py-4 text-neutral-600">{Number(unit.size).toLocaleString()}</td>
