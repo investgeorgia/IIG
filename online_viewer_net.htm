@@ -240,17 +240,26 @@
 
   <!-- Page 2 Footer / Contact Card -->
   <div style="background: #0F172A; border-radius: 12px; padding: 28px 32px; color: #FFFFFF;">
-    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #E2E8F0; margin-bottom: 12px;">Get In Touch</div>
+    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94A3B8; margin-bottom: 16px;">Your Sales Representative</div>
     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
       <div>
-        <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 6px;">{{consultantName}}</div>
-        <div style="font-size: 13px; color: #94A3B8; display: flex; align-items: center; gap: 8px;">
-          <span>Phone:</span>
-          <span style="color: #F8FAFC; font-weight: 500;">{{consultantPhone}}</span>
-        </div>
-        <div style="font-size: 13px; color: #94A3B8; display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-          <span>Email:</span>
-          <a href="mailto:info@investgeorgia.ae" style="color: #F8FAFC; text-decoration: none; font-weight: 500;">info@investgeorgia.ae</a>
+        <div style="font-size: 17px; font-weight: 700; color: #FFFFFF; margin-bottom: 14px;">{{consultantName}}</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <!-- Phone icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+            <span style="font-size: 13px; color: #E2E8F0; font-weight: 500;">{{consultantPhone}}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <!-- Email icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <a href="mailto:{{consultantEmail}}" style="font-size: 13px; color: #E2E8F0; text-decoration: none; font-weight: 500;">{{consultantEmail}}</a>
+          </div>
         </div>
       </div>
       <div style="text-align: right;">

@@ -103,27 +103,29 @@ function buildGalleryPageHtml(selectedImages: string[], logoImgTag: string): str
 
   const galleryItems = selectedImages
     .map(
-      (url) => `<div style="aspect-ratio:16/9;overflow:hidden;border-radius:8px;border:1px solid #E2E8F0;background:#F1F5F9;">
-        <img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;" />
+      (url) => `<div class="gallery-item">
+        <img src="${url}" />
       </div>`
     )
     .join('')
 
-  return `<div style="width:794px;min-height:1123px;background:#FFFFFF;padding:50px 56px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0F172A;box-sizing:border-box;display:flex;flex-direction:column;">
+  return `<div class="page">
+  <div>
     <!-- Header -->
-    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:24px;border-bottom:2px solid #F1F5F9;margin-bottom:32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; border-bottom: 2px solid #F1F5F9; margin-bottom: 32px;">
       <div>
-        <div style="font-size:24px;font-weight:800;letter-spacing:-0.02em;color:#0F172A;">SALES OFFER</div>
-        <div style="font-size:12px;color:#64748B;margin-top:4px;font-weight:500;">Property Gallery</div>
+        <div style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #0F172A;">SALES OFFER</div>
+        <div style="font-size: 12px; color: #64748B; margin-top: 4px; font-weight: 500;">Property Gallery</div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;">${logoImgTag}</div>
+      <div style="display: flex; align-items: center; gap: 12px;">${logoImgTag}</div>
     </div>
 
-    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#C0392B;margin-bottom:16px;">Property Images</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #C0392B; margin-bottom: 16px;">Property Images</div>
+    <div class="gallery-grid">
       ${galleryItems}
     </div>
-  </div>`
+  </div>
+</div>`
 }
 
 export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
@@ -174,6 +176,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const amenities: string[] = snap?.amenities || []
   const consultantName = proposal.createdBy?.name || 'Invest Georgia UAE'
   const consultantPhone = proposal.createdBy?.phone || ''
+  const consultantEmail = proposal.createdBy?.email || 'info@investgeorgia.ae'
 
   const defaultCustomerMessage =
     'Taking into consideration your preferences and key investment goals, we have carefully selected the following opportunity that aligns with your criteria and demonstrates exceptional growth potential.'
@@ -199,6 +202,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{roi}}/g, roi)
     .replace(/{{consultantName}}/g, consultantName)
     .replace(/{{consultantPhone}}/g, consultantPhone)
+    .replace(/{{consultantEmail}}/g, consultantEmail)
     .replace(/{{baseUrl}}/g, baseUrl)
     // Dynamic HTML blocks
     .replace(/{{paymentPlanRows}}/g, paymentPlanRows)
