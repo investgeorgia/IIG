@@ -40,10 +40,11 @@ export async function GET(
       baseDir = path.join(process.cwd(), 'public', 'media')
     }
 
-    const filePath = path.join(baseDir, ...pathArray)
+    const filePath = path.resolve(baseDir, ...pathArray)
+    const resolvedBase = path.resolve(baseDir)
 
     // Security check to prevent directory traversal
-    if (!filePath.startsWith(baseDir)) {
+    if (!filePath.startsWith(resolvedBase + path.sep) && filePath !== resolvedBase) {
       return new NextResponse('Forbidden', { status: 403 })
     }
 

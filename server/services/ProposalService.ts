@@ -92,7 +92,17 @@ export class ProposalService {
       snapshotAt: new Date().toISOString()
     }
 
-    return ProposalRepository.create({ ...data, snapshot })
+    let finalTemplateId = data.templateId
+    if (!finalTemplateId) {
+      const defaultTemplate = await prisma.proposalTemplate.findFirst({
+        where: { isDefault: true }
+      })
+      if (defaultTemplate) {
+        finalTemplateId = defaultTemplate.id
+      }
+    }
+
+    return ProposalRepository.create({ ...data, templateId: finalTemplateId, snapshot })
   }
 
   static async updateStatus(id: number, status: string) {
