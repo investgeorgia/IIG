@@ -94,9 +94,10 @@ export class ProposalService {
 
     let finalTemplateId = data.templateId
     if (!finalTemplateId) {
-      const defaultTemplate = await prisma.proposalTemplate.findFirst({
+      const defaultTemplate = (await prisma.proposalTemplate.findFirst({
         where: { isDefault: true }
-      })
+      })) || (await prisma.proposalTemplate.findFirst())
+
       if (defaultTemplate) {
         finalTemplateId = defaultTemplate.id
       }

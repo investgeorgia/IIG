@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, ArrowLeft, Loader2, Check, FileText, Plus, Search, User, Mail, Phone, Building } from 'lucide-react'
@@ -83,6 +83,14 @@ export default function CreateProposalPage() {
     queryFn: async () => (await fetch('/api/cms/templates')).json(),
     enabled: step === 4
   })
+
+  // Auto-select default database template when templates load
+  useEffect(() => {
+    if (templates.length > 0 && selectedTemplateId === null) {
+      const def = templates.find((t: any) => t.isDefault) || templates[0]
+      if (def) setSelectedTemplateId(def.id)
+    }
+  }, [templates, selectedTemplateId])
 
   // Create customer then proposal
   const createProposalMutation = useMutation({
@@ -568,7 +576,7 @@ export default function CreateProposalPage() {
                     onChange={e => setSelectedTemplateId(e.target.value ? Number(e.target.value) : null)}
                     className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:ring-1 focus:ring-red-500"
                   >
-                    <option value="">Use Default System Template</option>
+                    <option value="">Select a Template...</option>
                     {templates.map((t: any) => (
                       <option key={t.id} value={t.id}>{t.name} {t.isDefault ? '(Default)' : ''}</option>
                     ))}
