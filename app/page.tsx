@@ -36,8 +36,8 @@ export default function HomePage() {
         </div>
 
         {/* Center Section: Hero Title */}
-        <div className="flex flex-col items-center text-center my-auto max-w-4xl mx-auto px-4">
-          <h1 className={`${cormorant.className} text-4xl md:text-6xl lg:text-7xl font-normal leading-tight tracking-wide text-white drop-shadow-md`}>
+        <div className="flex flex-col items-center text-center mt-[12vh] mb-auto max-w-5xl mx-auto px-4">
+          <h1 className={`${cormorant.className} text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-wide text-white drop-shadow-md`}>
             From Dubai to Georgia <br />
             <span className="italic">Your Investment Journey Begins Here</span>
           </h1>
