@@ -33,7 +33,8 @@ export default function SalespersonsPage() {
       if (!res.ok) throw new Error('Failed to fetch salespersons')
       return res.json()
     },
-    enabled: hasPermission('Salespersons', 'VIEW')
+    enabled: !permissionsLoading && hasPermission('Salespersons', 'VIEW'),
+    retry: 2,
   })
 
   const uploadMutation = useMutation({
