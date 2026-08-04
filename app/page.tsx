@@ -38,8 +38,8 @@ export default function HomePage() {
         {/* Center Section: Hero Title */}
         <div className="flex flex-col items-center text-center mt-[12vh] mb-auto max-w-5xl mx-auto px-4">
           <h1 className={`${cormorant.className} text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] tracking-wide text-white drop-shadow-md`}>
-            From Dubai to Georgia <br />
-            <span className="italic">Your Investment Journey Begins Here</span>
+            <span className="md:whitespace-nowrap">From Dubai to Georgia</span> <br />
+            <span className="italic md:whitespace-nowrap">Your Investment Journey Begins Here</span>
           </h1>
           <p className="mt-6 text-sm md:text-base max-w-xl text-white/95 leading-relaxed font-light drop-shadow-sm">
             Connecting UAE investors with premium real estate opportunities across Tbilisi, Batumi, and Georgia's most promising destinations.
@@ -85,17 +85,25 @@ export default function HomePage() {
           </div>
 
           {/* Bottom Right: Consultation & Contact Button */}
-          <div className="flex flex-col items-start md:items-end text-left md:text-right">
-            <span className="text-[11px] uppercase tracking-widest font-semibold text-white/90 mb-3 block">
-              Book Free Consultation
-            </span>
+          <div className="flex flex-col items-start md:items-end text-left md:text-right max-w-xs md:max-w-sm">
+            <p className="text-xs md:text-sm text-white/80 font-light leading-relaxed mb-4">
+              Discover Georgia's Real Estate<br className="hidden md:inline" />
+              Opportunities. Get expert guidance<br className="hidden md:inline" />
+              tailored to your investment goals.<br className="hidden md:inline" />
+              Take the first step towards owning
+            </p>
             <a
               href="https://investingeorgia.ae/en/contact-us/"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-white/80 hover:bg-white text-neutral-900 backdrop-blur-md px-12 py-3 rounded-full text-sm font-semibold transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-3 bg-white/80 hover:bg-white text-neutral-900 backdrop-blur-md pl-6 pr-2 py-2 rounded-full text-xs font-bold transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
             >
-              Contact
+              <span>Book a Session</span>
+              <span className="w-7 h-7 bg-black rounded-full flex items-center justify-center text-white">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </span>
             </a>
           </div>
 
