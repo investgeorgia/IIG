@@ -35,8 +35,8 @@ export function checkPermission(
   }
 
   // 3. Fallback to Role-based defaults
-  if (moduleName === 'Users' || moduleName === 'Settings') {
-    // Only Admin can access Users and Settings (unless overridden)
+  if (moduleName === 'Users' || moduleName === 'Settings' || moduleName === 'Salespersons') {
+    // Only Admin can access Users, Settings, and Salespersons (unless overridden)
     return false
   }
 

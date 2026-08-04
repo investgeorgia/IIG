@@ -678,3 +678,135 @@
         border-radius: 8px;
     }
 }
+
+/* Inquiry Modal Styles */
+.portfolio-body .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+    animation: fadeIn 0.3s ease;
+}
+
+.portfolio-body .modal-content {
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 440px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-family: var(--font-family);
+    animation: slideUp 0.3s ease;
+}
+
+.portfolio-body .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.portfolio-body .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.portfolio-body .close-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.portfolio-body .close-btn:hover {
+    color: #fff;
+}
+
+.portfolio-body .form-group {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.portfolio-body .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 6px;
+}
+
+.portfolio-body .form-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.portfolio-body .form-input:focus {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.portfolio-body .submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #e11d48;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+.portfolio-body .submit-btn:hover {
+    background: #be123c;
+}
+
+.portfolio-body .submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.portfolio-body .salesperson-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+

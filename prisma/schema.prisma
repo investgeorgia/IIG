@@ -218,18 +218,22 @@ model Media {
 // ─── CUSTOMERS ───────────────────────────────────────────
 
 model Customer {
-  id          Int        @id @default(autoincrement())
-  name        String
-  email       String?
-  phone       String?
-  nationality String?
-  source      String?    // e.g. "Instagram", "Referral", "Walk-in"
-  notes       String?    @db.Text
-  assignedToId Int?
-  assignedTo  User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  proposals   Proposal[]
+  id               Int          @id @default(autoincrement())
+  name             String
+  email            String?
+  phone            String?
+  nationality      String?
+  source           String?      // e.g. "Instagram", "Referral", "Walk-in"
+  notes            String?      @db.Text
+  assignedToId     Int?
+  assignedTo       User?        @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  salesperson_id   Int?
+  salesperson      Salesperson? @relation(fields: [salesperson_id], references: [id])
+  salesperson_name String?
+  salesperson_slug String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  proposals        Proposal[]
 }
 
 // ─── PROPOSALS ───────────────────────────────────────────
@@ -302,4 +306,17 @@ model ProposalTemplate {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   proposals   Proposal[]
+}
+
+model Salesperson {
+  id           Int        @id @default(autoincrement())
+  name         String
+  slug         String     @unique
+  phone        String
+  email        String
+  profileImage String?
+  active       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  customers    Customer[]
 }

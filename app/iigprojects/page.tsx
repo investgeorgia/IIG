@@ -21,6 +21,25 @@ export default function IIGProjectsPage() {
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false)
   const [imageNameOpacity, setImageNameOpacity] = useState<number>(1)
 
+  // Salesperson referral system state
+  const [salesperson, setSalesperson] = useState<any>(null)
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false)
+  const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', phone: '', notes: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  // Fetch active salesperson on mount
+  useEffect(() => {
+    fetch('/api/salesperson/current')
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          setSalesperson(data)
+        }
+      })
+      .catch(err => console.error('Error fetching salesperson', err))
+  }, [])
+
   const carouselContainerRef = useRef<HTMLDivElement>(null)
   const bottomWrapperRef = useRef<HTMLDivElement>(null)
   
@@ -149,6 +168,42 @@ export default function IIGProjectsPage() {
         setActiveImageIndex(0)
         setImageNameOpacity(1)
       }, 200)
+    }
+  }
+
+  const openInquiry = () => {
+    setInquiryForm({
+      name: '',
+      email: '',
+      phone: '',
+      notes: `I'm interested in the ${activeProject.name} project.`
+    })
+    setSubmitSuccess(false)
+    setIsInquiryOpen(true)
+  }
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inquiryForm.name) return
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/public/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...inquiryForm,
+          salesperson_id: salesperson ? salesperson.id : null
+        })
+      })
+      if (!res.ok) throw new Error('Failed to submit inquiry')
+      setSubmitSuccess(true)
+      setInquiryForm({ name: '', email: '', phone: '', notes: '' })
+      setTimeout(() => setIsInquiryOpen(false), 2000)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -344,14 +399,23 @@ export default function IIGProjectsPage() {
               </div>
             </div>
 
-            <a 
-              href="https://investingeorgia.ae/en/contact-us/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="contact-btn"
-            >
-              Contact Now
-            </a>
+            {(() => {
+              const whatsappPhone = salesperson ? salesperson.phone : '97145477804'
+              const whatsappText = salesperson 
+                ? `Hi ${salesperson.name}, I'm interested in the ${activeProject.name} project.`
+                : `Hi, I'm interested in the ${activeProject.name} project.`
+              const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappText)}`
+              return (
+                <a 
+                  href={whatsappUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="contact-btn"
+                >
+                  Contact Now
+                </a>
+              )
+            })()}
           </section>
 
           {/* Right Side: Projects Carousel */}
@@ -406,6 +470,97 @@ export default function IIGProjectsPage() {
 
         </div>
       </main>
+
+      {/* Inquiry Modal */}
+      {isInquiryOpen && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setIsInquiryOpen(false) }}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <span className="modal-title">Register Your Interest</span>
+              <button className="close-btn" onClick={() => setIsInquiryOpen(false)}>×</button>
+            </div>
+
+            {submitSuccess ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>✓</div>
+                <p style={{ fontWeight: 600, fontSize: '16px' }}>Thank you!</p>
+                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', marginTop: '6px' }}>
+                  We'll be in touch with you soon.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleInquirySubmit}>
+                {salesperson && (
+                  <div className="salesperson-badge">
+                    {salesperson.profileImage ? (
+                      <img src={salesperson.profileImage} alt={salesperson.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12 }}>
+                        {salesperson.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span>Your dedicated contact: <strong>{salesperson.name}</strong></span>
+                  </div>
+                )}
+
+                <div className="form-group" style={{ marginTop: salesperson ? '16px' : '0' }}>
+                  <label className="form-label">Full Name *</label>
+                  <input
+                    className="form-input"
+                    type="text"
+                    placeholder="Your full name"
+                    value={inquiryForm.name}
+                    onChange={e => setInquiryForm(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Phone Number</label>
+                  <input
+                    className="form-input"
+                    type="tel"
+                    placeholder="+971 50 000 0000"
+                    value={inquiryForm.phone}
+                    onChange={e => setInquiryForm(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Email Address</label>
+                  <input
+                    className="form-input"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={inquiryForm.email}
+                    onChange={e => setInquiryForm(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Message</label>
+                  <textarea
+                    className="form-input"
+                    rows={3}
+                    placeholder="Your message..."
+                    value={inquiryForm.notes}
+                    onChange={e => setInquiryForm(prev => ({ ...prev, notes: e.target.value }))}
+                    style={{ resize: 'none' }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={isSubmitting || !inquiryForm.name}
+                >
+                  {isSubmitting ? 'Submitting...' : 'Send Inquiry'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

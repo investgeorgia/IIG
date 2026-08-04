@@ -39,6 +39,7 @@ export function Sidebar() {
     { name: 'Templates', href: '/cms/templates', icon: FileCode, module: 'Templates' },
     { name: 'Amenities', href: '/cms/amenities', icon: Star, module: 'Amenities' },
     { name: 'Pages', href: '/cms/pages', icon: FileText, module: 'Pages' },
+    { name: 'Salespersons', href: '/cms/salespersons', icon: Users, module: 'Salespersons' },
   ]
 
   const settingsNav = [

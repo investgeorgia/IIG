@@ -51,10 +51,17 @@ const staticPagesList: StaticPageItem[] = [
     type: 'Admin Only'
   },
   {
-    name: 'Proposal Builder',
+    name: 'Proposals Builder',
     slug: '/proposals',
     createdAt: '2026-07-24',
     description: 'Create and generate customer-tailored proposals.',
+    type: 'Admin Only'
+  },
+  {
+    name: 'Salespersons Management',
+    slug: '/cms/salespersons',
+    createdAt: '2026-08-04',
+    description: 'Manage salesperson referral slugs, WhatsApp numbers, and activation status.',
     type: 'Admin Only'
   }
 ]
