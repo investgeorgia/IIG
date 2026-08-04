@@ -34,7 +34,9 @@ export async function GET(
     console.error('[Referral Route Error]', err)
   }
 
-  // Redirect visitor to /iigprojects
-  const url = new URL('/iigprojects', request.url)
-  return NextResponse.redirect(url)
+  // Build the redirect URL from the Host header so it works on shared hosting
+  // where request.url base resolves to the internal 0.0.0.0:3000 address
+  const host = request.headers.get('host') ?? 'investgeorgia.ae'
+  const proto = request.headers.get('x-forwarded-proto') ?? 'https'
+  return NextResponse.redirect(`${proto}://${host}/iigprojects`)
 }
