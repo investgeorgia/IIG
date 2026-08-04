@@ -80,6 +80,55 @@ export async function GET(request: Request) {
     logs.push('• Customer.salesperson_id index already exists')
   }
 
+  // ── 3b. Create ReferralVisitor table if it doesn't exist ──
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS \`ReferralVisitor\` (
+        \`id\`        int          NOT NULL AUTO_INCREMENT,
+        \`visitorId\` varchar(191) NOT NULL,
+        \`ipAddress\` varchar(191) NOT NULL,
+        \`userAgent\` text         NOT NULL,
+        \`device\`    varchar(191) DEFAULT NULL,
+        \`browser\`   varchar(191) DEFAULT NULL,
+        \`firstSeen\` datetime(3)  NOT NULL DEFAULT current_timestamp(3),
+        \`lastSeen\`  datetime(3)  NOT NULL DEFAULT current_timestamp(3) ON UPDATE current_timestamp(3),
+        PRIMARY KEY (\`id\`),
+        UNIQUE KEY \`ReferralVisitor_visitorId_key\` (\`visitorId\`),
+        KEY \`ReferralVisitor_visitorId_idx\` (\`visitorId\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `)
+    logs.push('✓ ReferralVisitor table created (or already exists)')
+  } catch (e: any) {
+    errors.push('ReferralVisitor table: ' + e.message)
+  }
+
+  // ── 3c. Create ReferralTrackingEvent table if it doesn't exist ──
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS \`ReferralTrackingEvent\` (
+        \`id\`            int          NOT NULL AUTO_INCREMENT,
+        \`salespersonId\` int          NOT NULL,
+        \`visitorId\`     varchar(191) NOT NULL,
+        \`eventType\`     enum('PAGE_VISIT', 'WHATSAPP_CLICK') NOT NULL,
+        \`utmSource\`     varchar(191) DEFAULT NULL,
+        \`utmMedium\`     varchar(191) DEFAULT NULL,
+        \`utmCampaign\`   varchar(191) DEFAULT NULL,
+        \`referrerUrl\`   text         DEFAULT NULL,
+        \`createdAt\`     datetime(3)  NOT NULL DEFAULT current_timestamp(3),
+        PRIMARY KEY (\`id\`),
+        KEY \`ReferralTrackingEvent_salespersonId_idx\` (\`salespersonId\`),
+        KEY \`ReferralTrackingEvent_visitorId_idx\` (\`visitorId\`),
+        KEY \`ReferralTrackingEvent_eventType_idx\` (\`eventType\`),
+        KEY \`ReferralTrackingEvent_createdAt_idx\` (\`createdAt\`),
+        CONSTRAINT \`ReferralTrackingEvent_salespersonId_fkey\` FOREIGN KEY (\`salespersonId\`) REFERENCES \`Salesperson\` (\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `)
+    logs.push('✓ ReferralTrackingEvent table created (or already exists)')
+  } catch (e: any) {
+    errors.push('ReferralTrackingEvent table: ' + e.message)
+  }
+
+
   // ── 4. Seed salespersons ──
   const seedLogs: string[] = []
   for (const sp of salespersons) {

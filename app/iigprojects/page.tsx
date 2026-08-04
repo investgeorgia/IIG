@@ -405,17 +405,37 @@ export default function IIGProjectsPage() {
                 ? `Hi ${salesperson.name}, I'm interested in the ${activeProject.name} project.`
                 : `Hi, I'm interested in the ${activeProject.name} project.`
               const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappText)}`
+
+              const handleContact = async () => {
+                // If we have a salesperson, log the click first then redirect
+                if (salesperson?.id) {
+                  try {
+                    const res = await fetch('/api/tracking/whatsapp', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ salespersonId: salesperson.id, whatsappUrl }),
+                    })
+                    const data = await res.json()
+                    window.open(data.url || whatsappUrl, '_blank')
+                  } catch {
+                    // Fallback: open directly if tracking fails
+                    window.open(whatsappUrl, '_blank')
+                  }
+                } else {
+                  window.open(whatsappUrl, '_blank')
+                }
+              }
+
               return (
-                <a 
-                  href={whatsappUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <button
+                  onClick={handleContact}
                   className="contact-btn"
                 >
                   Contact Now
-                </a>
+                </button>
               )
             })()}
+
           </section>
 
           {/* Right Side: Projects Carousel */}

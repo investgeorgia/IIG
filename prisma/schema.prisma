@@ -309,14 +309,53 @@ model ProposalTemplate {
 }
 
 model Salesperson {
-  id           Int        @id @default(autoincrement())
-  name         String
-  slug         String     @unique
-  phone        String
-  email        String
-  profileImage String?
-  active       Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  customers    Customer[]
+  id             Int                     @id @default(autoincrement())
+  name           String
+  slug           String                  @unique
+  phone          String
+  email          String
+  profileImage   String?
+  active         Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  customers      Customer[]
+  trackingEvents ReferralTrackingEvent[]
+}
+
+// ─── REFERRAL TRACKING ────────────────────────────────────
+
+model ReferralVisitor {
+  id        Int      @id @default(autoincrement())
+  visitorId String   @unique  // SHA256 hash of IP+UserAgent
+  ipAddress String
+  userAgent String   @db.Text
+  device    String?           // mobile | desktop | tablet
+  browser   String?
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @updatedAt
+
+  @@index([visitorId])
+}
+
+enum TrackingEventType {
+  PAGE_VISIT
+  WHATSAPP_CLICK
+}
+
+model ReferralTrackingEvent {
+  id            Int               @id @default(autoincrement())
+  salespersonId Int
+  salesperson   Salesperson       @relation(fields: [salespersonId], references: [id], onDelete: Cascade)
+  visitorId     String            // matches ReferralVisitor.visitorId
+  eventType     TrackingEventType
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  referrerUrl   String?           @db.Text
+  createdAt     DateTime          @default(now())
+
+  @@index([salespersonId])
+  @@index([visitorId])
+  @@index([eventType])
+  @@index([createdAt])
 }

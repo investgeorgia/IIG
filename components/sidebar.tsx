@@ -40,6 +40,7 @@ export function Sidebar() {
     { name: 'Amenities', href: '/cms/amenities', icon: Star, module: 'Amenities' },
     { name: 'Pages', href: '/cms/pages', icon: FileText, module: 'Pages' },
     { name: 'Salespersons', href: '/cms/salespersons', icon: Users, module: 'Salespersons' },
+    { name: 'Analytics', href: '/cms/analytics', icon: LayoutDashboard, module: 'Analytics' },
   ]
 
   const settingsNav = [
