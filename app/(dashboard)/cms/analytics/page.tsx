@@ -94,29 +94,38 @@ export default function AnalyticsPage() {
   const [sortCol, setSortCol]     = useState<SortCol>('totalVisits')
   const [sortDir, setSortDir]     = useState<'asc' | 'desc'>('desc')
 
-  /* Avoid React 18 double-fetch in dev */
-  const hasFetched = useRef(false)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
-  /* ── FETCH ───────────────────────────────────── */
-  // Use a plain async function + useEffect with cleanup flag.
-  // No useCallback + hasPermission dependency (that was the bug).
+  /* ── FETCH (with 30s auto-refresh) ──────────── */
   useEffect(() => {
     let cancelled = false
-    const { from, to } = getDateRange(preset)
 
-    setLoading(true)
-    setError(null)
+    const doFetch = (showSpinner: boolean) => {
+      const { from, to } = getDateRange(preset)
+      if (showSpinner) { setLoading(true); setError(null) }
 
-    fetch(`/api/analytics/referrals?from=${from}&to=${to}`)
-      .then(res => {
-        if (!res.ok) throw new Error(res.status === 401 ? 'Unauthorized' : `API error ${res.status}`)
-        return res.json()
-      })
-      .then(json => { if (!cancelled) { setData(json); setLoading(false) } })
-      .catch(err => { if (!cancelled) { setError(err.message); setLoading(false) } })
+      fetch(`/api/analytics/referrals?from=${from}&to=${to}`)
+        .then(res => {
+          if (!res.ok) throw new Error(res.status === 401 ? 'Unauthorized' : `API error ${res.status}`)
+          return res.json()
+        })
+        .then(json => {
+          if (!cancelled) {
+            setData(json)
+            setLoading(false)
+            setLastUpdated(new Date())
+          }
+        })
+        .catch(err => { if (!cancelled) { setError(err.message); setLoading(false) } })
+    }
 
-    return () => { cancelled = true }
-  }, [preset])   // ONLY re-fetch when preset changes — no hasPermission in deps
+    doFetch(true)  // initial load with spinner
+
+    // Auto-refresh every 30 seconds silently (no spinner)
+    const interval = setInterval(() => doFetch(false), 30_000)
+
+    return () => { cancelled = true; clearInterval(interval) }
+  }, [preset])
 
   /* ── DETAIL FETCH ───────────────────────────── */
   const openDetail = (id: number) => {
@@ -236,6 +245,21 @@ export default function AnalyticsPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' as const }}>
+          {/* Live indicator */}
+          {data && (
+            <div className="an-live-badge">
+              <span className="an-live-dot"/>
+              Live
+            </div>
+          )}
+
+          {/* Last updated */}
+          {lastUpdated && (
+            <span style={{ fontSize: '0.72rem', color: '#9ca3af', whiteSpace: 'nowrap' as const }}>
+              Updated {lastUpdated.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+          )}
+
           {/* Date preset */}
           <div className="an-preset-group">
             {(['today','7d','30d','all'] as Preset[]).map(p => (
@@ -246,12 +270,12 @@ export default function AnalyticsPage() {
           </div>
 
           <button className="an-icon-btn" onClick={() => {
-            setData(null); setLoading(true)
             const { from, to } = getDateRange(preset)
             fetch(`/api/analytics/referrals?from=${from}&to=${to}`)
-              .then(r => r.json()).then(json => { setData(json); setLoading(false) })
-              .catch(() => setLoading(false))
-          }} title="Refresh">
+              .then(r => r.json())
+              .then(json => { setData(json); setLastUpdated(new Date()) })
+              .catch(() => {})
+          }} title="Refresh now">
             <RefreshCw size={14}/>
           </button>
         </div>
@@ -564,4 +588,9 @@ const css = `
 .an-ev-type { font-weight: 600; color: #111827; }
 .an-ev-meta { color: #6b7280; margin-left: 0.25rem; }
 .an-ev-time { color: #9ca3af; white-space: nowrap; font-size: 0.75rem; }
+
+/* ── Live badge ── */
+.an-live-badge { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; font-weight: 600; color: #059669; background: rgba(16,185,129,0.1); padding: 0.25rem 0.6rem; border-radius: 999px; }
+.an-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; animation: an-pulse 2s ease-in-out infinite; }
+@keyframes an-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }
 `
