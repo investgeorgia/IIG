@@ -40,6 +40,21 @@ export default function IIGProjectsPage() {
       .catch(err => console.error('Error fetching salesperson', err))
   }, [])
 
+  // Track global pageview
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    fetch('/api/tracking/pageview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        utm_source: urlParams.get('utm_source'),
+        utm_medium: urlParams.get('utm_medium'),
+        utm_campaign: urlParams.get('utm_campaign'),
+        referrer_url: document.referrer || undefined
+      })
+    }).catch(err => console.error('Failed to track pageview', err))
+  }, [])
+
   const carouselContainerRef = useRef<HTMLDivElement>(null)
   const bottomWrapperRef = useRef<HTMLDivElement>(null)
   
