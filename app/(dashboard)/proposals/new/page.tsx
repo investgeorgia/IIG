@@ -61,7 +61,7 @@ export default function CreateProposalPage() {
     queryFn: async () => {
       const res = await fetch('/api/cms/projects')
       const all = await res.json()
-      return all.filter((p: any) => p.isPublished && (!selectedDeveloperId || p.developerId === selectedDeveloperId))
+      return all.filter((p: any) => (!selectedDeveloperId || p.developerId === selectedDeveloperId))
     },
     enabled: !!selectedDeveloperId
   })
@@ -393,7 +393,20 @@ export default function CreateProposalPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {units.filter((u: any) => u.status === 'AVAILABLE').map((unit: any) => (
-                  <button key={unit.id} type="button" onClick={() => setSelectedUnit(unit)}
+                  <button key={unit.id} type="button" onClick={() => {
+                    setSelectedUnit(unit)
+                    const plan = (unit.paymentPlans && unit.paymentPlans.length > 0) ? unit.paymentPlans[0] : (projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans?.[0])
+                    if (plan && plan.schedule) {
+                      setPaymentPlan(plan.schedule.map((s: any, idx: number) => ({
+                        id: Date.now() + idx,
+                        milestone: s.milestone || s.label || '',
+                        percentage: Number(s.percentage) || 0,
+                        date: s.date || (s.dueDays ? `Due in ${s.dueDays} days` : '')
+                      })))
+                    } else {
+                      setPaymentPlan([])
+                    }
+                  }}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${selectedUnit?.id === unit.id ? 'border-red-500 bg-red-50/50 shadow-sm' : 'border-neutral-200 hover:border-neutral-300 bg-white'}`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-base text-neutral-900">Unit {unit.unitNumber}</span>

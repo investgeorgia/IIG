@@ -25,6 +25,7 @@ function ProjectsList() {
   const [isAdding, setIsAdding] = useState(false)
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
   const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [form, setForm] = useState({
     name: '', developerId: '', address: '', city: '', country: 'Georgia', status: 'PLANNING', completionDate: '', startingPrice: '', roi: ''
   })
@@ -46,6 +47,16 @@ function ProjectsList() {
     }
     return true
   }) : []
+
+  const searchedProjects = filteredProjects.filter((p: any) => {
+    const q = searchQuery.toLowerCase()
+    return (
+      p.name?.toLowerCase().includes(q) ||
+      p.developer?.name?.toLowerCase().includes(q) ||
+      p.city?.toLowerCase().includes(q) ||
+      p.country?.toLowerCase().includes(q)
+    )
+  })
 
   const activeDeveloperName = filteredProjects.length > 0 && developerFilterId 
     ? filteredProjects[0].developer?.name 
@@ -115,10 +126,10 @@ function ProjectsList() {
   })
 
   const toggleSelectAll = () => {
-    if (filteredProjects && selectedIds.length === filteredProjects.length) {
+    if (searchedProjects && selectedIds.length === searchedProjects.length) {
       setSelectedIds([])
-    } else if (filteredProjects) {
-      setSelectedIds(filteredProjects.map((p: any) => p.id))
+    } else if (searchedProjects) {
+      setSelectedIds(searchedProjects.map((p: any) => p.id))
     }
   }
 
@@ -205,12 +216,20 @@ function ProjectsList() {
         </div>
       )}
 
+      <div className="flex items-center gap-2 max-w-sm">
+        <Input 
+          placeholder="Search projects..." 
+          value={searchQuery} 
+          onChange={e => setSearchQuery(e.target.value)} 
+        />
+      </div>
+
       <Card className="shadow-sm border-neutral-200">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-8 text-center text-neutral-500">Loading projects...</div>
-          ) : filteredProjects?.length === 0 ? (
-            <div className="p-8 text-center text-neutral-500">No projects found. Add one to get started.</div>
+          ) : searchedProjects?.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No projects found.</div>
           ) : (
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
@@ -218,7 +237,7 @@ function ProjectsList() {
                   {canEdit && (
                     <th className="px-6 py-3 w-12 font-medium">
                       <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                        checked={filteredProjects?.length > 0 && selectedIds.length === filteredProjects.length} 
+                        checked={searchedProjects?.length > 0 && selectedIds.length === searchedProjects.length} 
                         onChange={toggleSelectAll} 
                       />
                     </th>
@@ -231,7 +250,7 @@ function ProjectsList() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProjects?.map((project: any) => (
+                {searchedProjects?.map((project: any) => (
                   <tr key={project.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
                     {canEdit && (
                       <td className="px-6 py-4">

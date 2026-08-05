@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client'
 export class ProjectRepository {
   static async findAll() {
     return prisma.project.findMany({
-      include: { developer: true },
+      include: { developer: true, paymentPlans: true },
       orderBy: { createdAt: 'desc' }
     })
   }

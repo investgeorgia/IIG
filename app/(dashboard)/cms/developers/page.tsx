@@ -17,6 +17,7 @@ export default function DevelopersPage() {
   const [newDevName, setNewDevName] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const { data: developers, isLoading } = useQuery({
     queryKey: ['developers'],
@@ -27,6 +28,10 @@ export default function DevelopersPage() {
     },
     enabled: hasPermission('Developers', 'VIEW')
   })
+
+  const searchedDevelopers = developers
+    ? developers.filter((d: any) => d.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    : []
 
   const createMutation = useMutation({
     mutationFn: async (name: string) => {
@@ -116,12 +121,20 @@ export default function DevelopersPage() {
         </Card>
       )}
 
+      <div className="flex items-center gap-2 max-w-sm">
+        <Input 
+          placeholder="Search developers..." 
+          value={searchQuery} 
+          onChange={e => setSearchQuery(e.target.value)} 
+        />
+      </div>
+
       <Card className="shadow-sm border-neutral-200">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-8 text-center text-neutral-500">Loading developers...</div>
-          ) : developers?.length === 0 ? (
-            <div className="p-8 text-center text-neutral-500">No developers found. Add one to get started.</div>
+          ) : searchedDevelopers?.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No developers found.</div>
           ) : (
              <table className="w-full text-sm text-left">
               <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
@@ -132,7 +145,7 @@ export default function DevelopersPage() {
                 </tr>
               </thead>
               <tbody>
-                {developers?.map((dev: any) => (
+                {searchedDevelopers?.map((dev: any) => (
                   <tr key={dev.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
                     <td className="px-6 py-4 font-medium text-neutral-900">
                       {editingId === dev.id ? (

@@ -146,6 +146,7 @@ model Unit {
   floor          Int?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
+  paymentPlans   PaymentPlan[]
 
   @@index([projectId])
 }
@@ -183,11 +184,14 @@ model PaymentPlan {
   description String?  @db.Text
   projectId   Int
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  unitId      Int?
+  unit        Unit?    @relation(fields: [unitId], references: [id], onDelete: Cascade)
   schedule    Json     // Array of { label, percentage, dueDays }
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([projectId])
+  @@index([unitId])
 }
 
 enum MediaType {

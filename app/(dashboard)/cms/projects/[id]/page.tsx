@@ -58,7 +58,8 @@ export default function ProjectDetailPage() {
   const [unitFloorPlanUploading, setUnitFloorPlanUploading] = useState(false)
   const [planName, setPlanName] = useState('')
   const [planDesc, setPlanDesc] = useState('')
-  const [planSchedule, setPlanSchedule] = useState<{label: string, percentage: string, dueDays: string}[]>([])
+  const [planUnitId, setPlanUnitId] = useState<number | null>(null)
+  const [planSchedule, setPlanSchedule] = useState<{milestone: string, percentage: string, date: string}[]>([])
   const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([])
 
   // -- Queries --
@@ -132,10 +133,11 @@ export default function ProjectDetailPage() {
         body: JSON.stringify({ 
           name: planName, 
           description: planDesc, 
+          unitId: planUnitId || undefined,
           schedule: planSchedule.map(s => ({
-            label: s.label,
+            milestone: s.milestone,
             percentage: Number(s.percentage),
-            dueDays: Number(s.dueDays)
+            date: s.date
           }))
         })
       })
@@ -146,6 +148,7 @@ export default function ProjectDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['payment-plans', id] })
       setPlanName('')
       setPlanDesc('')
+      setPlanUnitId(null)
       setPlanSchedule([])
       setShowAddPlan(false)
       toast.success('Payment plan added')
@@ -598,13 +601,27 @@ export default function ProjectDetailPage() {
                 <div className="space-y-1"><Label>Plan Name *</Label><Input placeholder='e.g. "40/60 Plan"' value={planName} onChange={e => setPlanName(e.target.value)} /></div>
                 <div className="space-y-1"><Label>Description</Label><Input placeholder="e.g. 40% on booking, 60% on handover" value={planDesc} onChange={e => setPlanDesc(e.target.value)} /></div>
                 
+                <div className="space-y-1">
+                  <Label>Assign to Unit (Optional)</Label>
+                  <select
+                    value={planUnitId || ''}
+                    onChange={e => setPlanUnitId(e.target.value ? Number(e.target.value) : null)}
+                    className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                  >
+                    <option value="">Apply to entire Project</option>
+                    {units.map((u: any) => (
+                      <option key={u.id} value={u.id}>Unit {u.unitNumber} ({u.type})</option>
+                    ))}
+                  </select>
+                </div>
+                
                 <div className="space-y-2">
                   <Label>Schedule Details</Label>
                   {planSchedule.map((item, index) => (
                     <div key={index} className="flex gap-2 items-center bg-neutral-50 p-2 rounded-lg border border-neutral-200">
-                      <Input placeholder="Label (e.g. Booking)" value={item.label} onChange={e => {
+                      <Input placeholder="Milestone Name (e.g. Down Payment)" value={item.milestone} onChange={e => {
                         const newSch = [...planSchedule]
-                        newSch[index].label = e.target.value
+                        newSch[index].milestone = e.target.value
                         setPlanSchedule(newSch)
                       }} />
                       <Input type="number" placeholder="%" value={item.percentage} className="w-24" onChange={e => {
@@ -612,9 +629,9 @@ export default function ProjectDetailPage() {
                         newSch[index].percentage = e.target.value
                         setPlanSchedule(newSch)
                       }} />
-                      <Input type="number" placeholder="Days Due" value={item.dueDays} className="w-24" onChange={e => {
+                      <Input placeholder="Date (e.g. On Booking)" value={item.date} className="w-48" onChange={e => {
                         const newSch = [...planSchedule]
-                        newSch[index].dueDays = e.target.value
+                        newSch[index].date = e.target.value
                         setPlanSchedule(newSch)
                       }} />
                       <Button variant="ghost" size="icon" className="text-red-500" onClick={() => setPlanSchedule(planSchedule.filter((_, i) => i !== index))}>
@@ -622,7 +639,7 @@ export default function ProjectDetailPage() {
                       </Button>
                     </div>
                   ))}
-                  <Button variant="outline" size="sm" onClick={() => setPlanSchedule([...planSchedule, { label: '', percentage: '', dueDays: '' }])} className="w-full border-dashed">
+                  <Button variant="outline" size="sm" onClick={() => setPlanSchedule([...planSchedule, { milestone: '', percentage: '', date: '' }])} className="w-full border-dashed">
                     <Plus className="w-4 h-4 mr-2" /> Add Milestone
                   </Button>
                 </div>
@@ -643,15 +660,22 @@ export default function ProjectDetailPage() {
                   {paymentPlans.map((plan: any) => (
                     <div key={plan.id} className="flex items-center justify-between px-6 py-4 hover:bg-neutral-50">
                       <div>
-                        <p className="font-medium text-neutral-900">{plan.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-neutral-900">{plan.name}</p>
+                          {plan.unitId && (
+                            <span className="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800 font-medium border border-blue-200">
+                              Unit {units.find((u: any) => u.id === plan.unitId)?.unitNumber || plan.unitId}
+                            </span>
+                          )}
+                        </div>
                         {plan.description && <p className="text-sm text-neutral-500 mt-0.5">{plan.description}</p>}
                         {plan.schedule && Array.isArray(plan.schedule) && plan.schedule.length > 0 && (
                           <div className="mt-2 space-y-1">
                             {plan.schedule.map((s: any, i: number) => (
                               <div key={i} className="text-xs flex gap-4 text-neutral-600 bg-white border border-neutral-100 p-1.5 rounded">
-                                <span className="font-medium w-32">{s.label}</span>
+                                <span className="font-medium w-32">{s.milestone || s.label}</span>
                                 <span className="text-blue-600 w-12">{s.percentage}%</span>
-                                <span>Due in {s.dueDays} days</span>
+                                <span>{s.date || (s.dueDays ? `Due in ${s.dueDays} days` : '')}</span>
                               </div>
                             ))}
                           </div>

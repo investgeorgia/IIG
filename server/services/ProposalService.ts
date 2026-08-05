@@ -46,7 +46,6 @@ export class ProposalService {
     })
 
     if (!unit) throw new Error('Unit not found')
-    if (!unit.project.isPublished) throw new Error('This project is not published')
 
     // 2. Build immutable snapshot
     const snapshot = {

@@ -5,6 +5,7 @@ export class UnitRepository {
   static async findAllByProjectId(projectId: number) {
     return prisma.unit.findMany({
       where: { projectId },
+      include: { paymentPlans: true },
       orderBy: { unitNumber: 'asc' }
     })
   }

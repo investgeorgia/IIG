@@ -19,6 +19,7 @@ export default function CustomersPage() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [form, setForm] = useState({ name: '', email: '', phone: '', nationality: '', source: '', notes: '', assignedToId: '' })
   const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers'],
@@ -28,6 +29,17 @@ export default function CustomersPage() {
       return res.json()
     },
     enabled: hasPermission('Customers', 'VIEW')
+  })
+
+  const searchedCustomers = customers.filter((c: any) => {
+    const q = searchQuery.toLowerCase()
+    return (
+      c.name?.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q) ||
+      c.phone?.toLowerCase().includes(q) ||
+      c.source?.toLowerCase().includes(q) ||
+      c.nationality?.toLowerCase().includes(q)
+    )
   })
 
   const { data: users = [] } = useQuery({
@@ -107,10 +119,10 @@ export default function CustomersPage() {
   })
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === customers.length) {
+    if (selectedIds.length === searchedCustomers.length) {
       setSelectedIds([])
     } else {
-      setSelectedIds(customers.map((c: any) => c.id))
+      setSelectedIds(searchedCustomers.map((c: any) => c.id))
     }
   }
 
@@ -211,12 +223,20 @@ export default function CustomersPage() {
         </Card>
       )}
 
+      <div className="flex items-center gap-2 max-w-sm">
+        <Input 
+          placeholder="Search leads..." 
+          value={searchQuery} 
+          onChange={e => setSearchQuery(e.target.value)} 
+        />
+      </div>
+
       <Card className="shadow-sm">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="p-8 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-neutral-400" /></div>
-          ) : customers.length === 0 ? (
-            <div className="p-8 text-center text-neutral-500">No customers yet. Add your first lead.</div>
+          ) : searchedCustomers.length === 0 ? (
+            <div className="p-8 text-center text-neutral-500">No customers found.</div>
           ) : (
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
@@ -224,7 +244,7 @@ export default function CustomersPage() {
                   {canEdit && (
                     <th className="px-6 py-3 w-12">
                       <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                        checked={customers.length > 0 && selectedIds.length === customers.length} 
+                        checked={searchedCustomers.length > 0 && selectedIds.length === searchedCustomers.length} 
                         onChange={toggleSelectAll} 
                       />
                     </th>
@@ -239,7 +259,7 @@ export default function CustomersPage() {
                 </tr>
               </thead>
               <tbody>
-                {customers.map((c: any) => (
+                {searchedCustomers.map((c: any) => (
                   <tr key={c.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
                     {canEdit && (
                       <td className="px-6 py-4">

@@ -49,17 +49,18 @@ export async function GET(request: Request) {
     errors.push('Salesperson table: ' + e.message)
   }
 
-  // ── 2. Add new columns to Customer table if missing ──
+  // ── 2. Add new columns to Customer and PaymentPlan tables if missing ──
   const alterColumns = [
-    { col: 'salesperson_id',   sql: 'ADD COLUMN IF NOT EXISTS `salesperson_id`   int          DEFAULT NULL' },
-    { col: 'salesperson_name', sql: 'ADD COLUMN IF NOT EXISTS `salesperson_name` varchar(191) DEFAULT NULL' },
-    { col: 'salesperson_slug', sql: 'ADD COLUMN IF NOT EXISTS `salesperson_slug` varchar(191) DEFAULT NULL' },
+    { table: 'Customer', col: 'salesperson_id',   sql: 'ADD COLUMN IF NOT EXISTS `salesperson_id`   int          DEFAULT NULL' },
+    { table: 'Customer', col: 'salesperson_name', sql: 'ADD COLUMN IF NOT EXISTS `salesperson_name` varchar(191) DEFAULT NULL' },
+    { table: 'Customer', col: 'salesperson_slug', sql: 'ADD COLUMN IF NOT EXISTS `salesperson_slug` varchar(191) DEFAULT NULL' },
+    { table: 'PaymentPlan', col: 'unitId', sql: 'ADD COLUMN IF NOT EXISTS `unitId` int DEFAULT NULL' },
   ]
 
-  for (const { col, sql } of alterColumns) {
+  for (const { table, col, sql } of alterColumns) {
     try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE \`Customer\` ${sql};`)
-      logs.push(`✓ Customer.${col} column ensured`)
+      await prisma.$executeRawUnsafe(`ALTER TABLE \`${table}\` ${sql};`)
+      logs.push(`✓ ${table}.${col} column ensured`)
     } catch (e: any) {
       // Ignore "duplicate column" errors — means it already exists
       if (e.message?.includes('Duplicate column')) {
