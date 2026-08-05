@@ -34,11 +34,11 @@ export default function CustomersPage() {
   const searchedCustomers = customers.filter((c: any) => {
     const q = searchQuery.toLowerCase()
     return (
-      c.name?.toLowerCase().includes(q) ||
-      c.email?.toLowerCase().includes(q) ||
-      c.phone?.toLowerCase().includes(q) ||
-      c.source?.toLowerCase().includes(q) ||
-      c.nationality?.toLowerCase().includes(q)
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.phone || '').toLowerCase().includes(q) ||
+      (c.source || '').toLowerCase().includes(q) ||
+      (c.nationality || '').toLowerCase().includes(q)
     )
   })
 

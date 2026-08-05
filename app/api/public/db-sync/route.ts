@@ -81,6 +81,16 @@ export async function GET(request: Request) {
     logs.push('• Customer.salesperson_id index already exists')
   }
 
+  // ── 3b-extra. Add index on PaymentPlan.unitId if missing ──
+  try {
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE \`PaymentPlan\` ADD INDEX \`PaymentPlan_unitId_idx\` (\`unitId\`);
+    `)
+    logs.push('✓ PaymentPlan.unitId index created')
+  } catch (e: any) {
+    logs.push('• PaymentPlan.unitId index already exists')
+  }
+
   // ── 3b. Create ReferralVisitor table if it doesn't exist ──
   try {
     await prisma.$executeRawUnsafe(`

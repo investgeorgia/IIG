@@ -51,10 +51,10 @@ function ProjectsList() {
   const searchedProjects = filteredProjects.filter((p: any) => {
     const q = searchQuery.toLowerCase()
     return (
-      p.name?.toLowerCase().includes(q) ||
-      p.developer?.name?.toLowerCase().includes(q) ||
-      p.city?.toLowerCase().includes(q) ||
-      p.country?.toLowerCase().includes(q)
+      (p.name || '').toLowerCase().includes(q) ||
+      (p.developer?.name || '').toLowerCase().includes(q) ||
+      (p.city || '').toLowerCase().includes(q) ||
+      (p.country || '').toLowerCase().includes(q)
     )
   })
 

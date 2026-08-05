@@ -30,7 +30,7 @@ export default function DevelopersPage() {
   })
 
   const searchedDevelopers = developers
-    ? developers.filter((d: any) => d.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? developers.filter((d: any) => (d.name || '').toLowerCase().includes(searchQuery.toLowerCase()))
     : []
 
   const createMutation = useMutation({
