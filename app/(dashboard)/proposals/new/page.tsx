@@ -397,12 +397,22 @@ export default function CreateProposalPage() {
                     setSelectedUnit(unit)
                     const plan = (unit.paymentPlans && unit.paymentPlans.length > 0) ? unit.paymentPlans[0] : (projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans?.[0])
                     if (plan && plan.schedule) {
-                      setPaymentPlan(plan.schedule.map((s: any, idx: number) => ({
-                        id: Date.now() + idx,
-                        milestone: s.milestone || s.label || '',
-                        percentage: Number(s.percentage) || 0,
-                        date: s.date || (s.dueDays ? `Due in ${s.dueDays} days` : '')
-                      })))
+                      try {
+                        let parsedSchedule = typeof plan.schedule === 'string' ? JSON.parse(plan.schedule) : plan.schedule;
+                        if (Array.isArray(parsedSchedule)) {
+                          setPaymentPlan(parsedSchedule.map((s: any, idx: number) => ({
+                            id: Date.now() + idx,
+                            milestone: s.milestone || s.label || s.name || '',
+                            percentage: Number(s.percentage) || 0,
+                            date: s.date || (s.dueDays ? `Due in ${s.dueDays} days` : '')
+                          })))
+                        } else {
+                          setPaymentPlan([])
+                        }
+                      } catch (e) {
+                        console.error('Failed to parse schedule', e)
+                        setPaymentPlan([])
+                      }
                     } else {
                       setPaymentPlan([])
                     }
