@@ -28,12 +28,7 @@ export default function HomePage() {
       <div className="relative z-10 flex min-h-screen flex-col justify-between px-6 py-12 md:px-16 md:py-16">
         
         {/* Top Spacer or Header */}
-        <div className="w-full flex justify-between items-center">
-          {/* Logo Placeholder or Link */}
-          <Link href="/login" className="text-white/60 hover:text-white text-xs font-semibold uppercase tracking-widest transition-colors">
-            Staff Portal
-          </Link>
-        </div>
+        <div className="w-full flex justify-between items-center" />
 
         {/* Center Section: Hero Title */}
         <div className="flex flex-col items-center text-center mt-[12vh] mb-auto max-w-5xl mx-auto px-4">
@@ -55,7 +50,7 @@ export default function HomePage() {
         </div>
 
         {/* Bottom Section */}
-        <div className="w-full flex flex-col md:flex-row justify-between items-end gap-8 mt-auto">
+        <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mt-auto">
           
           {/* Bottom Left: Info & Stats */}
           <div className="text-left max-w-lg">
