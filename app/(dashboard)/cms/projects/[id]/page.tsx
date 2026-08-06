@@ -84,32 +84,57 @@ export default function ProjectDetailPage() {
     }
   })
 
-  const { data: units = [] } = useQuery({
+  const { data: rawUnits } = useQuery({
     queryKey: ['units', id],
-    queryFn: async () => (await fetch(`/api/cms/projects/${id}/units`)).json()
+    queryFn: async () => {
+      const res = await fetch(`/api/cms/projects/${id}/units`)
+      if (!res.ok) throw new Error('Failed to load units')
+      return res.json()
+    }
   })
 
-  const { data: allAmenities = [] } = useQuery({
+  const { data: rawAllAmenities } = useQuery({
     queryKey: ['amenities'],
-    queryFn: async () => (await fetch('/api/cms/amenities')).json()
+    queryFn: async () => {
+      const res = await fetch('/api/cms/amenities')
+      if (!res.ok) throw new Error('Failed to load amenities')
+      return res.json()
+    }
   })
 
-  const { data: projectAmenities = [] } = useQuery({
+  const { data: rawProjectAmenities } = useQuery({
     queryKey: ['project-amenities', id],
-    queryFn: async () => (await fetch(`/api/cms/projects/${id}/amenities`)).json()
+    queryFn: async () => {
+      const res = await fetch(`/api/cms/projects/${id}/amenities`)
+      if (!res.ok) throw new Error('Failed to load project amenities')
+      return res.json()
+    }
   })
 
-  const { data: paymentPlans = [] } = useQuery({
+  const { data: rawPaymentPlans } = useQuery({
     queryKey: ['payment-plans', id],
-    queryFn: async () => (await fetch(`/api/cms/projects/${id}/payment-plans`)).json()
+    queryFn: async () => {
+      const res = await fetch(`/api/cms/projects/${id}/payment-plans`)
+      if (!res.ok) throw new Error('Failed to load payment plans')
+      return res.json()
+    }
   })
 
-  const { data: mediaFiles = [] } = useQuery({
+  const { data: rawMediaFiles } = useQuery({
     queryKey: ['media', id],
-    queryFn: async () => (await fetch(`/api/cms/projects/${id}/media`)).json()
+    queryFn: async () => {
+      const res = await fetch(`/api/cms/projects/${id}/media`)
+      if (!res.ok) throw new Error('Failed to load media files')
+      return res.json()
+    }
   })
 
-  // -- Derived --
+  const units = Array.isArray(rawUnits) ? rawUnits : []
+  const allAmenities = Array.isArray(rawAllAmenities) ? rawAllAmenities : []
+  const projectAmenities = Array.isArray(rawProjectAmenities) ? rawProjectAmenities : []
+  const paymentPlans = Array.isArray(rawPaymentPlans) ? rawPaymentPlans : []
+  const mediaFiles = Array.isArray(rawMediaFiles) ? rawMediaFiles : []
+
   const linkedAmenityIds = new Set(projectAmenities.map((pa: any) => pa.amenityId))
 
   // -- Mutations --
