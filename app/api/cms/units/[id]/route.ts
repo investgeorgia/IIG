@@ -37,6 +37,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (body.size) body.size = Number(body.size)
     if (body.price) body.price = Number(body.price)
     if (body.projectId) body.projectId = Number(body.projectId)
+    if (body.livingAreaSize !== undefined && body.livingAreaSize !== null && body.livingAreaSize !== '') body.livingAreaSize = Number(body.livingAreaSize)
+    else delete body.livingAreaSize
+    if (body.balconySize !== undefined && body.balconySize !== null && body.balconySize !== '') body.balconySize = Number(body.balconySize)
+    else delete body.balconySize
+    if (body.terraceSize !== undefined && body.terraceSize !== null && body.terraceSize !== '') body.terraceSize = Number(body.terraceSize)
+    else delete body.terraceSize
+    if (body.greenyardSize !== undefined && body.greenyardSize !== null && body.greenyardSize !== '') body.greenyardSize = Number(body.greenyardSize)
+    else delete body.greenyardSize
 
     const unit = await UnitService.updateUnit(id, body)
     return NextResponse.json(unit)

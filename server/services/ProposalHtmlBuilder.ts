@@ -219,6 +219,63 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const defaultCustomerMessage =
     'Taking into consideration your preferences and key investment goals, we have carefully selected the following opportunity that aligns with your criteria and demonstrates exceptional growth potential.'
 
+  // --- Extra Unit Sizes ---
+  const lvSize = snap?.unit?.livingAreaSize
+  const blSize = snap?.unit?.balconySize
+  const trSize = snap?.unit?.terraceSize
+  const gySize = snap?.unit?.greenyardSize
+
+  let unitExtraSizesHtml = ''
+  if (lvSize || blSize || trSize || gySize) {
+    const cols = []
+    const vals = []
+    if (lvSize) {
+      cols.push(`<th style="text-align: left; width: 25%;">Living Area</th>`)
+      vals.push(`<td style="text-align: left; font-weight: 500;">${lvSize} m²</td>`)
+    }
+    if (blSize) {
+      cols.push(`<th style="text-align: center; width: 25%;">Balcony</th>`)
+      vals.push(`<td style="text-align: center; font-weight: 500;">${blSize} m²</td>`)
+    }
+    if (trSize) {
+      cols.push(`<th style="text-align: center; width: 25%;">Terrace</th>`)
+      vals.push(`<td style="text-align: center; font-weight: 500;">${trSize} m²</td>`)
+    }
+    if (gySize) {
+      cols.push(`<th style="text-align: right; width: 25%;">Greenyard</th>`)
+      vals.push(`<td style="text-align: right; font-weight: 500;">${gySize} m²</td>`)
+    }
+
+    const widthPct = Math.floor(100 / cols.length)
+    const headerRow = cols.map((c, idx) => {
+      let align = 'center'
+      if (idx === 0) align = 'left'
+      else if (idx === cols.length - 1) align = 'right'
+      return c.replace(/style="text-align: [a-z]+; width: 25%;"/, `style="text-align: ${align}; width: ${widthPct}%;"`)
+    }).join('')
+    const valueRow = vals.map((v, idx) => {
+      let align = 'center'
+      if (idx === 0) align = 'left'
+      else if (idx === vals.length - 1) align = 'right'
+      return v.replace(/style="text-align: [a-z]+; font-weight: 500;"/, `style="text-align: ${align}; font-weight: 500;"`)
+    }).join('')
+
+    unitExtraSizesHtml = `
+      <table class="table-custom" style="margin-top: 10px;">
+        <thead>
+          <tr>
+            ${headerRow}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            ${valueRow}
+          </tr>
+        </tbody>
+      </table>
+    `
+  }
+
   // --- Build HTML fragments ---
   const logoImgTag = buildLogoImgTag(baseUrl)
   const paymentPlanRows = buildPaymentPlanRows(customPaymentPlan, finalPriceUSD)
@@ -258,6 +315,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{floorPlanHtml}}/g, floorPlanHtml)
     .replace(/{{amenitiesHtml}}/g, amenitiesHtml)
     .replace(/{{galleryPage}}/g, galleryPageHtml)
+    .replace(/{{unitExtraSizesHtml}}/g, unitExtraSizesHtml)
     // Logo: replace any <img> referencing logo-black.svg with inlined base64
     .replace(
       /<img([^>]*?)src=["'][^"']*logo-black\.svg["']([^>]*?)\/?>/gi,

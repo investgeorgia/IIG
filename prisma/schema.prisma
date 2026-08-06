@@ -144,6 +144,10 @@ model Unit {
   floorPlanUrl   String?
   view           String?
   floor          Int?
+  livingAreaSize Float?
+  balconySize    Float?
+  terraceSize    Float?
+  greenyardSize  Float?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   paymentPlans   PaymentPlan[]

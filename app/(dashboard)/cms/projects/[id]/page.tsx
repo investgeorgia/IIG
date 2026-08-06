@@ -247,6 +247,10 @@ export default function ProjectDetailPage() {
         size: Number(data.size),
         price: Number(data.price),
         floor: data.floor ? Number(data.floor) : undefined,
+        livingAreaSize: data.livingAreaSize ? Number(data.livingAreaSize) : undefined,
+        balconySize: data.balconySize ? Number(data.balconySize) : undefined,
+        terraceSize: data.terraceSize ? Number(data.terraceSize) : undefined,
+        greenyardSize: data.greenyardSize ? Number(data.greenyardSize) : undefined,
         status: data.status || 'AVAILABLE'
       }
       
@@ -278,7 +282,11 @@ export default function ProjectDetailPage() {
       floor: unit.floor || '',
       size: unit.size,
       price: unit.price,
-      floorPlanUrl: unit.floorPlanUrl || ''
+      floorPlanUrl: unit.floorPlanUrl || '',
+      livingAreaSize: unit.livingAreaSize || '',
+      balconySize: unit.balconySize || '',
+      terraceSize: unit.terraceSize || '',
+      greenyardSize: unit.greenyardSize || ''
     })
     setShowAddUnit(true)
   }
@@ -599,13 +607,19 @@ export default function ProjectDetailPage() {
                       </div>
                       <div className="space-y-1"><Label>View</Label><Input placeholder="Sea View" {...regUnit('view')} /></div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="space-y-1"><Label>Bedrooms *</Label><Input type="number" min={0} {...regUnit('bedrooms', { required: true })} /></div>
                       <div className="space-y-1"><Label>Bathrooms *</Label><Input type="number" min={0} {...regUnit('bathrooms', { required: true })} /></div>
                       <div className="space-y-1"><Label>Floor</Label><Input type="number" min={0} {...regUnit('floor')} /></div>
                       <div className="space-y-1"><Label>Size (m²) *</Label><Input type="number" step="0.01" {...regUnit('size', { required: true })} /></div>
                       <div className="space-y-1"><Label>Price (USD) *</Label><Input type="number" step="0.01" {...regUnit('price', { required: true })} /></div>
-                      <div className="space-y-1 md:col-span-2 lg:col-span-1">
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <div className="space-y-1"><Label>Living Area (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 85.5" {...regUnit('livingAreaSize')} /></div>
+                      <div className="space-y-1"><Label>Balcony (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 10.2" {...regUnit('balconySize')} /></div>
+                      <div className="space-y-1"><Label>Terrace (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 15.0" {...regUnit('terraceSize')} /></div>
+                      <div className="space-y-1"><Label>Greenyard (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 25.4" {...regUnit('greenyardSize')} /></div>
+                      <div className="space-y-1">
                         <Label>Floor Plan URL</Label>
                         <div className="flex gap-2">
                           <Input placeholder="https://..." {...regUnit('floorPlanUrl')} className="flex-1 text-xs" />
