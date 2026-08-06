@@ -73,8 +73,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const priceHeader = mapping['price']
       const price = priceHeader ? Math.max(0, parseFloat(row[priceHeader]) || 0) : 0
 
-      const currencyHeader = mapping['currency']
-      const currency = currencyHeader ? String(row[currencyHeader] || '').trim().toUpperCase() : 'USD'
+      const currency = 'USD'
 
       const statusHeader = mapping['status']
       const rawStatus = statusHeader ? String(row[statusHeader] || '').trim().toUpperCase() : ''
@@ -101,29 +100,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const deliveryFormHeader = mapping['deliveryForm']
       const deliveryForm = deliveryFormHeader ? String(row[deliveryFormHeader] || '').trim() : null
 
-      const blackFrameHeader = mapping['blackFrame']
-      const blackFrame = blackFrameHeader ? (row[blackFrameHeader] === true || String(row[blackFrameHeader]).toLowerCase() === 'true' || row[blackFrameHeader] === '1') : false
-
-      const whiteFrameHeader = mapping['whiteFrame']
-      const whiteFrame = whiteFrameHeader ? (row[whiteFrameHeader] === true || String(row[whiteFrameHeader]).toLowerCase() === 'true' || row[whiteFrameHeader] === '1') : false
-
-      const greenFrameHeader = mapping['greenFrame']
-      const greenFrame = greenFrameHeader ? (row[greenFrameHeader] === true || String(row[greenFrameHeader]).toLowerCase() === 'true' || row[greenFrameHeader] === '1') : false
-
-      const turnkeyHeader = mapping['turnkey']
-      const turnkey = turnkeyHeader ? (row[turnkeyHeader] === true || String(row[turnkeyHeader]).toLowerCase() === 'true' || row[turnkeyHeader] === '1') : false
-
       const blackFramePriceHeader = mapping['blackFramePrice']
       const blackFramePrice = blackFramePriceHeader ? parseFloat(row[blackFramePriceHeader]) || null : null
+      const blackFrame = (blackFramePrice !== null && blackFramePrice > 0)
 
       const whiteFramePriceHeader = mapping['whiteFramePrice']
       const whiteFramePrice = whiteFramePriceHeader ? parseFloat(row[whiteFramePriceHeader]) || null : null
+      const whiteFrame = (whiteFramePrice !== null && whiteFramePrice > 0)
 
       const greenFramePriceHeader = mapping['greenFramePrice']
       const greenFramePrice = greenFramePriceHeader ? parseFloat(row[greenFramePriceHeader]) || null : null
+      const greenFrame = (greenFramePrice !== null && greenFramePrice > 0)
 
       const turnkeyPriceHeader = mapping['turnkeyPrice']
       const turnkeyPrice = turnkeyPriceHeader ? parseFloat(row[turnkeyPriceHeader]) || null : null
+      const turnkey = (turnkeyPrice !== null && turnkeyPrice > 0)
 
       const floorPlanUrlHeader = mapping['floorPlanUrl']
       const floorPlanUrl = floorPlanUrlHeader ? String(row[floorPlanUrlHeader] || '').trim() : null
