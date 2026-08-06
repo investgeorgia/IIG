@@ -79,18 +79,14 @@ function buildPaymentPlanRows(
 
 function buildFloorPlanHtml(floorPlanUrl: string | undefined): string {
   if (floorPlanUrl) {
-    return `<div style="width:100%;height:380px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;background:#F8FAFC;">
-      <img src="${floorPlanUrl}" style="width:100%;height:100%;object-fit:contain;" />
+    return `<div style="margin-bottom: 32px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #0F172A; margin-bottom: 12px;">Floor Plan &amp; Layout</div>
+      <div style="width:100%;height:380px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;background:#F8FAFC;">
+        <img src="${floorPlanUrl}" style="width:100%;height:100%;object-fit:contain;" />
+      </div>
     </div>`
   }
-  return `<div style="width:100%;height:380px;border:2px dashed #CBD5E1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#F8FAFC;color:#94A3B8;">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;opacity:0.5;">
-      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-      <path d="M3 9h18"></path>
-      <path d="M9 21V9"></path>
-    </svg>
-    <span style="font-size:13px;font-weight:500;">No floor plan image uploaded</span>
-  </div>`
+  return ''
 }
 
 function buildAmenitiesHtml(amenities: string[]): string {
@@ -299,6 +295,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{consultantPhone}}/g, consultantPhone)
     .replace(/{{consultantEmail}}/g, consultantEmail)
     .replace(/{{baseUrl}}/g, baseUrl)
+    .replace(/{{paymentPlanName}}/g, proposal.paymentPlanName || 'Standard Plan')
     // Unit Specs
     .replace(/{{unitType}}/g, unitType)
     .replace(/{{type}}/g, unitType)
@@ -310,6 +307,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{bedrooms}}/g, unitBedrooms)
     .replace(/{{unitBathrooms}}/g, unitBathrooms)
     .replace(/{{bathrooms}}/g, unitBathrooms)
+    .replace(/{{deliveryForm}}/g, snap?.unit?.deliveryForm || '—')
     // Dynamic HTML blocks
     .replace(/{{paymentPlanRows}}/g, paymentPlanRows)
     .replace(/{{floorPlanHtml}}/g, floorPlanHtml)

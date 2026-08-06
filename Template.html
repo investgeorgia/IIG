@@ -168,11 +168,12 @@
       <table class="table-custom" style="margin-top: 10px;">
         <thead>
           <tr>
-            <th style="text-align: left; width: 25%;">Unit Type</th>
-            <th style="text-align: center; width: 20%;">Size</th>
+            <th style="text-align: left; width: 20%;">Unit Type</th>
+            <th style="text-align: center; width: 15%;">Size</th>
             <th style="text-align: center; width: 15%;">Floor</th>
-            <th style="text-align: center; width: 20%;">Bedrooms</th>
-            <th style="text-align: right; width: 20%;">Bathrooms</th>
+            <th style="text-align: center; width: 15%;">Bedrooms</th>
+            <th style="text-align: center; width: 15%;">Bathrooms</th>
+            <th style="text-align: right; width: 20%;">Delivery Form</th>
           </tr>
         </thead>
         <tbody>
@@ -181,7 +182,8 @@
             <td style="text-align: center; font-weight: 500;">{{unitSize}} m²</td>
             <td style="text-align: center; font-weight: 500;">{{unitFloor}}</td>
             <td style="text-align: center; font-weight: 500;">{{unitBedrooms}}</td>
-            <td style="text-align: right; font-weight: 500;">{{unitBathrooms}}</td>
+            <td style="text-align: center; font-weight: 500;">{{unitBathrooms}}</td>
+            <td style="text-align: right; font-weight: 500;">{{deliveryForm}}</td>
           </tr>
         </tbody>
       </table>
@@ -215,7 +217,7 @@
     <div class="payment-plan-section" style="margin-bottom: 24px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <div class="section-label" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #C0392B;">03 / Payment Plan</div>
-        <div style="font-size: 11px; font-weight: 600; color: #64748B;">Standard Plan</div>
+        <div style="font-size: 11px; font-weight: 600; color: #64748B;">{{paymentPlanName}}</div>
       </div>
       
       <table class="table-custom" style="border-radius: 8px; overflow: visible;">
@@ -272,10 +274,7 @@
     </div>
 
     <!-- Floor Plan Container -->
-    <div style="margin-bottom: 32px;">
-      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #0F172A; margin-bottom: 12px;">Floor Plan &amp; Layout</div>
-      {{floorPlanHtml}}
-    </div>
+    {{floorPlanHtml}}
 
     <!-- Amenities -->
     {{amenitiesHtml}}

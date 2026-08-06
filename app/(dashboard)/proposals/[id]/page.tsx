@@ -135,7 +135,7 @@ export default function ProposalDetailsPage() {
   if (!proposal) return <div className="p-8 text-center">Proposal not found</div>
 
   const snapshot = proposal.snapshot || {}
-  const basePrice = Number(snapshot.unit?.price || 0)
+  const basePrice = Number(proposal.selectedPrice || snapshot.unit?.price || 0)
   const finalPriceNum = proposal.customPrice
     ? Number(proposal.customPrice)
     : basePrice - (basePrice * (proposal.discountPercent || 0) / 100)

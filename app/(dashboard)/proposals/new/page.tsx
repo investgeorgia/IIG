@@ -39,6 +39,9 @@ export default function CreateProposalPage() {
   const [paymentPlan, setPaymentPlan] = useState<{ id: number, milestone: string, percentage: number, date: string, subMilestones?: { id: number, milestone: string, percentage: number, date: string }[] }[]>([])
   const [customFloorPlanUrl, setCustomFloorPlanUrl] = useState('')
   const [floorPlanUploading, setFloorPlanUploading] = useState(false)
+  const [selectedPriceVal, setSelectedPriceVal] = useState<number>(0)
+  const [selectedPricingType, setSelectedPricingType] = useState<string>('Base Price')
+  const [selectedPaymentPlanName, setSelectedPaymentPlanName] = useState<string>('Standard Plan')
 
   // Data queries
   const { data: searchResults = [], isFetching: isSearchingCustomers } = useQuery({
@@ -125,7 +128,10 @@ export default function CreateProposalPage() {
           towerBlock,
           unitCondition,
           paymentPlan,
-          customFloorPlanUrl: customFloorPlanUrl || undefined
+          customFloorPlanUrl: customFloorPlanUrl || undefined,
+          pricingType: selectedPricingType,
+          selectedPrice: selectedPriceVal,
+          paymentPlanName: selectedPaymentPlanName
         })
       })
       if (!res.ok) { const e = await res.json(); throw new Error(e.error) }
@@ -423,7 +429,10 @@ export default function CreateProposalPage() {
                 {units.filter((u: any) => u.status === 'AVAILABLE').map((unit: any) => (
                   <button key={unit.id} type="button" onClick={() => {
                     setSelectedUnit(unit)
+                    setSelectedPriceVal(Number(unit.price))
+                    setSelectedPricingType('Base Price')
                     const plan = (unit.paymentPlans && unit.paymentPlans.length > 0) ? unit.paymentPlans[0] : (projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans?.[0])
+                    setSelectedPaymentPlanName(plan ? plan.name : 'Standard Plan')
                     if (plan && plan.schedule) {
                       try {
                         let parsedSchedule = typeof plan.schedule === 'string' ? JSON.parse(plan.schedule) : plan.schedule;
@@ -495,12 +504,33 @@ export default function CreateProposalPage() {
             </CardContent>
           </Card>
 
-          {/* Customizations */}
           <Card className="shadow-sm border-neutral-200">
             <CardHeader><CardTitle className="text-xl">Customizations</CardTitle></CardHeader>
             <CardContent className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1"><Label>Custom Price (optional)</Label><Input type="number" placeholder={String(Number(selectedUnit.price))} value={customPrice} onChange={e => setCustomPrice(e.target.value)} /></div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <Label>Pricing Type</Label>
+                  <select
+                    value={selectedPriceVal}
+                    onChange={e => {
+                      const val = Number(e.target.value)
+                      setSelectedPriceVal(val)
+                      if (val === Number(selectedUnit.price)) setSelectedPricingType('Base Price')
+                      else if (val === Number(selectedUnit.blackFramePrice)) setSelectedPricingType('Black Frame')
+                      else if (val === Number(selectedUnit.whiteFramePrice)) setSelectedPricingType('White Frame')
+                      else if (val === Number(selectedUnit.greenFramePrice)) setSelectedPricingType('Green Frame')
+                      else if (val === Number(selectedUnit.turnkeyPrice)) setSelectedPricingType('Turnkey')
+                    }}
+                    className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                  >
+                    <option value={Number(selectedUnit.price)}>{Number(selectedUnit.price).toLocaleString()} USD</option>
+                    {selectedUnit.blackFramePrice && <option value={Number(selectedUnit.blackFramePrice)}>{Number(selectedUnit.blackFramePrice).toLocaleString()} USD</option>}
+                    {selectedUnit.whiteFramePrice && <option value={Number(selectedUnit.whiteFramePrice)}>{Number(selectedUnit.whiteFramePrice).toLocaleString()} USD</option>}
+                    {selectedUnit.greenFramePrice && <option value={Number(selectedUnit.greenFramePrice)}>{Number(selectedUnit.greenFramePrice).toLocaleString()} USD</option>}
+                    {selectedUnit.turnkeyPrice && <option value={Number(selectedUnit.turnkeyPrice)}>{Number(selectedUnit.turnkeyPrice).toLocaleString()} USD</option>}
+                  </select>
+                </div>
+                <div className="space-y-1"><Label>Custom Price (optional)</Label><Input type="number" placeholder={String(selectedPriceVal)} value={customPrice} onChange={e => setCustomPrice(e.target.value)} /></div>
                 <div className="space-y-1"><Label>Discount (%)</Label><Input type="number" min={0} max={50} placeholder="0" value={discountPercent} onChange={e => setDiscountPercent(e.target.value)} /></div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -523,18 +553,65 @@ export default function CreateProposalPage() {
               </div>
               
               <div className="space-y-3 pt-4 border-t border-neutral-100">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold">Detailed Payment Plan</Label>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1">
+                    <Label className="text-sm font-semibold whitespace-nowrap">Payment Plan:</Label>
+                    <select
+                      value={selectedPaymentPlanName}
+                      onChange={e => {
+                        const name = e.target.value
+                        setSelectedPaymentPlanName(name)
+                        const allPlans = [
+                          ...(selectedUnit?.paymentPlans || []),
+                          ...(projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans || [])
+                        ].filter((p, i, self) => self.findIndex(pl => pl.name === p.name) === i)
+                        const found = allPlans.find(p => p.name === name)
+                        if (found && found.schedule) {
+                          try {
+                            let parsed = typeof found.schedule === 'string' ? JSON.parse(found.schedule) : found.schedule
+                            if (Array.isArray(parsed)) {
+                              setPaymentPlan(parsed.map((s: any, idx: number) => ({
+                                id: Date.now() + idx,
+                                milestone: s.milestone || s.label || s.name || '',
+                                percentage: Number(s.percentage) || 0,
+                                date: s.date || '',
+                                subMilestones: Array.isArray(s.subMilestones) ? s.subMilestones.map((sub: any, subIdx: number) => ({
+                                  id: Date.now() + 1000 + idx * 10 + subIdx,
+                                  milestone: sub.milestone || '',
+                                  percentage: Number(sub.percentage) || 0,
+                                  date: sub.date || ''
+                                })) : []
+                              })))
+                            }
+                          } catch(err) {
+                            console.error(err)
+                          }
+                        }
+                      }}
+                      className="flex h-9 w-full sm:max-w-xs rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                    >
+                      <option value="Custom Plan">Custom Plan</option>
+                      {[
+                        ...(selectedUnit?.paymentPlans || []),
+                        ...(projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans || [])
+                      ].filter((p, i, self) => self.findIndex(pl => pl.name === p.name) === i).map(p => (
+                        <option key={p.name} value={p.name}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setPaymentPlan([...paymentPlan, { id: Date.now(), milestone: '', percentage: 0, date: '' }])}
+                    onClick={() => {
+                      setSelectedPaymentPlanName('Custom Plan')
+                      setPaymentPlan([...paymentPlan, { id: Date.now(), milestone: '', percentage: 0, date: '' }])
+                    }}
                   >
                     <Plus className="w-3 h-3 mr-1" /> Add Milestone
                   </Button>
                 </div>
-
+ 
                 {paymentPlan.length > 0 && (
                   <div className="rounded-lg border border-neutral-200 overflow-hidden">
                     <table className="w-full text-sm">
@@ -551,7 +628,7 @@ export default function CreateProposalPage() {
                       </thead>
                       <tbody>
                         {paymentPlan.flatMap((p, idx) => {
-                          const baseForCalc = customPrice ? Number(customPrice) : (Number(selectedUnit.price) * (1 - (discountPercent ? Number(discountPercent) / 100 : 0)))
+                          const baseForCalc = customPrice ? Number(customPrice) : (selectedPriceVal * (1 - (discountPercent ? Number(discountPercent) / 100 : 0)))
                           const amtUSD = (baseForCalc * (Number(p.percentage) || 0)) / 100
                           const amtAED = amtUSD * 3.6725
                           

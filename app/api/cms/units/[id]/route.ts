@@ -46,6 +46,22 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (body.greenyardSize !== undefined && body.greenyardSize !== null && body.greenyardSize !== '') body.greenyardSize = Number(body.greenyardSize)
     else delete body.greenyardSize
 
+    // Frame flags
+    body.blackFrame = body.blackFrame === true || body.blackFrame === 'true'
+    body.whiteFrame = body.whiteFrame === true || body.whiteFrame === 'true'
+    body.greenFrame = body.greenFrame === true || body.greenFrame === 'true'
+    body.turnkey = body.turnkey === true || body.turnkey === 'true'
+
+    // Frame prices
+    if (body.blackFramePrice !== undefined && body.blackFramePrice !== null && body.blackFramePrice !== '') body.blackFramePrice = Number(body.blackFramePrice)
+    else delete body.blackFramePrice
+    if (body.whiteFramePrice !== undefined && body.whiteFramePrice !== null && body.whiteFramePrice !== '') body.whiteFramePrice = Number(body.whiteFramePrice)
+    else delete body.whiteFramePrice
+    if (body.greenFramePrice !== undefined && body.greenFramePrice !== null && body.greenFramePrice !== '') body.greenFramePrice = Number(body.greenFramePrice)
+    else delete body.greenFramePrice
+    if (body.turnkeyPrice !== undefined && body.turnkeyPrice !== null && body.turnkeyPrice !== '') body.turnkeyPrice = Number(body.turnkeyPrice)
+    else delete body.turnkeyPrice
+
     const unit = await UnitService.updateUnit(id, body)
     return NextResponse.json(unit)
   } catch (error: any) {

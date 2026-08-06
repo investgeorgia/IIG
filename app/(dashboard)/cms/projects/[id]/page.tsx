@@ -276,6 +276,15 @@ export default function ProjectDetailPage() {
         balconySize: data.balconySize ? Number(data.balconySize) : undefined,
         terraceSize: data.terraceSize ? Number(data.terraceSize) : undefined,
         greenyardSize: data.greenyardSize ? Number(data.greenyardSize) : undefined,
+        deliveryForm: data.deliveryForm || undefined,
+        blackFrame: data.blackFrame === true || data.blackFrame === 'true',
+        whiteFrame: data.whiteFrame === true || data.whiteFrame === 'true',
+        greenFrame: data.greenFrame === true || data.greenFrame === 'true',
+        turnkey: data.turnkey === true || data.turnkey === 'true',
+        blackFramePrice: data.blackFramePrice ? Number(data.blackFramePrice) : undefined,
+        whiteFramePrice: data.whiteFramePrice ? Number(data.whiteFramePrice) : undefined,
+        greenFramePrice: data.greenFramePrice ? Number(data.greenFramePrice) : undefined,
+        turnkeyPrice: data.turnkeyPrice ? Number(data.turnkeyPrice) : undefined,
         status: data.status || 'AVAILABLE'
       }
       
@@ -311,7 +320,16 @@ export default function ProjectDetailPage() {
       livingAreaSize: unit.livingAreaSize || '',
       balconySize: unit.balconySize || '',
       terraceSize: unit.terraceSize || '',
-      greenyardSize: unit.greenyardSize || ''
+      greenyardSize: unit.greenyardSize || '',
+      deliveryForm: unit.deliveryForm || '',
+      blackFrame: unit.blackFrame || false,
+      whiteFrame: unit.whiteFrame || false,
+      greenFrame: unit.greenFrame || false,
+      turnkey: unit.turnkey || false,
+      blackFramePrice: unit.blackFramePrice || '',
+      whiteFramePrice: unit.whiteFramePrice || '',
+      greenFramePrice: unit.greenFramePrice || '',
+      turnkeyPrice: unit.turnkeyPrice || ''
     })
     setShowAddUnit(true)
   }
@@ -644,6 +662,51 @@ export default function ProjectDetailPage() {
                       <div className="space-y-1"><Label>Balcony (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 10.2" {...regUnit('balconySize')} /></div>
                       <div className="space-y-1"><Label>Terrace (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 15.0" {...regUnit('terraceSize')} /></div>
                       <div className="space-y-1"><Label>Greenyard (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 25.4" {...regUnit('greenyardSize')} /></div>
+                      <div className="space-y-1"><Label>Delivery Form</Label><Input placeholder="e.g. Turnkey" {...regUnit('deliveryForm')} /></div>
+                    </div>
+
+                    <div className="border border-neutral-100 p-3 rounded-lg bg-neutral-50/50 space-y-3">
+                      <Label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Frames Options &amp; Pricing</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="unit-blackFrame" {...regUnit('blackFrame')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
+                          <label htmlFor="unit-blackFrame" className="text-sm font-medium text-neutral-700 select-none cursor-pointer">Black Frame</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="unit-whiteFrame" {...regUnit('whiteFrame')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
+                          <label htmlFor="unit-whiteFrame" className="text-sm font-medium text-neutral-700 select-none cursor-pointer">White Frame</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="unit-greenFrame" {...regUnit('greenFrame')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
+                          <label htmlFor="unit-greenFrame" className="text-sm font-medium text-neutral-700 select-none cursor-pointer">Green Frame</label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="unit-turnkey" {...regUnit('turnkey')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
+                          <label htmlFor="unit-turnkey" className="text-sm font-medium text-neutral-700 select-none cursor-pointer">Turnkey</label>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-1">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Black Frame Price (USD)</Label>
+                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('blackFramePrice')} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">White Frame Price (USD)</Label>
+                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('whiteFramePrice')} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Green Frame Price (USD)</Label>
+                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('greenFramePrice')} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Turnkey Price (USD)</Label>
+                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('turnkeyPrice')} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-1">
                         <Label>Floor Plan URL</Label>
                         <div className="flex gap-2">

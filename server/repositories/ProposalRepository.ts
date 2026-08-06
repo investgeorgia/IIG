@@ -36,6 +36,9 @@ export class ProposalRepository {
     selectedImages?: string[]
     selectedFloors?: string[]
     templateId?: number
+    pricingType?: string
+    selectedPrice?: number
+    paymentPlanName?: string
   }) {
     return prisma.proposal.create({
       data: {
@@ -50,6 +53,9 @@ export class ProposalRepository {
         selectedImages: data.selectedImages ?? undefined,
         selectedFloors: data.selectedFloors ?? undefined,
         templateId: data.templateId,
+        pricingType: data.pricingType,
+        selectedPrice: data.selectedPrice,
+        paymentPlanName: data.paymentPlanName,
       }
     })
   }

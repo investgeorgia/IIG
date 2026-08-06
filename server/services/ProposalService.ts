@@ -30,6 +30,9 @@ export class ProposalService {
     unitCondition?: string
     paymentPlan?: { id: number, milestone: string, percentage: number, date: string, subMilestones?: any[] }[]
     customFloorPlanUrl?: string
+    pricingType?: string
+    selectedPrice?: number
+    paymentPlanName?: string
   }) {
     // 1. Load full unit + project + developer data for snapshot
     const unit = await prisma.unit.findUnique({
@@ -65,6 +68,15 @@ export class ProposalService {
         balconySize: unit.balconySize ? Number(unit.balconySize) : null,
         terraceSize: unit.terraceSize ? Number(unit.terraceSize) : null,
         greenyardSize: unit.greenyardSize ? Number(unit.greenyardSize) : null,
+        deliveryForm: unit.deliveryForm,
+        blackFrame: unit.blackFrame,
+        whiteFrame: unit.whiteFrame,
+        greenFrame: unit.greenFrame,
+        turnkey: unit.turnkey,
+        blackFramePrice: unit.blackFramePrice ? Number(unit.blackFramePrice) : null,
+        whiteFramePrice: unit.whiteFramePrice ? Number(unit.whiteFramePrice) : null,
+        greenFramePrice: unit.greenFramePrice ? Number(unit.greenFramePrice) : null,
+        turnkeyPrice: unit.turnkeyPrice ? Number(unit.turnkeyPrice) : null,
         status: unit.status,
         floorPlanUrl: data.customFloorPlanUrl || unit.floorPlanUrl,
         towerBlock: data.towerBlock,
