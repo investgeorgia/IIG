@@ -36,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       margin: { top: '0', right: '0', bottom: '0', left: '0' }
     })
 
-    const envPath = process.env.MEDIA_STORAGE_PATH
+    const envPath = process.platform === 'linux' ? process.env.MEDIA_STORAGE_PATH : null
     const pdfDir = envPath 
       ? path.join(envPath, 'proposals')
       : path.join(process.cwd(), 'public', 'media', 'proposals')
