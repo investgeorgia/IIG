@@ -61,6 +61,18 @@ export default function ProjectDetailPage() {
   const [planUnitId, setPlanUnitId] = useState<number | null>(null)
   const [planSchedule, setPlanSchedule] = useState<{milestone: string, percentage: string, date: string}[]>([])
   const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([])
+  const [editingPlanId, setEditingPlanId] = useState<number | null>(null)
+
+  // Unit filter states
+  const [unitFilterSearch, setUnitFilterSearch] = useState('')
+  const [unitFilterType, setUnitFilterType] = useState('')
+  const [unitFilterFloor, setUnitFilterFloor] = useState('')
+  const [unitFilterBeds, setUnitFilterBeds] = useState('')
+  const [unitFilterBaths, setUnitFilterBaths] = useState('')
+  const [unitFilterMinSize, setUnitFilterMinSize] = useState('')
+  const [unitFilterMaxSize, setUnitFilterMaxSize] = useState('')
+  const [unitFilterMinPrice, setUnitFilterMinPrice] = useState('')
+  const [unitFilterMaxPrice, setUnitFilterMaxPrice] = useState('')
 
   // -- Queries --
   const { data: project, isLoading } = useQuery({
@@ -151,7 +163,39 @@ export default function ProjectDetailPage() {
       setPlanUnitId(null)
       setPlanSchedule([])
       setShowAddPlan(false)
+      setEditingPlanId(null)
       toast.success('Payment plan added')
+    }
+  })
+
+  const updatePlanMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/cms/payment-plans/${editingPlanId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: planName, 
+          description: planDesc, 
+          unitId: planUnitId || null,
+          schedule: planSchedule.map(s => ({
+            milestone: s.milestone,
+            percentage: Number(s.percentage),
+            date: s.date
+          }))
+        })
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['payment-plans', id] })
+      setPlanName('')
+      setPlanDesc('')
+      setPlanUnitId(null)
+      setPlanSchedule([])
+      setEditingPlanId(null)
+      setShowAddPlan(false)
+      toast.success('Payment plan updated')
     }
   })
 
@@ -434,122 +478,221 @@ export default function ProjectDetailPage() {
       )}
 
       {/* ─── TAB: UNITS ─── */}
-      {activeTab === 'units' && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            {canEdit && (
-              <Button onClick={() => { setEditingUnit(null); resetUnit(); setShowAddUnit(!showAddUnit) }} className="bg-red-600 hover:bg-red-700">
-                <Plus className="w-4 h-4 mr-2" /> Add Unit
-              </Button>
-            )}
-          </div>
+      {activeTab === 'units' && (() => {
+        const projectFloorPlans = mediaFiles.filter((m: any) => m.type === 'FLOOR_PLAN')
 
-          {showAddUnit && canEdit && (
-            <Card className="shadow-sm border-red-100">
-              <CardHeader><CardTitle className="text-lg">{editingUnit ? 'Edit Unit' : 'New Unit'}</CardTitle></CardHeader>
-              <CardContent>
-                <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data))} className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="space-y-1"><Label>Unit Number *</Label><Input placeholder="A-101" {...regUnit('unitNumber', { required: true })} /></div>
-                    <div className="space-y-1"><Label>Type *</Label>
-                      <select {...regUnit('type', { required: true })} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
-                        <option value="">Select...</option>
-                        {Object.entries(UNIT_TYPE_LABELS).map(([value, label]) => (
-                          <option key={value} value={value}>{label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1"><Label>Status</Label>
-                      <select {...regUnit('status')} defaultValue="AVAILABLE" className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
-                        <option value="AVAILABLE">Available</option>
-                        <option value="RESERVED">Reserved</option>
-                        <option value="SOLD">Sold</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1"><Label>View</Label><Input placeholder="Sea View" {...regUnit('view')} /></div>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div className="space-y-1"><Label>Bedrooms *</Label><Input type="number" min={0} {...regUnit('bedrooms', { required: true })} /></div>
-                    <div className="space-y-1"><Label>Bathrooms *</Label><Input type="number" min={0} {...regUnit('bathrooms', { required: true })} /></div>
-                    <div className="space-y-1"><Label>Floor</Label><Input type="number" min={0} {...regUnit('floor')} /></div>
-                    <div className="space-y-1"><Label>Size (m²) *</Label><Input type="number" step="0.01" {...regUnit('size', { required: true })} /></div>
-                    <div className="space-y-1"><Label>Price (USD) *</Label><Input type="number" step="0.01" {...regUnit('price', { required: true })} /></div>
-                    <div className="space-y-1 md:col-span-2 lg:col-span-1">
-                      <Label>Floor Plan URL</Label>
-                      <div className="flex gap-2">
-                        <Input placeholder="https://..." {...regUnit('floorPlanUrl')} className="flex-1" />
-                        <input type="file" id="unit-floor-upload" className="hidden" accept="image/*" onChange={handleUnitFloorPlanUpload} />
-                        <label htmlFor="unit-floor-upload" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-sm">
-                          {unitFloorPlanUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button type="submit" disabled={createUnitMutation.isPending} className="bg-red-600 hover:bg-red-700">
-                      {createUnitMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} {editingUnit ? 'Update Unit' : 'Save Unit'}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => { setShowAddUnit(false); setEditingUnit(null); resetUnit() }}>Cancel</Button>
-                  </div>
-                </form>
+        const filteredUnits = units.filter((unit: any) => {
+          if (unitFilterSearch && !unit.unitNumber.toLowerCase().includes(unitFilterSearch.toLowerCase())) return false
+          if (unitFilterType && unit.type !== unitFilterType) return false
+          if (unitFilterFloor && String(unit.floor) !== unitFilterFloor) return false
+          if (unitFilterBeds && String(unit.bedrooms) !== unitFilterBeds) return false
+          if (unitFilterBaths && String(unit.bathrooms) !== unitFilterBaths) return false
+          if (unitFilterMinSize && Number(unit.size) < Number(unitFilterMinSize)) return false
+          if (unitFilterMaxSize && Number(unit.size) > Number(unitFilterMaxSize)) return false
+          if (unitFilterMinPrice && Number(unit.price) < Number(unitFilterMinPrice)) return false
+          if (unitFilterMaxPrice && Number(unit.price) > Number(unitFilterMaxPrice)) return false
+          return true
+        })
+
+        return (
+          <div className="space-y-4">
+            {/* Filter Bar */}
+            <Card className="shadow-sm border-neutral-200">
+              <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold uppercase tracking-wider text-neutral-500">Filter &amp; Search Units</CardTitle></CardHeader>
+              <CardContent className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Unit #</Label>
+                  <Input placeholder="Search..." value={unitFilterSearch} onChange={e => setUnitFilterSearch(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Type</Label>
+                  <select value={unitFilterType} onChange={e => setUnitFilterType(e.target.value)} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                    <option value="">All Types</option>
+                    {Object.entries(UNIT_TYPE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Floor</Label>
+                  <Input type="number" min={0} placeholder="Floor" value={unitFilterFloor} onChange={e => setUnitFilterFloor(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Beds</Label>
+                  <select value={unitFilterBeds} onChange={e => setUnitFilterBeds(e.target.value)} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                    <option value="">Any</option>
+                    {[0, 1, 2, 3, 4, 5, 6].map(n => (
+                      <option key={n} value={n}>{n} Bed</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Baths</Label>
+                  <select value={unitFilterBaths} onChange={e => setUnitFilterBaths(e.target.value)} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                    <option value="">Any</option>
+                    {[1, 2, 3, 4, 5].map(n => (
+                      <option key={n} value={n}>{n} Bath</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Min Size (m²)</Label>
+                  <Input type="number" placeholder="Min" value={unitFilterMinSize} onChange={e => setUnitFilterMinSize(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Max Size (m²)</Label>
+                  <Input type="number" placeholder="Max" value={unitFilterMaxSize} onChange={e => setUnitFilterMaxSize(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Min Price (USD)</Label>
+                  <Input type="number" placeholder="Min" value={unitFilterMinPrice} onChange={e => setUnitFilterMinPrice(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Max Price (USD)</Label>
+                  <Input type="number" placeholder="Max" value={unitFilterMaxPrice} onChange={e => setUnitFilterMaxPrice(e.target.value)} />
+                </div>
+                <div className="flex items-end">
+                  <Button variant="outline" className="w-full text-xs" onClick={() => {
+                    setUnitFilterSearch('')
+                    setUnitFilterType('')
+                    setUnitFilterFloor('')
+                    setUnitFilterBeds('')
+                    setUnitFilterBaths('')
+                    setUnitFilterMinSize('')
+                    setUnitFilterMaxSize('')
+                    setUnitFilterMinPrice('')
+                    setUnitFilterMaxPrice('')
+                  }}>Reset Filters</Button>
+                </div>
               </CardContent>
             </Card>
-          )}
 
-          <Card className="shadow-sm">
-            <CardContent className="p-0">
-              {units.length === 0 ? (
-                <div className="p-8 text-center text-neutral-500">No units yet. Add the first one.</div>
-              ) : (
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
-                    <tr>
-                      <th className="px-6 py-3">Unit #</th>
-                      <th className="px-6 py-3">Type</th>
-                      <th className="px-6 py-3">Floor</th>
-                      <th className="px-6 py-3">Beds/Baths</th>
-                      <th className="px-6 py-3">Size (m²)</th>
-                      <th className="px-6 py-3">Price</th>
-                      <th className="px-6 py-3">Status</th>
-                      <th className="px-6 py-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {units.map((unit: any) => (
-                      <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
-                        <td className="px-6 py-4 font-medium">
-                          {unit.unitNumber}
-                          {unit.floorPlanUrl && <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-blue-600 hover:underline mt-1">View Plan</a>}
-                        </td>
-                        <td className="px-6 py-4 text-neutral-600">{UNIT_TYPE_LABELS[unit.type] || unit.type?.toLowerCase()}</td>
-                        <td className="px-6 py-4 text-neutral-600">{unit.floor ?? '—'}</td>
-                        <td className="px-6 py-4 text-neutral-600">{unit.bedrooms} / {unit.bathrooms}</td>
-                        <td className="px-6 py-4 text-neutral-600">{Number(unit.size).toLocaleString()}</td>
-                        <td className="px-6 py-4 font-medium">{Number(unit.price).toLocaleString()} {unit.currency}</td>
-                        <td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full font-medium ${UNIT_STATUS_COLORS[unit.status]}`}>{unit.status}</span></td>
-                        <td className="px-6 py-4 text-right flex justify-end gap-1">
-                          {canEdit ? (
-                            <>
-                              <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEditUnit(unit)}>
-                                Edit
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-600 h-8 px-2" onClick={() => deleteUnitMutation.mutate(unit.id)}>
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </>
-                          ) : (
-                            <span className="text-neutral-400 text-xs">Read-only</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="flex justify-end">
+              {canEdit && (
+                <Button onClick={() => { setEditingUnit(null); resetUnit(); setShowAddUnit(!showAddUnit) }} className="bg-red-600 hover:bg-red-700">
+                  <Plus className="w-4 h-4 mr-2" /> Add Unit
+                </Button>
               )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+
+            {showAddUnit && canEdit && (
+              <Card className="shadow-sm border-red-100">
+                <CardHeader><CardTitle className="text-lg">{editingUnit ? 'Edit Unit' : 'New Unit'}</CardTitle></CardHeader>
+                <CardContent>
+                  <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data))} className="space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-1"><Label>Unit Number *</Label><Input placeholder="A-101" {...regUnit('unitNumber', { required: true })} /></div>
+                      <div className="space-y-1"><Label>Type *</Label>
+                        <select {...regUnit('type', { required: true })} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                          <option value="">Select...</option>
+                          {Object.entries(UNIT_TYPE_LABELS).map(([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1"><Label>Status</Label>
+                        <select {...regUnit('status')} defaultValue="AVAILABLE" className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                          <option value="AVAILABLE">Available</option>
+                          <option value="RESERVED">Reserved</option>
+                          <option value="SOLD">Sold</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1"><Label>View</Label><Input placeholder="Sea View" {...regUnit('view')} /></div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                      <div className="space-y-1"><Label>Bedrooms *</Label><Input type="number" min={0} {...regUnit('bedrooms', { required: true })} /></div>
+                      <div className="space-y-1"><Label>Bathrooms *</Label><Input type="number" min={0} {...regUnit('bathrooms', { required: true })} /></div>
+                      <div className="space-y-1"><Label>Floor</Label><Input type="number" min={0} {...regUnit('floor')} /></div>
+                      <div className="space-y-1"><Label>Size (m²) *</Label><Input type="number" step="0.01" {...regUnit('size', { required: true })} /></div>
+                      <div className="space-y-1"><Label>Price (USD) *</Label><Input type="number" step="0.01" {...regUnit('price', { required: true })} /></div>
+                      <div className="space-y-1 md:col-span-2 lg:col-span-1">
+                        <Label>Floor Plan URL</Label>
+                        <div className="flex gap-2">
+                          <Input placeholder="https://..." {...regUnit('floorPlanUrl')} className="flex-1 text-xs" />
+                          <input type="file" id="unit-floor-upload" className="hidden" accept="image/*" onChange={handleUnitFloorPlanUpload} />
+                          <label htmlFor="unit-floor-upload" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-xs">
+                            {unitFloorPlanUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                          </label>
+                        </div>
+                        {projectFloorPlans.length > 0 && (
+                          <select
+                            onChange={e => setUnitValue('floorPlanUrl', e.target.value)}
+                            className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 mt-1.5"
+                          >
+                            <option value="">Or select project floor plan...</option>
+                            {projectFloorPlans.map((fp: any) => (
+                              <option key={fp.id} value={fp.url}>{fp.name || fp.url.split('/').pop()}</option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button type="submit" disabled={createUnitMutation.isPending} className="bg-red-600 hover:bg-red-700">
+                        {createUnitMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} {editingUnit ? 'Update Unit' : 'Save Unit'}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => { setShowAddUnit(false); setEditingUnit(null); resetUnit() }}>Cancel</Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card className="shadow-sm">
+              <CardContent className="p-0">
+                {filteredUnits.length === 0 ? (
+                  <div className="p-8 text-center text-neutral-500">No units match these filters.</div>
+                ) : (
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
+                      <tr>
+                        <th className="px-6 py-3">Unit #</th>
+                        <th className="px-6 py-3">Type</th>
+                        <th className="px-6 py-3">Floor</th>
+                        <th className="px-6 py-3">Beds/Baths</th>
+                        <th className="px-6 py-3">Size (m²)</th>
+                        <th className="px-6 py-3">Price</th>
+                        <th className="px-6 py-3">Status</th>
+                        <th className="px-6 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUnits.map((unit: any) => (
+                        <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                          <td className="px-6 py-4 font-medium">
+                            {unit.unitNumber}
+                            {unit.floorPlanUrl && <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-blue-600 hover:underline mt-1">View Plan</a>}
+                          </td>
+                          <td className="px-6 py-4 text-neutral-600">{UNIT_TYPE_LABELS[unit.type] || unit.type?.toLowerCase()}</td>
+                          <td className="px-6 py-4 text-neutral-600">{unit.floor ?? '—'}</td>
+                          <td className="px-6 py-4 text-neutral-600">{unit.bedrooms} / {unit.bathrooms}</td>
+                          <td className="px-6 py-4 text-neutral-600">{Number(unit.size).toLocaleString()}</td>
+                          <td className="px-6 py-4 font-medium">{Number(unit.price).toLocaleString()} {unit.currency}</td>
+                          <td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full font-medium ${UNIT_STATUS_COLORS[unit.status]}`}>{unit.status}</span></td>
+                          <td className="px-6 py-4 text-right flex justify-end gap-1">
+                            {canEdit ? (
+                              <>
+                                <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEditUnit(unit)}>
+                                  Edit
+                                </Button>
+                                <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-600 h-8 px-2" onClick={() => deleteUnitMutation.mutate(unit.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="text-neutral-400 text-xs">Read-only</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )
+      })()}
 
       {/* ─── TAB: AMENITIES ─── */}
       {activeTab === 'amenities' && (
@@ -591,12 +734,12 @@ export default function ProjectDetailPage() {
         <div className="space-y-4">
           <div className="flex justify-end">
             {canEdit && (
-              <Button onClick={() => setShowAddPlan(true)} className="bg-red-600 hover:bg-red-700"><Plus className="w-4 h-4 mr-2" /> Add Plan</Button>
+              <Button onClick={() => { setEditingPlanId(null); setPlanName(''); setPlanDesc(''); setPlanUnitId(null); setPlanSchedule([]); setShowAddPlan(true); }} className="bg-red-600 hover:bg-red-700"><Plus className="w-4 h-4 mr-2" /> Add Plan</Button>
             )}
           </div>
           {showAddPlan && canEdit && (
             <Card className="shadow-sm">
-              <CardHeader><CardTitle className="text-lg">New Payment Plan</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg">{editingPlanId ? 'Edit Payment Plan' : 'New Payment Plan'}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-1"><Label>Plan Name *</Label><Input placeholder='e.g. "40/60 Plan"' value={planName} onChange={e => setPlanName(e.target.value)} /></div>
                 <div className="space-y-1"><Label>Description</Label><Input placeholder="e.g. 40% on booking, 60% on handover" value={planDesc} onChange={e => setPlanDesc(e.target.value)} /></div>
@@ -604,9 +747,9 @@ export default function ProjectDetailPage() {
                 <div className="space-y-1">
                   <Label>Assign to Unit (Optional)</Label>
                   <select
-                    value={planUnitId || ''}
-                    onChange={e => setPlanUnitId(e.target.value ? Number(e.target.value) : null)}
-                    className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                     value={planUnitId || ''}
+                     onChange={e => setPlanUnitId(e.target.value ? Number(e.target.value) : null)}
+                     className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
                   >
                     <option value="">Apply to entire Project</option>
                     {units.map((u: any) => (
@@ -645,8 +788,11 @@ export default function ProjectDetailPage() {
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <Button onClick={() => createPlanMutation.mutate()} disabled={!planName || createPlanMutation.isPending} className="bg-red-600 hover:bg-red-700">Save</Button>
-                  <Button variant="outline" onClick={() => { setShowAddPlan(false); setPlanSchedule([]); }}>Cancel</Button>
+                  <Button onClick={() => editingPlanId ? updatePlanMutation.mutate() : createPlanMutation.mutate()} disabled={!planName || (editingPlanId ? updatePlanMutation.isPending : createPlanMutation.isPending)} className="bg-red-600 hover:bg-red-700">
+                    {(editingPlanId ? updatePlanMutation.isPending : createPlanMutation.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Save
+                  </Button>
+                  <Button variant="outline" onClick={() => { setShowAddPlan(false); setEditingPlanId(null); setPlanSchedule([]); }}>Cancel</Button>
                 </div>
               </CardContent>
             </Card>
@@ -682,9 +828,21 @@ export default function ProjectDetailPage() {
                         )}
                       </div>
                       {canEdit && (
-                        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => deletePlanMutation.mutate(plan.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => {
+                            setEditingPlanId(plan.id)
+                            setPlanName(plan.name)
+                            setPlanDesc(plan.description || '')
+                            setPlanUnitId(plan.unitId || null)
+                            setPlanSchedule(plan.schedule || [])
+                            setShowAddPlan(true)
+                          }}>
+                            Edit
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => deletePlanMutation.mutate(plan.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       )}
                     </div>
                   ))}
