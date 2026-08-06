@@ -144,7 +144,7 @@ export default function CreateProposalPage() {
     onError: (e: any) => toast.error(e.message)
   })
 
-  const images = projectMedia.filter((m: any) => m.type === 'IMAGE')
+  const images = (Array.isArray(projectMedia) ? projectMedia : []).filter((m: any) => m.type === 'IMAGE')
   
   if (selectedUnit?.floorPlanUrl && !images.find((m: any) => m.url === selectedUnit.floorPlanUrl)) {
     images.push({ id: 'floorplan', url: selectedUnit.floorPlanUrl, type: 'IMAGE' })
