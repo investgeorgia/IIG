@@ -33,7 +33,7 @@ function buildLogoImgTag(baseUrl: string): string {
 }
 
 function buildPaymentPlanRows(
-  customPaymentPlan: { milestone: string; percentage: number; date: string }[],
+  customPaymentPlan: { milestone: string; percentage: number; date: string, subMilestones?: any[] }[],
   finalPriceUSD: number
 ): string {
   if (!customPaymentPlan || customPaymentPlan.length === 0) {
@@ -45,17 +45,34 @@ function buildPaymentPlanRows(
   }
 
   return customPaymentPlan
-    .map((m, i) => {
+    .flatMap((m, i) => {
       const amtUSD = (finalPriceUSD * m.percentage) / 100
       const amtAED = amtUSD * USD_TO_AED
-      return `<tr>
+      const rows = []
+      rows.push(`<tr>
         <td style="text-align:center;color:#64748B;">${i + 1}</td>
-        <td style="font-weight:500;">${m.milestone}</td>
-        <td style="text-align:center;">${m.percentage}%</td>
-        <td style="text-align:center;color:#475569;">${m.date}</td>
-        <td style="text-align:right;font-weight:500;">$${formatNum(amtUSD)}</td>
-        <td style="text-align:right;color:#475569;">AED ${formatNum(amtAED)}</td>
-      </tr>`
+        <td style="font-weight:700;">${m.milestone}</td>
+        <td style="text-align:center;font-weight:700;">${m.percentage}%</td>
+        <td style="text-align:center;color:#475569;font-weight:600;">${m.date}</td>
+        <td style="text-align:right;font-weight:700;">$${formatNum(amtUSD)}</td>
+        <td style="text-align:right;color:#475569;font-weight:600;">AED ${formatNum(amtAED)}</td>
+      </tr>`)
+
+      if (m.subMilestones && m.subMilestones.length > 0) {
+        m.subMilestones.forEach((sub: any, subIdx: number) => {
+          const subAmtUSD = (finalPriceUSD * (Number(sub.percentage) || 0)) / 100
+          const subAmtAED = subAmtUSD * USD_TO_AED
+          rows.push(`<tr>
+            <td style="text-align:center;color:#94A3B8;font-size:10px;">${i + 1}.${subIdx + 1}</td>
+            <td style="font-weight:400;padding-left:24px;color:#475569;"><span style="color:#CBD5E1;margin-right:4px;">-</span> ${sub.milestone}</td>
+            <td style="text-align:center;color:#475569;">${sub.percentage}%</td>
+            <td style="text-align:center;color:#64748B;">${sub.date}</td>
+            <td style="text-align:right;font-weight:500;color:#475569;">$${formatNum(subAmtUSD)}</td>
+            <td style="text-align:right;color:#64748B;">AED ${formatNum(subAmtAED)}</td>
+          </tr>`)
+        })
+      }
+      return rows
     })
     .join('')
 }

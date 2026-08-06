@@ -28,7 +28,8 @@ export class ProposalService {
     templateId?: number
     towerBlock?: string
     unitCondition?: string
-    paymentPlan?: { id: number, milestone: string, percentage: number, date: string }[]
+    paymentPlan?: { id: number, milestone: string, percentage: number, date: string, subMilestones?: any[] }[]
+    customFloorPlanUrl?: string
   }) {
     // 1. Load full unit + project + developer data for snapshot
     const unit = await prisma.unit.findUnique({
@@ -61,7 +62,7 @@ export class ProposalService {
         view: unit.view,
         floor: unit.floor,
         status: unit.status,
-        floorPlanUrl: unit.floorPlanUrl,
+        floorPlanUrl: data.customFloorPlanUrl || unit.floorPlanUrl,
         towerBlock: data.towerBlock,
         condition: data.unitCondition,
       },

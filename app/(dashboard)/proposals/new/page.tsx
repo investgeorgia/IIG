@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, ArrowLeft, Loader2, Check, FileText, Plus, Search, User, Mail, Phone, Building } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Loader2, Check, FileText, Plus, Search, User, Mail, Phone, Building, Upload, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -36,7 +36,9 @@ export default function CreateProposalPage() {
   // New Customizations
   const [towerBlock, setTowerBlock] = useState('')
   const [unitCondition, setUnitCondition] = useState('')
-  const [paymentPlan, setPaymentPlan] = useState<{ id: number, milestone: string, percentage: number, date: string }[]>([])
+  const [paymentPlan, setPaymentPlan] = useState<{ id: number, milestone: string, percentage: number, date: string, subMilestones?: { id: number, milestone: string, percentage: number, date: string }[] }[]>([])
+  const [customFloorPlanUrl, setCustomFloorPlanUrl] = useState('')
+  const [floorPlanUploading, setFloorPlanUploading] = useState(false)
 
   // Data queries
   const { data: searchResults = [], isFetching: isSearchingCustomers } = useQuery({
@@ -122,7 +124,8 @@ export default function CreateProposalPage() {
           selectedImages,
           towerBlock,
           unitCondition,
-          paymentPlan
+          paymentPlan,
+          customFloorPlanUrl: customFloorPlanUrl || undefined
         })
       })
       if (!res.ok) { const e = await res.json(); throw new Error(e.error) }
@@ -148,6 +151,31 @@ export default function CreateProposalPage() {
   const getInitials = (name: string) => {
     if (!name) return 'C'
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+  }
+
+  const handleFloorPlanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setFloorPlanUploading(true)
+    try {
+      const file = files[0]
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'FLOOR_PLAN')
+      
+      const res = await fetch('/api/uploads', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (res.ok) {
+        setCustomFloorPlanUrl(data.url)
+        toast.success('Custom floor plan uploaded')
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed')
+    } finally {
+      setFloorPlanUploading(false)
+    }
   }
 
   return (
@@ -404,7 +432,13 @@ export default function CreateProposalPage() {
                             id: Date.now() + idx,
                             milestone: s.milestone || s.label || s.name || '',
                             percentage: Number(s.percentage) || 0,
-                            date: s.date || (s.dueDays ? `Due in ${s.dueDays} days` : '')
+                            date: s.date || (s.dueDays ? `Due in ${s.dueDays} days` : ''),
+                            subMilestones: Array.isArray(s.subMilestones) ? s.subMilestones.map((sub: any, subIdx: number) => ({
+                              id: Date.now() + 1000 + idx * 10 + subIdx,
+                              milestone: sub.milestone || '',
+                              percentage: Number(sub.percentage) || 0,
+                              date: sub.date || ''
+                            })) : []
                           })))
                         } else {
                           setPaymentPlan([])
@@ -474,7 +508,19 @@ export default function CreateProposalPage() {
                 <div className="space-y-1"><Label>Unit Condition</Label><Input placeholder="e.g. Fully Renovated, White Frame" value={unitCondition} onChange={e => setUnitCondition(e.target.value)} /></div>
               </div>
               <div className="space-y-1"><Label>Message to Customer</Label><textarea value={customerMessage} onChange={e => setCustomerMessage(e.target.value)} rows={3} placeholder="Dear [customer name], it is our pleasure to present this exclusive offer..." className="flex w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500" /></div>
-              <div className="space-y-1"><Label>Internal Notes</Label><Input placeholder="Private notes (not shown in PDF)..." value={notes} onChange={e => setNotes(e.target.value)} /></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1"><Label>Internal Notes</Label><Input placeholder="Private notes (not shown in PDF)..." value={notes} onChange={e => setNotes(e.target.value)} /></div>
+                <div className="space-y-1">
+                  <Label>Custom Floor Plan Image</Label>
+                  <div className="flex gap-2">
+                    <Input placeholder="URL or upload..." value={customFloorPlanUrl} onChange={e => setCustomFloorPlanUrl(e.target.value)} className="flex-1" />
+                    <input type="file" id="custom-floor-upload" className="hidden" accept="image/*" onChange={handleFloorPlanUpload} />
+                    <label htmlFor="custom-floor-upload" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-sm">
+                      {floorPlanUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    </label>
+                  </div>
+                </div>
+              </div>
               
               <div className="space-y-3 pt-4 border-t border-neutral-100">
                 <div className="flex items-center justify-between">
@@ -504,21 +550,36 @@ export default function CreateProposalPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {paymentPlan.map((p, idx) => {
+                        {paymentPlan.flatMap((p, idx) => {
                           const baseForCalc = customPrice ? Number(customPrice) : (Number(selectedUnit.price) * (1 - (discountPercent ? Number(discountPercent) / 100 : 0)))
                           const amtUSD = (baseForCalc * (Number(p.percentage) || 0)) / 100
                           const amtAED = amtUSD * 3.6725
-                          return (
-                            <tr key={p.id} className="border-t border-neutral-100">
-                              <td className="px-3 py-2 text-neutral-400 text-xs">{idx + 1}</td>
-                              <td className="px-2 py-1.5">
+                          
+                          const rows = []
+                          
+                          rows.push(
+                            <tr key={p.id} className="border-t border-neutral-200 bg-white">
+                              <td className="px-3 py-2 text-neutral-500 font-semibold text-xs">{idx + 1}</td>
+                              <td className="px-2 py-1.5 flex flex-col gap-1">
                                 <input
                                   type="text"
                                   placeholder="e.g. Down Payment"
                                   value={p.milestone}
                                   onChange={e => { const n = [...paymentPlan]; n[idx].milestone = e.target.value; setPaymentPlan(n) }}
-                                  className="w-full px-2 py-1 text-sm rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+                                  className="w-full px-2 py-1 text-sm font-semibold rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400"
                                 />
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    const n = [...paymentPlan]
+                                    if (!n[idx].subMilestones) n[idx].subMilestones = []
+                                    n[idx].subMilestones.push({ id: Date.now(), milestone: '', percentage: 0, date: '' })
+                                    setPaymentPlan(n)
+                                  }}
+                                  className="text-[10px] text-blue-600 self-start hover:underline px-2"
+                                >
+                                  + Add Sub-milestone
+                                </button>
                               </td>
                               <td className="px-2 py-1.5">
                                 <input
@@ -528,7 +589,7 @@ export default function CreateProposalPage() {
                                   max={100}
                                   value={p.percentage || ''}
                                   onChange={e => { const n = [...paymentPlan]; n[idx].percentage = Number(e.target.value); setPaymentPlan(n) }}
-                                  className="w-full px-2 py-1 text-sm rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center"
+                                  className="w-full px-2 py-1 text-sm rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400 text-center font-semibold"
                                 />
                               </td>
                               <td className="px-2 py-1.5">
@@ -537,13 +598,13 @@ export default function CreateProposalPage() {
                                   placeholder="e.g. On Signing"
                                   value={p.date}
                                   onChange={e => { const n = [...paymentPlan]; n[idx].date = e.target.value; setPaymentPlan(n) }}
-                                  className="w-full px-2 py-1 text-sm rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center"
+                                  className="w-full px-2 py-1 text-sm rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400 text-center font-semibold"
                                 />
                               </td>
-                              <td className="px-3 py-2 text-right text-sm font-medium text-neutral-700">
+                              <td className="px-3 py-2 text-right text-sm font-semibold text-neutral-800">
                                 {amtUSD > 0 ? amtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
                               </td>
-                              <td className="px-3 py-2 text-right text-sm text-neutral-600">
+                              <td className="px-3 py-2 text-right text-sm text-neutral-700 font-semibold">
                                 {amtAED > 0 ? amtAED.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
                               </td>
                               <td className="px-2 py-1.5 text-center">
@@ -551,11 +612,71 @@ export default function CreateProposalPage() {
                                   type="button"
                                   onClick={() => setPaymentPlan(paymentPlan.filter(x => x.id !== p.id))}
                                   className="text-neutral-300 hover:text-red-500 transition-colors text-lg font-bold leading-none"
-                                  title="Remove"
+                                  title="Remove Main Milestone"
                                 >×</button>
                               </td>
                             </tr>
                           )
+                          
+                          if (p.subMilestones && p.subMilestones.length > 0) {
+                            p.subMilestones.forEach((sub, subIdx) => {
+                              const subAmtUSD = (baseForCalc * (Number(sub.percentage) || 0)) / 100
+                              const subAmtAED = subAmtUSD * 3.6725
+                              rows.push(
+                                <tr key={sub.id} className="border-t border-neutral-100 bg-neutral-50/50">
+                                  <td className="px-3 py-2 text-neutral-400 text-[10px] text-right">{idx + 1}.{subIdx + 1}</td>
+                                  <td className="px-2 py-1.5 pl-6">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 border-t border-neutral-300"></div>
+                                      <input
+                                        type="text"
+                                        placeholder="e.g. 1st Installment"
+                                        value={sub.milestone}
+                                        onChange={e => { const n = [...paymentPlan]; n[idx].subMilestones![subIdx].milestone = e.target.value; setPaymentPlan(n) }}
+                                        className="w-full px-2 py-1 text-xs rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 bg-white"
+                                      />
+                                    </div>
+                                  </td>
+                                  <td className="px-2 py-1.5">
+                                    <input
+                                      type="number"
+                                      placeholder="0"
+                                      min={0}
+                                      max={100}
+                                      value={sub.percentage || ''}
+                                      onChange={e => { const n = [...paymentPlan]; n[idx].subMilestones![subIdx].percentage = Number(e.target.value); setPaymentPlan(n) }}
+                                      className="w-full px-2 py-1 text-xs rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center bg-white"
+                                    />
+                                  </td>
+                                  <td className="px-2 py-1.5">
+                                    <input
+                                      type="text"
+                                      placeholder="e.g. After 3 Months"
+                                      value={sub.date}
+                                      onChange={e => { const n = [...paymentPlan]; n[idx].subMilestones![subIdx].date = e.target.value; setPaymentPlan(n) }}
+                                      className="w-full px-2 py-1 text-xs rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center bg-white"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2 text-right text-xs text-neutral-600">
+                                    {subAmtUSD > 0 ? subAmtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
+                                  </td>
+                                  <td className="px-3 py-2 text-right text-xs text-neutral-500">
+                                    {subAmtAED > 0 ? subAmtAED.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
+                                  </td>
+                                  <td className="px-2 py-1.5 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => { const n = [...paymentPlan]; n[idx].subMilestones = n[idx].subMilestones!.filter(x => x.id !== sub.id); setPaymentPlan(n) }}
+                                      className="text-neutral-300 hover:text-red-500 transition-colors text-base font-bold leading-none"
+                                      title="Remove Sub-milestone"
+                                    >×</button>
+                                  </td>
+                                </tr>
+                              )
+                            })
+                          }
+
+                          return rows
                         })}
                       </tbody>
                       <tfoot className="bg-neutral-50 border-t border-neutral-200 text-xs">
