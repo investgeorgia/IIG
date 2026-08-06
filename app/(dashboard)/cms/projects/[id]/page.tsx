@@ -301,7 +301,10 @@ export default function ProjectDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      if (!res.ok) throw new Error('Failed')
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to save unit')
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['units', id] })
@@ -309,6 +312,9 @@ export default function ProjectDetailPage() {
       setShowAddUnit(false)
       setEditingUnit(null)
       toast.success(editingUnit ? 'Unit updated' : 'Unit added')
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to save unit')
     }
   })
 

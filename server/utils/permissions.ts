@@ -25,6 +25,11 @@ export function checkPermission(
 ): boolean {
   if (!user || !user.role) return false
 
+  // If checking Units, fallback to Projects permissions
+  if (moduleName === 'Units') {
+    return checkPermission(user, 'Projects', requiredLevel)
+  }
+
   // 1. Admins bypass all restrictions
   if (user.role.name === 'Admin') return true
 
