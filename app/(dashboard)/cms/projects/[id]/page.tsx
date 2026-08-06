@@ -63,6 +63,14 @@ export default function ProjectDetailPage() {
   const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([])
   const [editingPlanId, setEditingPlanId] = useState<number | null>(null)
 
+  // Bulk upload states
+  const [showBulkUpload, setShowBulkUpload] = useState(false)
+  const [bulkFile, setBulkFile] = useState<File | null>(null)
+  const [bulkHeaders, setBulkHeaders] = useState<string[]>([])
+  const [bulkRows, setBulkRows] = useState<any[]>([])
+  const [bulkMapping, setBulkMapping] = useState<Record<string, string>>({})
+  const [bulkUploading, setBulkUploading] = useState(false)
+
   // Unit filter states
   const [unitFilterSearch, setUnitFilterSearch] = useState('')
   const [unitFilterType, setUnitFilterType] = useState('')
@@ -618,11 +626,16 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
               {canEdit && (
-                <Button onClick={() => { setEditingUnit(null); resetUnit(); setShowAddUnit(!showAddUnit) }} className="bg-red-600 hover:bg-red-700">
-                  <Plus className="w-4 h-4 mr-2" /> Add Unit
-                </Button>
+                <>
+                  <Button onClick={() => setShowBulkUpload(true)} variant="outline">
+                    <Upload className="w-4 h-4 mr-2" /> Bulk Upload Units
+                  </Button>
+                  <Button onClick={() => { setEditingUnit(null); resetUnit(); setShowAddUnit(!showAddUnit) }} className="bg-red-600 hover:bg-red-700">
+                    <Plus className="w-4 h-4 mr-2" /> Add Unit
+                  </Button>
+                </>
               )}
             </div>
 
@@ -1168,6 +1181,238 @@ export default function ProjectDetailPage() {
           </div>
         )
       })()}
+      {showBulkUpload && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white shadow-xl flex flex-col">
+            <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+              <CardTitle className="text-xl font-bold">Bulk Upload Units</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => {
+                setShowBulkUpload(false)
+                setBulkFile(null)
+                setBulkHeaders([])
+                setBulkRows([])
+                setBulkMapping({})
+              }}>
+                <X className="w-5 h-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4 flex-1">
+              {!bulkFile ? (
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-neutral-300 rounded-xl p-8 bg-neutral-50/50 hover:bg-neutral-50 transition-colors">
+                  <Upload className="w-10 h-10 text-neutral-400 mb-3" />
+                  <p className="text-sm font-medium text-neutral-700 mb-1">Upload CSV file</p>
+                  <p className="text-xs text-neutral-500 mb-4">File must contain unit data with columns for headers</p>
+                  <input
+                    type="file"
+                    id="bulk-csv-upload"
+                    accept=".csv"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const files = e.target.files
+                      if (!files || files.length === 0) return
+                      const file = files[0]
+                      setBulkFile(file)
+                      const reader = new FileReader()
+                      reader.onload = (evt) => {
+                        const text = evt.target?.result as string
+                        const parsed = parseCSV(text)
+                        if (parsed.length > 0) {
+                          const headers = parsed[0]
+                          const dataRows = parsed.slice(1)
+                          const rows = dataRows.map(row => {
+                            const obj: any = {}
+                            headers.forEach((h, idx) => {
+                              obj[h] = row[idx]
+                            })
+                            return obj
+                          })
+                          setBulkHeaders(headers)
+                          setBulkRows(rows)
+
+                          // Auto map
+                          const initialMapping: Record<string, string> = {}
+                          UNIT_FIELDS.forEach(f => {
+                            initialMapping[f.key] = autoMap(f.key, headers)
+                          })
+                          setBulkMapping(initialMapping)
+                        } else {
+                          toast.error('File seems empty or invalid')
+                          setBulkFile(null)
+                        }
+                      }
+                      reader.readAsText(file)
+                    }}
+                  />
+                  <label htmlFor="bulk-csv-upload" className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-red-600 hover:bg-red-700 text-white h-9 px-4 py-2 cursor-pointer shadow transition-colors">
+                    Select File
+                  </label>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-neutral-50 border rounded-lg p-3 text-sm text-neutral-600 flex items-center justify-between">
+                    <span>Selected: <strong>{bulkFile.name}</strong> ({bulkRows.length} rows found)</span>
+                    <Button variant="ghost" size="sm" className="h-7 text-xs text-red-600 hover:text-red-700" onClick={() => {
+                      setBulkFile(null)
+                      setBulkHeaders([])
+                      setBulkRows([])
+                      setBulkMapping({})
+                    }}>Change file</Button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <Label className="font-semibold text-neutral-800 text-sm">Column Mapping</Label>
+                      <span className="text-xs text-neutral-500">Map database fields to CSV columns</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto pr-1">
+                      {UNIT_FIELDS.map(f => (
+                        <div key={f.key} className="space-y-1">
+                          <Label className="text-xs text-neutral-600 font-medium">{f.label}</Label>
+                          <select
+                            value={bulkMapping[f.key] || ''}
+                            onChange={e => {
+                              setBulkMapping(prev => ({ ...prev, [f.key]: e.target.value }))
+                            }}
+                            className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                          >
+                            <option value="">(Ignore / Left empty)</option>
+                            {bulkHeaders.map(h => (
+                              <option key={h} value={h}>{h}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t">
+                    <Button variant="outline" onClick={() => {
+                      setShowBulkUpload(false)
+                      setBulkFile(null)
+                      setBulkHeaders([])
+                      setBulkRows([])
+                      setBulkMapping({})
+                    }}>Cancel</Button>
+                    <Button
+                      disabled={bulkUploading || !bulkMapping['unitNumber']}
+                      onClick={async () => {
+                        setBulkUploading(true)
+                        try {
+                          const res = await fetch(`/api/cms/projects/${id}/units/bulk-upload`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ rows: bulkRows, mapping: bulkMapping })
+                          })
+                          const result = await res.json()
+                          if (res.ok) {
+                            toast.success(`Upload complete! Created ${result.createdCount} and updated ${result.updatedCount} units.`)
+                            queryClient.invalidateQueries({ queryKey: ['units', id] })
+                            setShowBulkUpload(false)
+                            setBulkFile(null)
+                            setBulkHeaders([])
+                            setBulkRows([])
+                            setBulkMapping({})
+                          } else {
+                            throw new Error(result.error || 'Failed to upload')
+                          }
+                        } catch (err: any) {
+                          toast.error(err.message || 'Upload failed')
+                        } finally {
+                          setBulkUploading(false)
+                        }
+                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      {bulkUploading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Start Import
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
+}
+
+const UNIT_FIELDS = [
+  { key: 'unitNumber', label: 'Unit Number *' },
+  { key: 'type', label: 'Unit Type' },
+  { key: 'bedrooms', label: 'Bedrooms' },
+  { key: 'bathrooms', label: 'Bathrooms' },
+  { key: 'size', label: 'Size (m²)' },
+  { key: 'price', label: 'Price (USD)' },
+  { key: 'currency', label: 'Currency' },
+  { key: 'status', label: 'Status' },
+  { key: 'view', label: 'View' },
+  { key: 'floor', label: 'Floor' },
+  { key: 'livingAreaSize', label: 'Living Area Size' },
+  { key: 'balconySize', label: 'Balcony Size' },
+  { key: 'terraceSize', label: 'Terrace Size' },
+  { key: 'greenyardSize', label: 'Greenyard Size' },
+  { key: 'deliveryForm', label: 'Delivery Form' },
+  { key: 'blackFrame', label: 'Black Frame (boolean)' },
+  { key: 'whiteFrame', label: 'White Frame (boolean)' },
+  { key: 'greenFrame', label: 'Green Frame (boolean)' },
+  { key: 'turnkey', label: 'Turnkey (boolean)' },
+  { key: 'blackFramePrice', label: 'Black Frame Price' },
+  { key: 'whiteFramePrice', label: 'White Frame Price' },
+  { key: 'greenFramePrice', label: 'Green Frame Price' },
+  { key: 'turnkeyPrice', label: 'Turnkey Price' },
+  { key: 'floorPlanUrl', label: 'Floor Plan URL' }
+]
+
+function parseCSV(text: string): string[][] {
+  const lines: string[][] = []
+  let row: string[] = []
+  let inQuotes = false
+  let entry = ''
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]
+    const nextChar = text[i+1]
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        entry += '"'
+        i++
+      } else {
+        inQuotes = !inQuotes
+      }
+    } else if (char === ',' && !inQuotes) {
+      row.push(entry.trim())
+      entry = ''
+    } else if ((char === '\r' || char === '\n') && !inQuotes) {
+      if (char === '\r' && nextChar === '\n') {
+        i++
+      }
+      row.push(entry.trim())
+      if (row.length > 0 && row.some(cell => cell !== '')) {
+        lines.push(row)
+      }
+      row = []
+      entry = ''
+    } else {
+      entry += char
+    }
+  }
+  if (entry || row.length > 0) {
+    row.push(entry.trim())
+    if (row.some(cell => cell !== '')) {
+      lines.push(row)
+    }
+  }
+  return lines
+}
+
+function autoMap(fieldKey: string, headers: string[]): string {
+  const k = fieldKey.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const found = headers.find(h => {
+    const normalizedH = h.toLowerCase().replace(/[^a-z0-9]/g, '')
+    return normalizedH === k || normalizedH.includes(k) || k.includes(normalizedH)
+  })
+  return found || ''
 }

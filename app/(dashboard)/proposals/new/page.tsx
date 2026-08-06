@@ -91,8 +91,9 @@ export default function CreateProposalPage() {
 
   // Auto-select default database template when templates load
   useEffect(() => {
-    if (templates.length > 0 && selectedTemplateId === null) {
-      const def = templates.find((t: any) => t.isDefault) || templates[0]
+    const templatesArr = Array.isArray(templates) ? templates : []
+    if (templatesArr.length > 0 && selectedTemplateId === null) {
+      const def = templatesArr.find((t: any) => t.isDefault) || templatesArr[0]
       if (def) setSelectedTemplateId(def.id)
     }
   }, [templates, selectedTemplateId])
