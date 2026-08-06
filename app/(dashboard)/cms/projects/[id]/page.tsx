@@ -490,15 +490,15 @@ export default function ProjectDetailPage() {
         const projectFloorPlans = mediaFiles.filter((m: any) => m.type === 'FLOOR_PLAN')
 
         const filteredUnits = units.filter((unit: any) => {
-          if (unitFilterSearch && !unit.unitNumber.toLowerCase().includes(unitFilterSearch.toLowerCase())) return false
-          if (unitFilterType && unit.type !== unitFilterType) return false
-          if (unitFilterFloor && String(unit.floor) !== unitFilterFloor) return false
-          if (unitFilterBeds && String(unit.bedrooms) !== unitFilterBeds) return false
-          if (unitFilterBaths && String(unit.bathrooms) !== unitFilterBaths) return false
-          if (unitFilterMinSize && Number(unit.size) < Number(unitFilterMinSize)) return false
-          if (unitFilterMaxSize && Number(unit.size) > Number(unitFilterMaxSize)) return false
-          if (unitFilterMinPrice && Number(unit.price) < Number(unitFilterMinPrice)) return false
-          if (unitFilterMaxPrice && Number(unit.price) > Number(unitFilterMaxPrice)) return false
+          if (unitFilterSearch && !(unit?.unitNumber || '').toLowerCase().includes(unitFilterSearch.toLowerCase())) return false
+          if (unitFilterType && unit?.type !== unitFilterType) return false
+          if (unitFilterFloor && String(unit?.floor ?? '') !== unitFilterFloor) return false
+          if (unitFilterBeds && String(unit?.bedrooms ?? '') !== unitFilterBeds) return false
+          if (unitFilterBaths && String(unit?.bathrooms ?? '') !== unitFilterBaths) return false
+          if (unitFilterMinSize && Number(unit?.size || 0) < Number(unitFilterMinSize)) return false
+          if (unitFilterMaxSize && Number(unit?.size || 0) > Number(unitFilterMaxSize)) return false
+          if (unitFilterMinPrice && Number(unit?.price || 0) < Number(unitFilterMinPrice)) return false
+          if (unitFilterMaxPrice && Number(unit?.price || 0) > Number(unitFilterMaxPrice)) return false
           return true
         })
 
