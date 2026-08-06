@@ -35,7 +35,7 @@ export default function ProposalDetailsPage() {
   const [editUnitCondition, setEditUnitCondition] = useState('')
   const [editMessage, setEditMessage] = useState('')
   const [editNotes, setEditNotes] = useState('')
-  const [editPaymentPlan, setEditPaymentPlan] = useState<{ id: number, milestone: string, percentage: number, date: string }[]>([])
+  const [editPaymentPlan, setEditPaymentPlan] = useState<{ id: number, milestone: string, percentage: number, date: string, subMilestones?: { id: number, milestone: string, percentage: number, date: string }[] }[]>([])
   const [editSelectedImages, setEditSelectedImages] = useState<string[]>([])
 
   const { data: proposal, isLoading } = useQuery({
@@ -259,35 +259,86 @@ export default function ProposalDetailsPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {editPaymentPlan.map((p, idx) => {
+                        {editPaymentPlan.flatMap((p, idx) => {
                           const amtUSD = (editBasePrice * (Number(p.percentage) || 0)) / 100
                           const amtAED = amtUSD * USD_TO_AED
-                          return (
-                            <tr key={p.id} className="border-t border-neutral-100">
-                              <td className="px-3 py-1.5 text-neutral-400 text-xs">{idx + 1}</td>
-                              <td className="px-2 py-1.5">
+                          const rows = []
+
+                          rows.push(
+                            <tr key={p.id} className="border-t border-neutral-200 bg-white">
+                              <td className="px-3 py-1.5 text-neutral-500 font-semibold text-xs">{idx + 1}</td>
+                              <td className="px-2 py-1.5 flex flex-col gap-1">
                                 <input type="text" placeholder="e.g. Down Payment" value={p.milestone}
                                   onChange={e => { const n = [...editPaymentPlan]; n[idx].milestone = e.target.value; setEditPaymentPlan(n) }}
-                                  className="w-full px-2 py-1 text-sm rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400" />
+                                  className="w-full px-2 py-1 text-sm font-semibold rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const n = [...editPaymentPlan]
+                                    if (!n[idx].subMilestones) n[idx].subMilestones = []
+                                    n[idx].subMilestones!.push({ id: Date.now(), milestone: '', percentage: 0, date: '' })
+                                    setEditPaymentPlan(n)
+                                  }}
+                                  className="text-[10px] text-blue-600 self-start hover:underline px-2"
+                                >+ Add Sub-milestone</button>
                               </td>
                               <td className="px-2 py-1.5">
                                 <input type="number" placeholder="0" min={0} max={100} value={p.percentage || ''}
                                   onChange={e => { const n = [...editPaymentPlan]; n[idx].percentage = Number(e.target.value); setEditPaymentPlan(n) }}
-                                  className="w-full px-2 py-1 text-sm rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center" />
+                                  className="w-full px-2 py-1 text-sm font-semibold rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400 text-center" />
                               </td>
                               <td className="px-2 py-1.5">
                                 <input type="text" placeholder="On Signing" value={p.date}
                                   onChange={e => { const n = [...editPaymentPlan]; n[idx].date = e.target.value; setEditPaymentPlan(n) }}
-                                  className="w-full px-2 py-1 text-sm rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center" />
+                                  className="w-full px-2 py-1 text-sm font-semibold rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400 text-center" />
                               </td>
-                              <td className="px-3 py-1.5 text-right text-xs font-medium">{amtUSD > 0 ? amtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
-                              <td className="px-3 py-1.5 text-right text-xs">{amtAED > 0 ? amtAED.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
+                              <td className="px-3 py-1.5 text-right text-xs font-semibold text-neutral-800">{amtUSD > 0 ? amtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
+                              <td className="px-3 py-1.5 text-right text-xs font-semibold text-neutral-700">{amtAED > 0 ? amtAED.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
                               <td className="px-2 py-1.5 text-center">
                                 <button type="button" onClick={() => setEditPaymentPlan(editPaymentPlan.filter(x => x.id !== p.id))}
-                                  className="text-neutral-300 hover:text-red-500 transition-colors text-lg font-bold leading-none">×</button>
+                                  className="text-neutral-300 hover:text-red-500 transition-colors text-lg font-bold leading-none" title="Remove Main Milestone">×</button>
                               </td>
                             </tr>
                           )
+
+                          if (p.subMilestones && p.subMilestones.length > 0) {
+                            p.subMilestones.forEach((sub, subIdx) => {
+                              const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
+                              const subAmtAED = subAmtUSD * USD_TO_AED
+                              rows.push(
+                                <tr key={sub.id} className="border-t border-neutral-100 bg-neutral-50/50">
+                                  <td className="px-3 py-1.5 text-neutral-400 text-[10px] text-right">{idx + 1}.{subIdx + 1}</td>
+                                  <td className="px-2 py-1.5 pl-6">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 border-t border-neutral-300"></div>
+                                      <input type="text" placeholder="e.g. 1st Installment" value={sub.milestone}
+                                        onChange={e => { const n = [...editPaymentPlan]; n[idx].subMilestones![subIdx].milestone = e.target.value; setEditPaymentPlan(n) }}
+                                        className="w-full px-2 py-1 text-xs rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 bg-white" />
+                                    </div>
+                                  </td>
+                                  <td className="px-2 py-1.5">
+                                    <input type="number" placeholder="0" min={0} max={100} value={sub.percentage || ''}
+                                      onChange={e => { const n = [...editPaymentPlan]; n[idx].subMilestones![subIdx].percentage = Number(e.target.value); setEditPaymentPlan(n) }}
+                                      className="w-full px-2 py-1 text-xs rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center bg-white" />
+                                  </td>
+                                  <td className="px-2 py-1.5">
+                                    <input type="text" placeholder="e.g. After 3 Months" value={sub.date}
+                                      onChange={e => { const n = [...editPaymentPlan]; n[idx].subMilestones![subIdx].date = e.target.value; setEditPaymentPlan(n) }}
+                                      className="w-full px-2 py-1 text-xs rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center bg-white" />
+                                  </td>
+                                  <td className="px-3 py-1.5 text-right text-xs text-neutral-600">{subAmtUSD > 0 ? subAmtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
+                                  <td className="px-3 py-1.5 text-right text-xs text-neutral-500">{subAmtAED > 0 ? subAmtAED.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}</td>
+                                  <td className="px-2 py-1.5 text-center">
+                                    <button type="button"
+                                      onClick={() => { const n = [...editPaymentPlan]; n[idx].subMilestones = n[idx].subMilestones!.filter(x => x.id !== sub.id); setEditPaymentPlan(n) }}
+                                      className="text-neutral-300 hover:text-red-500 transition-colors text-base font-bold leading-none" title="Remove Sub-milestone">×</button>
+                                  </td>
+                                </tr>
+                              )
+                            })
+                          }
+
+                          return rows
                         })}
                       </tbody>
                       <tfoot className="bg-neutral-50 border-t border-neutral-200 text-xs">
@@ -411,18 +462,35 @@ export default function ProposalDetailsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {snapshot.customPaymentPlan.map((m: any, i: number) => {
+                    {snapshot.customPaymentPlan.flatMap((m: any, i: number) => {
                       const amtUSD = (finalPriceNum * m.percentage) / 100
-                      return (
-                        <tr key={i} className="border-t border-neutral-100">
-                          <td className="px-4 py-2 text-neutral-400">{i + 1}</td>
-                          <td className="px-4 py-2 font-medium">{m.milestone}</td>
-                          <td className="px-4 py-2 text-center">{m.percentage}%</td>
-                          <td className="px-4 py-2 text-center text-neutral-500">{m.date}</td>
-                          <td className="px-4 py-2 text-right">{amtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                          <td className="px-4 py-2 text-right">{(amtUSD * USD_TO_AED).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                      const rows = []
+                      rows.push(
+                        <tr key={i} className="border-t border-neutral-200 bg-white">
+                          <td className="px-4 py-2 text-neutral-500 font-semibold text-xs">{i + 1}</td>
+                          <td className="px-4 py-2 font-semibold">{m.milestone}</td>
+                          <td className="px-4 py-2 text-center font-semibold">{m.percentage}%</td>
+                          <td className="px-4 py-2 text-center text-neutral-500 font-medium">{m.date}</td>
+                          <td className="px-4 py-2 text-right font-semibold">{amtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                          <td className="px-4 py-2 text-right font-semibold">{(amtUSD * USD_TO_AED).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
                         </tr>
                       )
+                      if (m.subMilestones && m.subMilestones.length > 0) {
+                        m.subMilestones.forEach((sub: any, subIdx: number) => {
+                          const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
+                          rows.push(
+                            <tr key={`${i}-${subIdx}`} className="border-t border-neutral-100 bg-neutral-50/60">
+                              <td className="px-4 py-1.5 text-neutral-400 text-[10px] text-right">{i + 1}.{subIdx + 1}</td>
+                              <td className="px-4 py-1.5 text-neutral-500 pl-8"><span className="text-neutral-300 mr-1">-</span>{sub.milestone}</td>
+                              <td className="px-4 py-1.5 text-center text-neutral-500">{sub.percentage}%</td>
+                              <td className="px-4 py-1.5 text-center text-neutral-400">{sub.date}</td>
+                              <td className="px-4 py-1.5 text-right text-neutral-500">{subAmtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                              <td className="px-4 py-1.5 text-right text-neutral-400">{(subAmtUSD * USD_TO_AED).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
+                            </tr>
+                          )
+                        })
+                      }
+                      return rows
                     })}
                   </tbody>
                 </table>

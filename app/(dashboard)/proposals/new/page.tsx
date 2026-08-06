@@ -620,7 +620,7 @@ export default function CreateProposalPage() {
                           
                           if (p.subMilestones && p.subMilestones.length > 0) {
                             p.subMilestones.forEach((sub, subIdx) => {
-                              const subAmtUSD = (baseForCalc * (Number(sub.percentage) || 0)) / 100
+                              const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
                               const subAmtAED = subAmtUSD * 3.6725
                               rows.push(
                                 <tr key={sub.id} className="border-t border-neutral-100 bg-neutral-50/50">

@@ -60,7 +60,7 @@ function buildPaymentPlanRows(
 
       if (m.subMilestones && m.subMilestones.length > 0) {
         m.subMilestones.forEach((sub: any, subIdx: number) => {
-          const subAmtUSD = (finalPriceUSD * (Number(sub.percentage) || 0)) / 100
+          const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
           const subAmtAED = subAmtUSD * USD_TO_AED
           rows.push(`<tr>
             <td style="text-align:center;color:#94A3B8;font-size:10px;">${i + 1}.${subIdx + 1}</td>
