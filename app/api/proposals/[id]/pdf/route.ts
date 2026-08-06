@@ -49,8 +49,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       ? `/media/proposals/${filename}`
       : `/media/proposals/${filename}`
       
-    await ProposalService.linkPdf(id, pdfUrl)
-
     return NextResponse.json({ pdfUrl })
   } catch (error: any) {
     console.error('[PDF Generation Error]', error)
