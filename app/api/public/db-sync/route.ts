@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/server/utils/auth'
+import bcrypt from 'bcryptjs'
 
 const salespersons = [
   { name: 'Ivane Kurasbediani',           slug: 'ivane',    phone: '971542574715', email: 'ivane@investingeorgia.ae' },
@@ -178,9 +179,94 @@ export async function GET(request: Request) {
         update: { name: sp.name, phone: sp.phone, email: sp.email, active: true },
         create: { name: sp.name, slug: sp.slug, phone: sp.phone, email: sp.email, active: true },
       })
-      seedLogs.push(`✓ ${sp.name} (${sp.slug})`)
+      seedLogs.push(`✓ Salesperson: ${sp.name} (${sp.slug})`)
     } catch (e: any) {
-      seedLogs.push(`✗ ${sp.name}: ${e.message}`)
+      seedLogs.push(`✗ Salesperson ${sp.name}: ${e.message}`)
+    }
+  }
+
+  // ── 5. Seed Users & Permissions ──
+  const usersToSeed = [
+    { name: 'Ivane Kurasbediani', roleName: 'Sales', email: 'ivane@investingeorgia.ae', phone: '+971 54 257 4715', password: 'Q7mL2xPa' },
+    { name: 'Liza', roleName: 'Sales', email: 'liza@investingeorgia.ae', phone: '+971 54 257 4717', password: 'N4vR8kTw' },
+    { name: 'Lika Tsamalashvili', roleName: 'Sales', email: 'lika@investingeorgia.ae', phone: '+971 54 257 4719', password: 'B9pX5eHs' },
+    { name: 'Tamer Raouf Fouad Abdelkader', roleName: 'Sales', email: 'tamer@investingeorgia.ae', phone: '+971 54 257 4721', password: 'Y3nJ7qMf' },
+    { name: 'Bijesh Vijayan', roleName: 'Sales', email: 'bijesh@investingeorgia.ae', phone: '+971 54 257 4714', password: 'P5rK9sJd' },
+    { name: 'Achraf', roleName: 'Sales', email: 'achraf@investingeorgia.ae', phone: '+971 54 257 4720', password: 'V2tN6wXz' },
+    { name: 'Hajar', roleName: 'Sales', email: 'hajar@investingeorgia.ae', phone: '+971 56 415 6060', password: 'M7qL3kPy' },
+    { name: 'Oyunsaikhan', roleName: 'Sales', email: 'oyun@investingeorgia.ae', phone: '+971 56 415 6161', password: 'W4vR8tKs' },
+    { name: 'Mohamed Adel Mohamed Ali Gad', roleName: 'Sales', email: 'adel@investingeorgia.ae', phone: '+971 56 416 0505', password: 'F9pX5eHd' },
+    { name: 'Sana', roleName: 'Sales', email: 'sana@investingeorgia.ae', phone: '+971 56 416 5151', password: 'Z3nJ7qMf' },
+    { name: 'Analyn Johnson', roleName: 'Sales', email: 'showroom@investingeorgia.ae', phone: '+971 54 257 4716', password: 'G5rK9sJd' },
+    { name: 'Anton', roleName: 'Sales', email: 'admin02@investingeorgia.ae', phone: '+971 54 257 4718', password: 'X2tN6wXz' },
+    { name: 'Gia Dumbadze', roleName: 'Admin', email: 'gia@investingeorgia.ae', phone: '+971 54 257 4722', password: 'H7qL3kPy' },
+    { name: 'Mehak Anees', roleName: 'Admin', email: 'mehak@investingeorgia.ae', phone: '+971 54 257 4723', password: 'J4vR8tKs' },
+    { name: 'Sivasankaran Krishnaraj', roleName: 'Sales', email: 'kris@investingeorgia.ae', phone: '+971 54 257 4724', password: 'D9pX5eHd' },
+    { name: 'Anisha', roleName: 'Sales', email: 'anisha@investingeorgia.ae', phone: '+971 54 257 4725', password: 'K3nJ7qMf' }
+  ]
+
+  const userLogs: string[] = []
+  for (const u of usersToSeed) {
+    try {
+      const email = u.email.toLowerCase()
+      const role = await prisma.role.findFirst({
+        where: { name: { equals: u.roleName } }
+      })
+      if (!role) {
+        userLogs.push(`✗ User ${u.name}: Role ${u.roleName} not found`)
+        continue
+      }
+
+      let dbUser = await prisma.user.findUnique({ where: { email } })
+
+      if (!dbUser) {
+        const hashedPassword = await bcrypt.hash(u.password, 10)
+        dbUser = await prisma.user.create({
+          data: {
+            name: u.name,
+            email,
+            phone: u.phone,
+            password: hashedPassword,
+            roleId: role.id,
+            isActive: true
+          }
+        })
+        userLogs.push(`✓ Created User: ${u.name}`)
+      } else {
+        dbUser = await prisma.user.update({
+          where: { email },
+          data: {
+            name: u.name,
+            phone: u.phone,
+            roleId: role.id
+          }
+        })
+        userLogs.push(`✓ Updated User: ${u.name}`)
+      }
+
+      await prisma.userModuleAccess.deleteMany({ where: { userId: dbUser.id } })
+      const modulesToOverride = ['Amenities', 'Customers', 'Developers', 'Media', 'PaymentPlans', 'Projects', 'Units']
+
+      if (u.roleName === 'Admin') {
+        const allModules = [...modulesToOverride, 'Settings', 'Templates', 'Users', 'Pages']
+        await prisma.userModuleAccess.createMany({
+          data: allModules.map(moduleName => ({
+            userId: dbUser.id,
+            moduleName,
+            accessLevel: 'EDIT'
+          }))
+        })
+      } else if (u.roleName === 'Sales' || u.roleName === 'Marketing') {
+        await prisma.userModuleAccess.createMany({
+          data: modulesToOverride.map(moduleName => ({
+            userId: dbUser.id,
+            moduleName,
+            accessLevel: 'EDIT'
+          }))
+        })
+      }
+    } catch (e: any) {
+      userLogs.push(`✗ User ${u.name}: ${e.message}`)
     }
   }
 
@@ -188,6 +274,7 @@ export async function GET(request: Request) {
     success: errors.length === 0,
     schemaMigration: logs,
     seeding: seedLogs,
+    userSeeding: userLogs,
     errors: errors.length ? errors : undefined,
   })
 }
