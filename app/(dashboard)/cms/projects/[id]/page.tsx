@@ -708,6 +708,9 @@ export default function ProjectDetailPage() {
                           {Object.entries(UNIT_TYPE_LABELS).map(([value, label]) => (
                             <option key={value} value={value}>{label}</option>
                           ))}
+                          {editingUnit?.type && !UNIT_TYPE_LABELS[editingUnit.type] && (
+                            <option value={editingUnit.type}>{editingUnit.type}</option>
+                          )}
                         </select>
                       </div>
                       <div className="space-y-1"><Label>Status</Label>

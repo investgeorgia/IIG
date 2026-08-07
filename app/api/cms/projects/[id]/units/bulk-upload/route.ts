@@ -62,8 +62,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
       // Map other fields
       const typeHeader = mapping['type']
-      const rawType = typeHeader ? String(row[typeHeader] || '').trim().toUpperCase() : ''
-      const type = UNIT_TYPE_MAP[rawType] || UNIT_TYPE_MAP[rawType.replace(/_/g, ' ')] || 'APARTMENT'
+      const rawType = typeHeader ? String(row[typeHeader] || '').trim() : ''
+      const type = rawType || 'APARTMENT'
 
       const bedroomsHeader = mapping['bedrooms']
       const bedrooms = bedroomsHeader ? Math.max(0, parseInt(row[bedroomsHeader], 10) || 0) : 0
