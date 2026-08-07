@@ -7,24 +7,33 @@ import { prisma } from '@/lib/prisma'
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!checkPermission(user, 'Users', AccessLevel.EDIT)) {
+
+  const id = Number((await params).id)
+  const hasUsersEdit = checkPermission(user, 'Users', AccessLevel.EDIT)
+
+  if (user.id !== id && !hasUsersEdit) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   try {
-    const id = Number((await params).id)
     const { name, email, phone, roleId } = await request.json()
-    if (!name || !email || !roleId) {
-      return NextResponse.json({ error: 'name, email, and roleId are required' }, { status: 400 })
-    }
-
-    const role = await prisma.role.findUnique({ where: { id: Number(roleId) } })
-    if (!role) {
-      return NextResponse.json({ error: 'Invalid roleId' }, { status: 400 })
+    if (!name || !email) {
+      return NextResponse.json({ error: 'name and email are required' }, { status: 400 })
     }
 
     const currentUserRecord = await prisma.user.findUnique({ where: { id } })
-    const roleChanged = currentUserRecord?.roleId !== Number(roleId)
+    if (!currentUserRecord) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const targetRoleId = roleId && hasUsersEdit ? Number(roleId) : currentUserRecord.roleId
+
+    const role = await prisma.role.findUnique({ where: { id: targetRoleId } })
+    if (!role) {
+      return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+    }
+
+    const roleChanged = currentUserRecord.roleId !== targetRoleId
 
     const updatedUser = await prisma.user.update({
       where: { id },
@@ -32,7 +41,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         name,
         email: email.toLowerCase(),
         phone: phone || null,
-        roleId: Number(roleId)
+        roleId: targetRoleId
       },
       select: { id: true, name: true, email: true, phone: true, isActive: true, roleId: true }
     })

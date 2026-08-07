@@ -6,15 +6,27 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { UserCircle, Building2, Bell, Key, Loader2 } from 'lucide-react'
+import { UserCircle, Building2, Key, Loader2 } from 'lucide-react'
 import { usePermissions } from '@/hooks/usePermissions'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function SettingsPage() {
-  const { hasPermission, isLoading: permissionsLoading } = usePermissions()
+  const { user, hasPermission, isLoading: permissionsLoading } = usePermissions()
+  const queryClient = useQueryClient()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'company' | 'notifications'>('profile')
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'company'>('profile')
+
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || '')
+      setEmail(user.email || '')
+    }
+  }, [user])
 
   useEffect(() => {
     if (!permissionsLoading && !hasPermission('Settings', 'VIEW')) {
@@ -40,13 +52,33 @@ export default function SettingsPage() {
     return null
   }
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!name || !email) {
+      toast.error('Name and email are required')
+      return
+    }
+    if (!user?.id) return
+
     setIsLoading(true)
-    setTimeout(() => {
+    try {
+      const res = await fetch(`/api/cms/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone: user.phone || '' })
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to update profile')
+      }
+      queryClient.invalidateQueries({ queryKey: ['auth-me'] })
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast.success('Profile updated successfully!')
+    } catch (err: any) {
+      toast.error(err.message)
+    } finally {
       setIsLoading(false)
-      toast.success('Settings saved successfully')
-    }, 800)
+    }
   }
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -112,12 +144,6 @@ export default function SettingsPage() {
             <Building2 className={`w-5 h-5 ${activeTab === 'company' ? 'text-neutral-500' : 'text-neutral-400'}`} />
             Company
           </button>
-          <button 
-            onClick={() => setActiveTab('notifications')}
-            className={`w-full flex items-center gap-3 px-4 py-2 font-medium rounded-lg transition-colors ${activeTab === 'notifications' ? 'bg-neutral-100 text-neutral-900' : 'text-neutral-600 hover:bg-neutral-50'}`}>
-            <Bell className={`w-5 h-5 ${activeTab === 'notifications' ? 'text-neutral-500' : 'text-neutral-400'}`} />
-            Notifications
-          </button>
         </div>
 
         <div className="md:col-span-3 space-y-6">
@@ -131,11 +157,11 @@ export default function SettingsPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="John Doe" defaultValue="Admin User" />
+                    <Input id="name" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" placeholder="john@example.com" defaultValue="admin@investgeorgia.com" />
+                    <Input id="email" type="email" placeholder="john@example.com" value={email} onChange={e => setEmail(e.target.value)} />
                   </div>
                   
                   <Button type="submit" disabled={isLoading} className="mt-4 bg-red-600 hover:bg-red-700 text-white">
@@ -217,37 +243,6 @@ export default function SettingsPage() {
                   
                   <Button type="submit" disabled={isLoading} className="mt-4 bg-red-600 hover:bg-red-700 text-white">
                     {isLoading ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </form>
-          )}
-
-          {activeTab === 'notifications' && (
-            <form onSubmit={handleSaveProfile}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notification Preferences</CardTitle>
-                  <CardDescription>Choose what updates you want to receive.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-base font-medium text-neutral-900">Email Notifications</Label>
-                      <p className="text-sm text-neutral-500">Receive alerts when new proposals are viewed or accepted.</p>
-                    </div>
-                    <input type="checkbox" className="w-4 h-4 rounded border-neutral-300 text-red-600 focus:ring-red-500" defaultChecked />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-base font-medium text-neutral-900">New Lead Alerts</Label>
-                      <p className="text-sm text-neutral-500">Get notified when a new lead is assigned to you.</p>
-                    </div>
-                    <input type="checkbox" className="w-4 h-4 rounded border-neutral-300 text-red-600 focus:ring-red-500" defaultChecked />
-                  </div>
-                  
-                  <Button type="submit" disabled={isLoading} className="mt-4 bg-red-600 hover:bg-red-700 text-white">
-                    {isLoading ? 'Saving...' : 'Save Preferences'}
                   </Button>
                 </CardContent>
               </Card>
