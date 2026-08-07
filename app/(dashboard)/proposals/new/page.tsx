@@ -25,6 +25,15 @@ export default function CreateProposalPage() {
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
   const [selectedUnit, setSelectedUnit] = useState<any>(null)
 
+  // Unit Filters in Step 3
+  const [unitSearch, setUnitSearch] = useState('')
+  const [unitFilterType, setUnitFilterType] = useState('')
+  const [unitFilterBeds, setUnitFilterBeds] = useState('')
+  const [unitMinSize, setUnitMinSize] = useState('')
+  const [unitMaxSize, setUnitMaxSize] = useState('')
+  const [unitMinPrice, setUnitMinPrice] = useState('')
+  const [unitMaxPrice, setUnitMaxPrice] = useState('')
+
   // Customizations
   const [customPrice, setCustomPrice] = useState('')
   const [discountPercent, setDiscountPercent] = useState('')
@@ -77,6 +86,23 @@ export default function CreateProposalPage() {
     enabled: !!selectedProjectId
   })
 
+  // Filtered units computation
+  const filteredUnits = (Array.isArray(units) ? units : []).filter((u: any) => {
+    if (u.status !== 'AVAILABLE') return false
+    if (unitSearch && !String(u.unitNumber || '').toLowerCase().includes(unitSearch.toLowerCase())) return false
+    if (unitFilterType && String(u.type || '').toUpperCase() !== unitFilterType.toUpperCase()) return false
+    if (unitFilterBeds !== '') {
+      const beds = Number(unitFilterBeds)
+      if (beds >= 4) { if ((Number(u.bedrooms) || 0) < 4) return false }
+      else if ((Number(u.bedrooms) || 0) !== beds) return false
+    }
+    if (unitMinSize && (Number(u.size) || 0) < Number(unitMinSize)) return false
+    if (unitMaxSize && (Number(u.size) || 0) > Number(unitMaxSize)) return false
+    if (unitMinPrice && (Number(u.price) || 0) < Number(unitMinPrice)) return false
+    if (unitMaxPrice && (Number(u.price) || 0) > Number(unitMaxPrice)) return false
+    return true
+  })
+
   const { data: projectMedia = [] } = useQuery({
     queryKey: ['media', selectedProjectId],
     queryFn: async () => (await fetch(`/api/cms/projects/${selectedProjectId}/media`)).json(),
@@ -101,6 +127,12 @@ export default function CreateProposalPage() {
   // Create customer then proposal
   const createProposalMutation = useMutation({
     mutationFn: async () => {
+      // Validate payment plan percentage
+      const totalPaymentPlanPercent = paymentPlan.reduce((sum, p) => sum + (Number(p.percentage) || 0), 0)
+      if (totalPaymentPlanPercent > 100) {
+        throw new Error(`Total payment plan percentage cannot exceed 100% (currently ${totalPaymentPlanPercent}%)`)
+      }
+
       let customerId = selectedCustomer?.id
 
       if (isNewCustomer) {
@@ -421,17 +453,133 @@ export default function CreateProposalPage() {
       {/* ─── STEP 3: UNIT ─── */}
       {step === 3 && (
         <Card className="shadow-sm border-neutral-200">
-          <CardHeader><CardTitle className="text-xl">Select Unit</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-xl">Select Unit</CardTitle>
+            <CardDescription>Filter by unit specs or search by unit number.</CardDescription>
+          </CardHeader>
           <CardContent className="space-y-6">
-            {units.filter((u: any) => u.status === 'AVAILABLE').length === 0 ? (
-              <p className="text-neutral-500 text-sm">No available units in this project.</p>
+            {/* Filter Bar */}
+            <div className="p-4 bg-neutral-50 rounded-xl border border-neutral-200 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Search Unit #</Label>
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-neutral-400" />
+                    <Input
+                      placeholder="e.g. A101, 1008"
+                      value={unitSearch}
+                      onChange={e => setUnitSearch(e.target.value)}
+                      className="pl-9 h-9 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Type</Label>
+                  <select
+                    value={unitFilterType}
+                    onChange={e => setUnitFilterType(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                  >
+                    <option value="">All Types</option>
+                    <option value="APARTMENT">Apartment</option>
+                    <option value="STUDIO">Studio</option>
+                    <option value="VILLA">Villa</option>
+                    <option value="TOWNHOUSE">Townhouse</option>
+                    <option value="PENTHOUSE">Penthouse</option>
+                    <option value="PLOT">Plot</option>
+                    <option value="COMMERCIAL">Commercial</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Bedrooms</Label>
+                  <select
+                    value={unitFilterBeds}
+                    onChange={e => setUnitFilterBeds(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                  >
+                    <option value="">All Bedrooms</option>
+                    <option value="0">Studio / 0 Bed</option>
+                    <option value="1">1 Bed</option>
+                    <option value="2">2 Bed</option>
+                    <option value="3">3 Bed</option>
+                    <option value="4">4+ Bed</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Size Range (m²)</Label>
+                  <div className="flex gap-1.5">
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={unitMinSize}
+                      onChange={e => setUnitMinSize(e.target.value)}
+                      className="h-9 text-sm px-2"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Max"
+                      value={unitMaxSize}
+                      onChange={e => setUnitMaxSize(e.target.value)}
+                      className="h-9 text-sm px-2"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-neutral-200">
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs font-semibold whitespace-nowrap">Price Range (USD):</Label>
+                  <Input
+                    type="number"
+                    placeholder="Min Price"
+                    value={unitMinPrice}
+                    onChange={e => setUnitMinPrice(e.target.value)}
+                    className="h-8 w-28 text-xs px-2"
+                  />
+                  <span className="text-neutral-400 text-xs">-</span>
+                  <Input
+                    type="number"
+                    placeholder="Max Price"
+                    value={unitMaxPrice}
+                    onChange={e => setUnitMaxPrice(e.target.value)}
+                    className="h-8 w-28 text-xs px-2"
+                  />
+                </div>
+
+                {(unitSearch || unitFilterType || unitFilterBeds !== '' || unitMinSize || unitMaxSize || unitMinPrice || unitMaxPrice) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setUnitSearch('')
+                      setUnitFilterType('')
+                      setUnitFilterBeds('')
+                      setUnitMinSize('')
+                      setUnitMaxSize('')
+                      setUnitMinPrice('')
+                      setUnitMaxPrice('')
+                    }}
+                    className="text-xs h-8 text-neutral-600 hover:text-red-600"
+                  >
+                    Reset Filters
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {filteredUnits.length === 0 ? (
+              <div className="p-8 text-center bg-neutral-50 rounded-xl border border-neutral-200 space-y-1">
+                <p className="text-neutral-700 text-sm font-semibold">No available units matching your filter criteria.</p>
+                <p className="text-neutral-400 text-xs">Try resetting or broadening your search filters above.</p>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {units.filter((u: any) => u.status === 'AVAILABLE').map((unit: any) => (
+                {filteredUnits.map((unit: any) => (
                   <button key={unit.id} type="button" onClick={() => {
                     setSelectedUnit(unit)
                     setSelectedPriceVal(Number(unit.price))
                     setSelectedPricingType('Base Price')
+                    setUnitCondition(unit.deliveryForm || '')
                     const plan = (unit.paymentPlans && unit.paymentPlans.length > 0) ? unit.paymentPlans[0] : (projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans?.[0])
                     setSelectedPaymentPlanName(plan ? plan.name : 'Standard Plan')
                     if (plan && plan.schedule) {
@@ -490,54 +638,103 @@ export default function CreateProposalPage() {
       )}
 
       {/* ─── STEP 4: CUSTOMIZE & GENERATE ─── */}
-      {step === 4 && selectedUnit && (
-        <div className="space-y-6">
-          {/* Summary Card */}
-          <Card className="shadow-sm bg-neutral-50 border-neutral-200">
-            <CardContent className="p-5">
-              <p className="text-xs text-neutral-500 uppercase font-semibold tracking-wider mb-3">Proposal Summary</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div><p className="text-neutral-500 text-xs">Customer</p><p className="font-semibold text-neutral-900">{selectedCustomer?.name || newCustomerForm.name}</p></div>
-                <div><p className="text-neutral-500 text-xs">Unit</p><p className="font-semibold text-neutral-900">{selectedUnit.unitNumber}</p></div>
-                <div><p className="text-neutral-500 text-xs">Base Price</p><p className="font-semibold text-neutral-900">{Number(selectedUnit.price).toLocaleString()} {selectedUnit.currency}</p></div>
-                <div><p className="text-neutral-500 text-xs">Size</p><p className="font-semibold text-neutral-900">{Number(selectedUnit.size).toLocaleString()} m²</p></div>
-              </div>
-            </CardContent>
-          </Card>
+      {step === 4 && selectedUnit && (() => {
+        const pricingOptions = [
+          { type: 'Base Price', label: `Base Price - ${Number(selectedUnit.price).toLocaleString()} USD`, price: Number(selectedUnit.price), defaultDelivery: selectedUnit.deliveryForm || 'Base Price' },
+          ...(selectedUnit.blackFramePrice ? [{ type: 'Black Frame', label: `Black Frame - ${Number(selectedUnit.blackFramePrice).toLocaleString()} USD`, price: Number(selectedUnit.blackFramePrice), defaultDelivery: 'Black Frame' }] : []),
+          ...(selectedUnit.whiteFramePrice ? [{ type: 'White Frame', label: `White Frame - ${Number(selectedUnit.whiteFramePrice).toLocaleString()} USD`, price: Number(selectedUnit.whiteFramePrice), defaultDelivery: 'White Frame' }] : []),
+          ...(selectedUnit.greenFramePrice ? [{ type: 'Green Frame', label: `Green Frame - ${Number(selectedUnit.greenFramePrice).toLocaleString()} USD`, price: Number(selectedUnit.greenFramePrice), defaultDelivery: 'Green Frame' }] : []),
+          ...(selectedUnit.turnkeyPrice ? [{ type: 'Turnkey', label: `Turnkey - ${Number(selectedUnit.turnkeyPrice).toLocaleString()} USD`, price: Number(selectedUnit.turnkeyPrice), defaultDelivery: 'Turnkey' }] : []),
+        ]
 
-          <Card className="shadow-sm border-neutral-200">
-            <CardHeader><CardTitle className="text-xl">Customizations</CardTitle></CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <Label>Pricing Type</Label>
-                  <select
-                    value={selectedPriceVal}
-                    onChange={e => {
-                      const val = Number(e.target.value)
-                      setSelectedPriceVal(val)
-                      if (val === Number(selectedUnit.price)) setSelectedPricingType('Base Price')
-                      else if (val === Number(selectedUnit.blackFramePrice)) setSelectedPricingType('Black Frame')
-                      else if (val === Number(selectedUnit.whiteFramePrice)) setSelectedPricingType('White Frame')
-                      else if (val === Number(selectedUnit.greenFramePrice)) setSelectedPricingType('Green Frame')
-                      else if (val === Number(selectedUnit.turnkeyPrice)) setSelectedPricingType('Turnkey')
-                    }}
-                    className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
-                  >
-                    <option value={Number(selectedUnit.price)}>{Number(selectedUnit.price).toLocaleString()} USD</option>
-                    {selectedUnit.blackFramePrice && <option value={Number(selectedUnit.blackFramePrice)}>{Number(selectedUnit.blackFramePrice).toLocaleString()} USD</option>}
-                    {selectedUnit.whiteFramePrice && <option value={Number(selectedUnit.whiteFramePrice)}>{Number(selectedUnit.whiteFramePrice).toLocaleString()} USD</option>}
-                    {selectedUnit.greenFramePrice && <option value={Number(selectedUnit.greenFramePrice)}>{Number(selectedUnit.greenFramePrice).toLocaleString()} USD</option>}
-                    {selectedUnit.turnkeyPrice && <option value={Number(selectedUnit.turnkeyPrice)}>{Number(selectedUnit.turnkeyPrice).toLocaleString()} USD</option>}
-                  </select>
+        return (
+          <div className="space-y-6">
+            {/* Summary Card */}
+            <Card className="shadow-sm bg-neutral-50 border-neutral-200">
+              <CardContent className="p-5">
+                <p className="text-xs text-neutral-500 uppercase font-semibold tracking-wider mb-3">Proposal Summary</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div><p className="text-neutral-500 text-xs">Customer</p><p className="font-semibold text-neutral-900">{selectedCustomer?.name || newCustomerForm.name}</p></div>
+                  <div><p className="text-neutral-500 text-xs">Unit</p><p className="font-semibold text-neutral-900">{selectedUnit.unitNumber}</p></div>
+                  <div><p className="text-neutral-500 text-xs">Selected Price</p><p className="font-semibold text-neutral-900">{selectedPriceVal.toLocaleString()} {selectedUnit.currency}</p></div>
+                  <div><p className="text-neutral-500 text-xs">Size</p><p className="font-semibold text-neutral-900">{Number(selectedUnit.size).toLocaleString()} m²</p></div>
                 </div>
-                <div className="space-y-1"><Label>Custom Price (optional)</Label><Input type="number" placeholder={String(selectedPriceVal)} value={customPrice} onChange={e => setCustomPrice(e.target.value)} /></div>
-                <div className="space-y-1"><Label>Discount (%)</Label><Input type="number" min={0} max={50} placeholder="0" value={discountPercent} onChange={e => setDiscountPercent(e.target.value)} /></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1"><Label>Tower/Block</Label><Input placeholder="e.g. Tower A" value={towerBlock} onChange={e => setTowerBlock(e.target.value)} /></div>
-                <div className="space-y-1"><Label>Unit Condition</Label><Input placeholder="e.g. Fully Renovated, White Frame" value={unitCondition} onChange={e => setUnitCondition(e.target.value)} /></div>
-              </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border-neutral-200">
+              <CardHeader><CardTitle className="text-xl">Customizations</CardTitle></CardHeader>
+              <CardContent className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <Label className="font-semibold text-neutral-800">Pricing Type</Label>
+                    <select
+                      value={selectedPriceVal}
+                      onChange={e => {
+                        const val = Number(e.target.value)
+                        setSelectedPriceVal(val)
+                        const opt = pricingOptions.find(o => o.price === val)
+                        if (opt) {
+                          setSelectedPricingType(opt.type)
+                          setUnitCondition(opt.defaultDelivery)
+                        }
+                        if (discountPercent) {
+                          const discounted = val * (1 - Number(discountPercent) / 100)
+                          setCustomPrice(discounted.toFixed(0))
+                        }
+                      }}
+                      className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 font-medium"
+                    >
+                      {pricingOptions.map(opt => (
+                        <option key={opt.type} value={opt.price}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="font-semibold text-neutral-800">Custom Price (USD)</Label>
+                    <Input
+                      type="number"
+                      placeholder={String(selectedPriceVal)}
+                      value={customPrice}
+                      onChange={e => {
+                        const cPrice = e.target.value
+                        setCustomPrice(cPrice)
+                        if (cPrice && selectedPriceVal > 0) {
+                          const disc = ((selectedPriceVal - Number(cPrice)) / selectedPriceVal) * 100
+                          setDiscountPercent(disc > 0 ? disc.toFixed(1) : '0')
+                        } else {
+                          setDiscountPercent('')
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="font-semibold text-neutral-800">Discount (%)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      placeholder="0"
+                      value={discountPercent}
+                      onChange={e => {
+                        const pct = e.target.value
+                        setDiscountPercent(pct)
+                        if (pct && selectedPriceVal > 0) {
+                          const discounted = selectedPriceVal * (1 - Number(pct) / 100)
+                          setCustomPrice(discounted.toFixed(0))
+                        } else {
+                          setCustomPrice('')
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1"><Label className="font-semibold text-neutral-800">Tower/Block</Label><Input placeholder="e.g. Tower A" value={towerBlock} onChange={e => setTowerBlock(e.target.value)} /></div>
+                  <div className="space-y-1"><Label className="font-semibold text-neutral-800">Delivery Form</Label><Input placeholder="e.g. White Frame, Turnkey" value={unitCondition} onChange={e => setUnitCondition(e.target.value)} /></div>
+                </div>
               <div className="space-y-1"><Label>Message to Customer</Label><textarea value={customerMessage} onChange={e => setCustomerMessage(e.target.value)} rows={3} placeholder="Dear [customer name], it is our pleasure to present this exclusive offer..." className="flex w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500" /></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1"><Label>Internal Notes</Label><Input placeholder="Private notes (not shown in PDF)..." value={notes} onChange={e => setNotes(e.target.value)} /></div>
@@ -759,11 +956,15 @@ export default function CreateProposalPage() {
                       </tbody>
                       <tfoot className="bg-neutral-50 border-t border-neutral-200 text-xs">
                         <tr>
-                          <td colSpan={2} className="px-3 py-2 text-neutral-500">Total</td>
-                          <td className={`px-3 py-2 text-center font-semibold ${paymentPlan.reduce((a, p) => a + (Number(p.percentage) || 0), 0) === 100 ? 'text-green-600' : 'text-amber-600'}`}>
+                          <td colSpan={2} className="px-3 py-2 text-neutral-600 font-semibold">Total</td>
+                          <td className={`px-3 py-2 text-center font-bold ${paymentPlan.reduce((a, p) => a + (Number(p.percentage) || 0), 0) === 100 ? 'text-green-600' : 'text-red-600'}`}>
                             {paymentPlan.reduce((a, p) => a + (Number(p.percentage) || 0), 0)}%
                           </td>
-                          <td colSpan={4}></td>
+                          <td colSpan={4} className="px-3 py-2 text-right">
+                            {paymentPlan.reduce((a, p) => a + (Number(p.percentage) || 0), 0) > 100 && (
+                              <span className="text-red-600 font-semibold">⚠️ Cannot exceed 100%</span>
+                            )}
+                          </td>
                         </tr>
                       </tfoot>
                     </table>
@@ -773,7 +974,7 @@ export default function CreateProposalPage() {
 
               {images.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Select Images for PDF ({selectedImages.length} selected)</Label>
+                  <Label className="font-semibold text-neutral-800">Select Images for PDF ({selectedImages.length} selected)</Label>
                   <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
                     {images.map((img: any) => (
                       <button key={img.id} type="button" onClick={() => toggleImage(img.url)}
@@ -792,7 +993,7 @@ export default function CreateProposalPage() {
 
               {templates.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-neutral-100">
-                  <Label>Proposal Template (Optional)</Label>
+                  <Label className="font-semibold text-neutral-800">Proposal Template (Optional)</Label>
                   <select 
                     value={selectedTemplateId || ''} 
                     onChange={e => setSelectedTemplateId(e.target.value ? Number(e.target.value) : null)}
@@ -810,13 +1011,14 @@ export default function CreateProposalPage() {
 
           <div className="flex justify-between pt-2">
             <Button variant="outline" onClick={() => setStep(3)}><ArrowLeft className="w-4 h-4 mr-2" />Back</Button>
-            <Button onClick={() => createProposalMutation.mutate()} disabled={createProposalMutation.isPending} className="bg-red-600 hover:bg-red-700 text-white px-6">
+            <Button onClick={() => createProposalMutation.mutate()} disabled={createProposalMutation.isPending || paymentPlan.reduce((a, p) => a + (Number(p.percentage) || 0), 0) > 100} className="bg-red-600 hover:bg-red-700 text-white px-6">
               {createProposalMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2" />}
               Create Proposal
             </Button>
           </div>
         </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
