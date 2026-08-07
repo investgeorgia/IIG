@@ -185,12 +185,12 @@ export default function ProposalsPage() {
             </select>
           </div>
         )}
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex gap-1.5 overflow-x-auto custom-scrollbar pb-1 max-w-full">
           {ALL_STATUSES.map(s => (
             <button
               key={s}
               onClick={() => { setActiveStatus(s); setSelectedIds([]) }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap ${
                 activeStatus === s
                   ? 'bg-neutral-900 text-white border-neutral-900'
                   : 'bg-white text-neutral-500 border-neutral-200 hover:border-neutral-400'
@@ -205,7 +205,7 @@ export default function ProposalsPage() {
 
       {/* Table */}
       <Card className="shadow-sm border-neutral-200 overflow-hidden">
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto custom-scrollbar">
           {isLoading ? (
             <div className="p-8 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-neutral-400" /></div>
           ) : filtered.length === 0 ? (

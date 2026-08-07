@@ -56,10 +56,10 @@ export default function Dashboard() {
     <div className="space-y-8 animate-in fade-in duration-500">
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 
         {/* Total Customers */}
-        <div className="bg-white rounded-3xl p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 flex flex-col justify-between h-48 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all">
+        <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 flex flex-col justify-between min-h-[170px] sm:h-48 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
               <Users className="w-5 h-5" />
@@ -67,7 +67,7 @@ export default function Dashboard() {
             <p className="font-bold text-neutral-700 text-sm">Total Customers</p>
           </div>
           <div>
-            <p className="text-4xl font-extrabold text-neutral-900">{stats?.customers?.total ?? '—'}</p>
+            <p className="text-3xl sm:text-4xl font-extrabold text-neutral-900">{stats?.customers?.total ?? '—'}</p>
           </div>
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-neutral-400">+{stats?.customers?.newLast30 ?? 0} in last 30 days</span>
@@ -76,7 +76,7 @@ export default function Dashboard() {
         </div>
 
         {/* Proposals Sent */}
-        <div className="bg-white rounded-3xl p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 flex flex-col justify-between h-48 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all">
+        <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 flex flex-col justify-between min-h-[170px] sm:h-48 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
               <FileText className="w-5 h-5" />
@@ -84,7 +84,7 @@ export default function Dashboard() {
             <p className="font-bold text-neutral-700 text-sm">Proposals Sent</p>
           </div>
           <div>
-            <p className="text-4xl font-extrabold text-neutral-900">{stats?.proposals?.total ?? '—'}</p>
+            <p className="text-3xl sm:text-4xl font-extrabold text-neutral-900">{stats?.proposals?.total ?? '—'}</p>
           </div>
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-neutral-400">+{stats?.proposals?.newLast30 ?? 0} in last 30 days</span>
@@ -93,7 +93,7 @@ export default function Dashboard() {
         </div>
 
         {/* Active Projects */}
-        <div className="bg-white rounded-3xl p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 flex flex-col justify-between h-48 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all">
+        <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 flex flex-col justify-between min-h-[170px] sm:h-48 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-green-600">
               <LayoutDashboard className="w-5 h-5" />
@@ -101,7 +101,7 @@ export default function Dashboard() {
             <p className="font-bold text-neutral-700 text-sm">Active Projects</p>
           </div>
           <div>
-            <p className="text-4xl font-extrabold text-neutral-900">{stats?.projects?.active ?? '—'}</p>
+            <p className="text-3xl sm:text-4xl font-extrabold text-neutral-900">{stats?.projects?.active ?? '—'}</p>
           </div>
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-neutral-400">+{stats?.projects?.newLast30 ?? 0} added in last 30 days</span>
@@ -113,10 +113,10 @@ export default function Dashboard() {
 
       {/* Recent Proposals Table */}
       <div className="bg-white rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 overflow-hidden">
-        <div className="p-6 flex items-center justify-between border-b border-neutral-100">
-          <h2 className="text-lg font-bold text-neutral-900">Recent Proposals Generated</h2>
-          <Link href="/proposals" className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">
-            See All Proposals
+        <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-100">
+          <h2 className="text-base sm:text-lg font-bold text-neutral-900">Recent Proposals Generated</h2>
+          <Link href="/proposals" className="text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">
+            See All Proposals →
           </Link>
         </div>
 

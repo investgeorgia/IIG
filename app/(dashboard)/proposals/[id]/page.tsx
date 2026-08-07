@@ -166,12 +166,12 @@ export default function ProposalDetailsPage() {
         <span className="font-medium text-neutral-900">Proposal #{proposal.id}</span>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Proposal for {proposal.customer?.name}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Proposal for {proposal.customer?.name}</h1>
           <p className="text-sm text-neutral-500 mt-1">Created on {new Date(proposal.createdAt).toLocaleDateString()}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <select
             value={proposal.status}
             onChange={(e) => updateStatusMutation.mutate(e.target.value)}
@@ -194,16 +194,16 @@ export default function ProposalDetailsPage() {
 
       {/* ─── EDIT MODAL ─── */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center overflow-y-auto py-8 px-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl my-auto max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-neutral-100">
               <h2 className="text-lg font-bold">Edit Proposal</h2>
               <button onClick={() => setIsEditing(false)} className="text-neutral-400 hover:text-neutral-700 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6 overflow-y-auto custom-scrollbar">
               {/* Pricing */}
               <div>
                 <Label className="text-sm font-semibold mb-3 block">Pricing</Label>

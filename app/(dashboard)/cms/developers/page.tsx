@@ -89,10 +89,10 @@ export default function DevelopersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Developers</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Developers</h1>
         {canEdit && (
-          <Button onClick={() => setIsAdding(!isAdding)} className="bg-red-600 hover:bg-red-700">
+          <Button onClick={() => setIsAdding(!isAdding)} className="bg-red-600 hover:bg-red-700 w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" /> Add Developer
           </Button>
         )}
@@ -103,25 +103,27 @@ export default function DevelopersPage() {
           <CardHeader>
             <CardTitle className="text-lg">New Developer</CardTitle>
           </CardHeader>
-          <CardContent className="flex space-x-4">
+          <CardContent className="flex flex-col sm:flex-row gap-3">
             <Input 
               placeholder="Developer Name" 
               value={newDevName} 
               onChange={(e) => setNewDevName(e.target.value)} 
-              className="max-w-sm"
+              className="w-full sm:max-w-sm"
             />
-            <Button 
-              onClick={() => createMutation.mutate(newDevName)}
-              disabled={!newDevName || createMutation.isPending}
-            >
-              Save
-            </Button>
-            <Button variant="outline" onClick={() => setIsAdding(false)}>Cancel</Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => createMutation.mutate(newDevName)}
+                disabled={!newDevName || createMutation.isPending}
+              >
+                Save
+              </Button>
+              <Button variant="outline" onClick={() => setIsAdding(false)}>Cancel</Button>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="flex items-center gap-2 max-w-sm">
+      <div className="flex items-center gap-2 w-full sm:max-w-sm">
         <Input 
           placeholder="Search developers..." 
           value={searchQuery} 
@@ -130,13 +132,13 @@ export default function DevelopersPage() {
       </div>
 
       <Card className="shadow-sm border-neutral-200">
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto custom-scrollbar">
           {isLoading ? (
             <div className="p-8 text-center text-neutral-500">Loading developers...</div>
           ) : searchedDevelopers?.length === 0 ? (
             <div className="p-8 text-center text-neutral-500">No developers found.</div>
           ) : (
-             <table className="w-full text-sm text-left">
+             <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
                 <tr>
                   <th className="px-6 py-3 font-medium">Name</th>

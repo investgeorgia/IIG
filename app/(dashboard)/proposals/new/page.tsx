@@ -226,36 +226,35 @@ export default function CreateProposalPage() {
       </div>
 
       {/* Step Indicator */}
-      <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-sm">
-        <div className="flex items-center justify-between">
+      <div className="bg-white p-3 sm:p-5 rounded-2xl border border-neutral-200 shadow-sm">
+        <div className="flex items-center justify-between max-w-4xl mx-auto gap-1 sm:gap-2">
           {[
-            { s: 1, title: 'Customer', desc: 'Select or add customer' },
-            { s: 2, title: 'Property', desc: 'Select developer & project' },
-            { s: 3, title: 'Unit', desc: 'Select available unit' },
-            { s: 4, title: 'Customize', desc: 'Price, options & summary' },
+            { s: 1, title: 'Customer', desc: 'Select or create' },
+            { s: 2, title: 'Project', desc: 'Choose property' },
+            { s: 3, title: 'Unit', desc: 'Select inventory' },
+            { s: 4, title: 'Customize', desc: 'Price & payment' },
           ].map((item, idx) => {
             const isCompleted = step > item.s
             const isCurrent = step === item.s
-
             return (
               <div key={item.s} className="flex-1 flex items-center">
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all shadow-sm ${
+                <div className="flex items-center gap-1.5 sm:gap-3">
+                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all shadow-sm shrink-0 ${
                     isCompleted ? 'bg-green-600 text-white' :
-                    isCurrent ? 'bg-red-600 text-white ring-4 ring-red-100' :
+                    isCurrent ? 'bg-red-600 text-white ring-2 sm:ring-4 ring-red-100' :
                     'bg-neutral-100 text-neutral-400 border border-neutral-200'
                   }`}>
-                    {isCompleted ? <Check className="w-5 h-5" /> : item.s}
+                    {isCompleted ? <Check className="w-4 h-4 sm:w-5 sm:h-5" /> : item.s}
                   </div>
-                  <div className="hidden sm:block text-left">
-                    <p className={`text-sm font-semibold leading-none ${isCurrent ? 'text-neutral-900' : isCompleted ? 'text-green-700' : 'text-neutral-400'}`}>
+                  <div className="hidden md:block text-left">
+                    <p className={`text-xs sm:text-sm font-semibold leading-none ${isCurrent ? 'text-neutral-900' : isCompleted ? 'text-green-700' : 'text-neutral-400'}`}>
                       {item.title}
                     </p>
-                    <p className="text-xs text-neutral-400 mt-1 font-normal">{item.desc}</p>
+                    <p className="text-[10px] sm:text-xs text-neutral-400 mt-1 font-normal">{item.desc}</p>
                   </div>
                 </div>
                 {idx < 3 && (
-                  <div className={`flex-1 h-0.5 mx-4 transition-colors ${step > item.s ? 'bg-green-500' : 'bg-neutral-200'}`} />
+                  <div className={`flex-1 h-0.5 mx-1 sm:mx-3 transition-colors ${step > item.s ? 'bg-green-500' : 'bg-neutral-200'}`} />
                 )}
               </div>
             )
@@ -811,8 +810,8 @@ export default function CreateProposalPage() {
                 </div>
  
                 {paymentPlan.length > 0 && (
-                  <div className="rounded-lg border border-neutral-200 overflow-hidden">
-                    <table className="w-full text-sm">
+                  <div className="rounded-lg border border-neutral-200 overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-sm min-w-[600px]">
                       <thead className="bg-neutral-50 text-xs text-neutral-500 uppercase">
                         <tr>
                           <th className="px-3 py-2 text-left w-8">#</th>

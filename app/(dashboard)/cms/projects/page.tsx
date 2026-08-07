@@ -151,9 +151,9 @@ function ProjectsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Projects</h1>
+        <div className="flex flex-wrap gap-2">
           {canEdit && selectedIds.length > 0 && (
             <Button variant="destructive" onClick={() => bulkDeleteMutation.mutate(selectedIds)} disabled={bulkDeleteMutation.isPending}>
               {bulkDeleteMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
@@ -216,7 +216,7 @@ function ProjectsList() {
         </div>
       )}
 
-      <div className="flex items-center gap-2 max-w-sm">
+      <div className="flex items-center gap-2 w-full sm:max-w-sm">
         <Input 
           placeholder="Search projects..." 
           value={searchQuery} 
@@ -225,13 +225,13 @@ function ProjectsList() {
       </div>
 
       <Card className="shadow-sm border-neutral-200">
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto custom-scrollbar">
           {isLoading ? (
             <div className="p-8 text-center text-neutral-500">Loading projects...</div>
           ) : searchedProjects?.length === 0 ? (
             <div className="p-8 text-center text-neutral-500">No projects found.</div>
           ) : (
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
                 <tr>
                   {canEdit && (
