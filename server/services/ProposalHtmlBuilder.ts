@@ -305,6 +305,8 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{floor}}/g, unitFloor)
     .replace(/{{unitBedrooms}}/g, unitBedrooms)
     .replace(/{{bedrooms}}/g, unitBedrooms)
+    .replace(/{{unitView}}/g, snap?.unit?.view || '—')
+    .replace(/{{view}}/g, snap?.unit?.view || '—')
     .replace(/{{unitBathrooms}}/g, unitBathrooms)
     .replace(/{{bathrooms}}/g, unitBathrooms)
     .replace(/{{deliveryForm}}/g, snap?.unit?.deliveryForm || '—')
