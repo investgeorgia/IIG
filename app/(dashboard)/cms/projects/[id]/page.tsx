@@ -61,6 +61,7 @@ export default function ProjectDetailPage() {
   const [planUnitId, setPlanUnitId] = useState<number | null>(null)
   const [planSchedule, setPlanSchedule] = useState<{milestone: string, percentage: string, date: string}[]>([])
   const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([])
+  const [selectedUnitIds, setSelectedUnitIds] = useState<number[]>([])
   const [editingPlanId, setEditingPlanId] = useState<number | null>(null)
 
   // Bulk upload states
@@ -167,6 +168,28 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['units', id] })
       toast.success('Unit deleted')
+    }
+  })
+
+  const bulkDeleteUnitsMutation = useMutation({
+    mutationFn: async (unitIds: number[]) => {
+      const res = await fetch(`/api/cms/units/bulk-delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: unitIds })
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.error || 'Failed to delete units')
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['units', id] })
+      setSelectedUnitIds([])
+      toast.success('Selected units deleted')
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to delete units')
     }
   })
 
@@ -632,17 +655,34 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-end gap-2">
-              {canEdit && (
-                <>
-                  <Button onClick={() => setShowBulkUpload(true)} variant="outline">
-                    <Upload className="w-4 h-4 mr-2" /> Bulk Upload Units
+            <div className="flex justify-between items-center gap-2">
+              <div>
+                {canEdit && selectedUnitIds.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm(`Are you sure you want to delete ${selectedUnitIds.length} selected unit(s)?`)) {
+                        bulkDeleteUnitsMutation.mutate(selectedUnitIds)
+                      }
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete Selected ({selectedUnitIds.length})
                   </Button>
-                  <Button onClick={() => { setEditingUnit(null); resetUnit(); setShowAddUnit(!showAddUnit) }} className="bg-red-600 hover:bg-red-700">
-                    <Plus className="w-4 h-4 mr-2" /> Add Unit
-                  </Button>
-                </>
-              )}
+                )}
+              </div>
+              <div className="flex justify-end gap-2">
+                {canEdit && (
+                  <>
+                    <Button onClick={() => setShowBulkUpload(true)} variant="outline">
+                      <Upload className="w-4 h-4 mr-2" /> Bulk Upload Units
+                    </Button>
+                    <Button onClick={() => { setEditingUnit(null); resetUnit(); setShowAddUnit(!showAddUnit) }} className="bg-red-600 hover:bg-red-700">
+                      <Plus className="w-4 h-4 mr-2" /> Add Unit
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
 
             {showAddUnit && canEdit && (
@@ -769,6 +809,23 @@ export default function ProjectDetailPage() {
                   <table className="w-full text-sm text-left">
                     <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
                       <tr>
+                        {canEdit && (
+                          <th className="px-4 py-3 w-10">
+                            <input
+                              type="checkbox"
+                              checked={filteredUnits.length > 0 && filteredUnits.every((u: any) => selectedUnitIds.includes(u.id))}
+                              onChange={() => {
+                                const allSelected = filteredUnits.length > 0 && filteredUnits.every((u: any) => selectedUnitIds.includes(u.id))
+                                if (allSelected) {
+                                  setSelectedUnitIds([])
+                                } else {
+                                  setSelectedUnitIds(filteredUnits.map((u: any) => u.id))
+                                }
+                              }}
+                              className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
+                            />
+                          </th>
+                        )}
                         <th className="px-6 py-3">Unit #</th>
                         <th className="px-6 py-3">Type</th>
                         <th className="px-6 py-3">Floor</th>
@@ -782,6 +839,18 @@ export default function ProjectDetailPage() {
                     <tbody>
                       {filteredUnits.map((unit: any) => (
                         <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                          {canEdit && (
+                            <td className="px-4 py-4 w-10">
+                              <input
+                                type="checkbox"
+                                checked={selectedUnitIds.includes(unit.id)}
+                                onChange={() => {
+                                  setSelectedUnitIds(prev => prev.includes(unit.id) ? prev.filter(i => i !== unit.id) : [...prev, unit.id])
+                                }}
+                                className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
+                              />
+                            </td>
+                          )}
                           <td className="px-6 py-4 font-medium">
                             {unit.unitNumber}
                             {unit.floorPlanUrl && <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-blue-600 hover:underline mt-1">View Plan</a>}
