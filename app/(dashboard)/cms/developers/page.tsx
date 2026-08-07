@@ -23,6 +23,23 @@ export default function DevelopersPage() {
   const [editName, setEditName] = useState('')
   const [editLogoUrl, setEditLogoUrl] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+
+  const toggleSelect = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(x => x !== id))
+    } else {
+      setSelectedIds([...selectedIds, id])
+    }
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === searchedDevelopers.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(searchedDevelopers.map((d: any) => d.id))
+    }
+  }
 
   const { data: developers, isLoading } = useQuery({
     queryKey: ['developers'],
@@ -106,6 +123,38 @@ export default function DevelopersPage() {
     onError: () => toast.error('Error updating developer')
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/cms/developers/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete developer')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['developers'] })
+      setSelectedIds(prev => prev.filter(x => x !== editingId))
+      toast.success('Developer deleted successfully')
+    },
+    onError: () => toast.error('Error deleting developer')
+  })
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const res = await fetch('/api/cms/developers/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      })
+      if (!res.ok) throw new Error('Failed to bulk delete developers')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['developers'] })
+      setSelectedIds([])
+      toast.success('Selected developers deleted successfully')
+    },
+    onError: () => toast.error('Error bulk deleting developers')
+  })
+
   const startEditing = (dev: any) => {
     setEditingId(dev.id)
     setEditName(dev.name)
@@ -186,12 +235,28 @@ export default function DevelopersPage() {
         </Card>
       )}
 
-      <div className="flex items-center gap-2 w-full sm:max-w-sm">
-        <Input 
-          placeholder="Search developers..." 
-          value={searchQuery} 
-          onChange={e => setSearchQuery(e.target.value)} 
-        />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 w-full sm:max-w-sm">
+          <Input 
+            placeholder="Search developers..." 
+            value={searchQuery} 
+            onChange={e => setSearchQuery(e.target.value)} 
+          />
+        </div>
+        {selectedIds.length > 0 && canEdit && (
+          <Button 
+            variant="destructive" 
+            onClick={() => {
+              if (confirm(`Are you sure you want to delete the ${selectedIds.length} selected developers?`)) {
+                bulkDeleteMutation.mutate(selectedIds)
+              }
+            }}
+            disabled={bulkDeleteMutation.isPending}
+            className="w-full sm:w-auto"
+          >
+            {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete Selected (${selectedIds.length})`}
+          </Button>
+        )}
       </div>
 
       <Card className="shadow-sm border-neutral-200">
@@ -204,7 +269,17 @@ export default function DevelopersPage() {
              <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
                 <tr>
-                  <th className="px-6 py-3 font-medium w-16">Logo</th>
+                  {canEdit && (
+                    <th className="px-6 py-3 w-12 font-medium">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                        checked={searchedDevelopers?.length > 0 && selectedIds.length === searchedDevelopers.length} 
+                        onChange={toggleSelectAll} 
+                      />
+                    </th>
+                  )}
+                  <th className="px-6 py-3 font-medium w-24">Logo</th>
                   <th className="px-6 py-3 font-medium">Name</th>
                   <th className="px-6 py-3 font-medium">Added On</th>
                   <th className="px-6 py-3 font-medium text-right">Actions</th>
@@ -213,22 +288,32 @@ export default function DevelopersPage() {
               <tbody>
                 {searchedDevelopers?.map((dev: any) => (
                   <tr key={dev.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                    {canEdit && (
+                      <td className="px-6 py-4">
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                          checked={selectedIds.includes(dev.id)} 
+                          onChange={() => toggleSelect(dev.id)} 
+                        />
+                      </td>
+                    )}
                     <td className="px-6 py-4">
                       {editingId === dev.id ? (
                         <div className="flex items-center gap-2">
                           {editLogoUrl && (
-                            <img src={editLogoUrl} alt="Logo" className="w-8 h-8 object-contain border border-neutral-200 rounded p-0.5" />
+                            <img src={editLogoUrl} alt="Logo" className="w-12 h-12 object-contain border border-neutral-200 rounded p-0.5" />
                           )}
                           <input type="file" id={`edit-logo-upload-${dev.id}`} className="hidden" accept="image/*" onChange={e => e.target.files?.[0] && uploadLogo(e.target.files[0], true)} />
-                          <Label htmlFor={`edit-logo-upload-${dev.id}`} className="p-1 border border-neutral-200 rounded bg-neutral-50 cursor-pointer hover:bg-neutral-100">
-                            <Upload className="w-3.5 h-3.5 text-neutral-500" />
+                          <Label htmlFor={`edit-logo-upload-${dev.id}`} className="p-1.5 border border-neutral-200 rounded bg-neutral-50 cursor-pointer hover:bg-neutral-100">
+                            <Upload className="w-4 h-4 text-neutral-500" />
                           </Label>
                         </div>
                       ) : (
                         dev.logoUrl ? (
-                          <img src={dev.logoUrl} alt={dev.name} className="w-8 h-8 object-contain border border-neutral-100 rounded p-0.5" />
+                          <img src={dev.logoUrl} alt={dev.name} className="w-12 h-12 object-contain border border-neutral-100 rounded p-0.5" />
                         ) : (
-                          <div className="w-8 h-8 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase">
+                          <div className="w-12 h-12 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase">
                             No Lg
                           </div>
                         )
@@ -265,7 +350,17 @@ export default function DevelopersPage() {
                               <Button variant="ghost" size="sm" onClick={() => startEditing(dev)} className="text-blue-600 hover:text-blue-700">
                                 Edit
                               </Button>
-                              <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="text-neutral-400 hover:text-red-600"
+                                onClick={() => {
+                                  if (confirm(`Are you sure you want to delete developer "${dev.name}"?`)) {
+                                    deleteMutation.mutate(dev.id)
+                                  }
+                                }}
+                                disabled={deleteMutation.isPending}
+                              >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </>
