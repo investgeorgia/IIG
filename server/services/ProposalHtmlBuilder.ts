@@ -78,8 +78,9 @@ function buildPaymentPlanPages(
     }
   })
 
-  // Page 1 can comfortably fit up to 8 rows alongside overview & summary
+  // Page 1 can fit up to 8 rows comfortably.
   const PAGE_1_LIMIT = 8
+  // Overflow pages can fit up to 16 rows.
   const OVERFLOW_LIMIT = 16
 
   const page1Rows = allRows.slice(0, PAGE_1_LIMIT)
@@ -95,7 +96,7 @@ function buildPaymentPlanPages(
   for (let i = 0; i < remainingRows.length; i += OVERFLOW_LIMIT) {
     const chunk = remainingRows.slice(i, i + OVERFLOW_LIMIT)
     overflowPagesHtml += `
-<div class="page">
+<div class="page" style="page-break-before: always; break-before: page;">
   <div>
     <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; border-bottom: 2px solid #F1F5F9; margin-bottom: 32px;">
       <div>
@@ -111,15 +112,15 @@ function buildPaymentPlanPages(
         <div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-top: 4px;">${paymentPlanName}</div>
       </div>
       
-      <table class="table-custom" style="border-radius: 8px; overflow: visible;">
+      <table class="table-custom" style="width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #E2E8F0; border-radius: 8px; overflow: hidden;">
         <thead>
           <tr>
-            <th style="text-align: center; width: 8%;">#</th>
-            <th style="text-align: left; width: 34%;">Milestone</th>
-            <th style="text-align: center; width: 12%;">%</th>
-            <th style="text-align: center; width: 18%;">Date</th>
-            <th style="text-align: right; width: 14%;">USD</th>
-            <th style="text-align: right; width: 14%;">AED</th>
+            <th style="background-color: #F8FAFC; color: #475569; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 14px; border-bottom: 1px solid #E2E8F0; text-align: center; width: 8%;">#</th>
+            <th style="background-color: #F8FAFC; color: #475569; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 14px; border-bottom: 1px solid #E2E8F0; text-align: left; width: 34%;">Milestone</th>
+            <th style="background-color: #F8FAFC; color: #475569; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 14px; border-bottom: 1px solid #E2E8F0; text-align: center; width: 12%;">%</th>
+            <th style="background-color: #F8FAFC; color: #475569; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 14px; border-bottom: 1px solid #E2E8F0; text-align: center; width: 18%;">Date</th>
+            <th style="background-color: #F8FAFC; color: #475569; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 14px; border-bottom: 1px solid #E2E8F0; text-align: right; width: 14%;">USD</th>
+            <th style="background-color: #F8FAFC; color: #475569; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 14px; border-bottom: 1px solid #E2E8F0; text-align: right; width: 14%;">AED</th>
           </tr>
         </thead>
         <tbody>

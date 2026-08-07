@@ -242,6 +242,7 @@ function ProjectsList() {
                       />
                     </th>
                   )}
+                  <th className="px-6 py-3 font-medium w-16">Thumbnail</th>
                   <th className="px-6 py-3 font-medium">Name</th>
                   <th className="px-6 py-3 font-medium">Developer</th>
                   <th className="px-6 py-3 font-medium">City</th>
@@ -250,44 +251,56 @@ function ProjectsList() {
                 </tr>
               </thead>
               <tbody>
-                {searchedProjects?.map((project: any) => (
-                  <tr key={project.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
-                    {canEdit && (
+                {searchedProjects?.map((project: any) => {
+                  const firstImage = project.media?.find((m: any) => m.type === 'IMAGE' || m.type === 'MASTER_PLAN' || m.type === 'FLOOR_PLAN')?.url || project.coverImageUrl
+                  return (
+                    <tr key={project.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                      {canEdit && (
+                        <td className="px-6 py-4">
+                          <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                            checked={selectedIds.includes(project.id)} 
+                            onChange={() => toggleSelect(project.id)} 
+                          />
+                        </td>
+                      )}
                       <td className="px-6 py-4">
-                        <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                          checked={selectedIds.includes(project.id)} 
-                          onChange={() => toggleSelect(project.id)} 
-                        />
-                      </td>
-                    )}
-                    <td className="px-6 py-4 font-medium text-neutral-900">
-                      <Link href={`/cms/projects/${project.id}`} className="text-red-600 hover:underline">
-                        {project.name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 text-neutral-500">{project.developer?.name}</td>
-                    <td className="px-6 py-4 text-neutral-500">{project.city}</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium">
-                        {project.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-1">
-                        {canEdit && (
-                          <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEdit(project)}>
-                            Edit
-                          </Button>
+                        {firstImage ? (
+                          <img src={firstImage} alt={project.name} className="w-10 h-10 object-cover border border-neutral-100 rounded" />
+                        ) : (
+                          <div className="w-10 h-10 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[9px] text-neutral-400 font-medium">
+                            No Img
+                          </div>
                         )}
-                        <Link href={`/cms/projects/${project.id}`}>
-                          <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-red-600 h-8 px-2">
-                            <Eye className="w-4 h-4 mr-1" /> View
-                          </Button>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-neutral-900">
+                        <Link href={`/cms/projects/${project.id}`} className="text-red-600 hover:underline">
+                          {project.name}
                         </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 text-neutral-500">{project.developer?.name}</td>
+                      <td className="px-6 py-4 text-neutral-500">{project.city}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium">
+                          {project.status.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-1">
+                          {canEdit && (
+                            <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEdit(project)}>
+                              Edit
+                            </Button>
+                          )}
+                          <Link href={`/cms/projects/${project.id}`}>
+                            <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-red-600 h-8 px-2">
+                              <Eye className="w-4 h-4 mr-1" /> View
+                            </Button>
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           )}

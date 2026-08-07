@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Upload, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { usePermissions } from '@/hooks/usePermissions'
 import Link from 'next/link'
@@ -15,8 +16,12 @@ export default function DevelopersPage() {
   const { hasPermission, isLoading: permissionsLoading } = usePermissions()
   const [isAdding, setIsAdding] = useState(false)
   const [newDevName, setNewDevName] = useState('')
+  const [newLogoUrl, setNewLogoUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
+
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editName, setEditName] = useState('')
+  const [editLogoUrl, setEditLogoUrl] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
   const { data: developers, isLoading } = useQuery({
@@ -33,12 +38,42 @@ export default function DevelopersPage() {
     ? developers.filter((d: any) => (d.name || '').toLowerCase().includes(searchQuery.toLowerCase()))
     : []
 
+  const uploadLogo = async (file: File, isEdit: boolean) => {
+    try {
+      setUploading(true)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'IMAGE')
+      formData.append('projectId', 'general')
+
+      const res = await fetch('/api/uploads', {
+        method: 'POST',
+        body: formData
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to upload logo')
+      }
+      const data = await res.json()
+      if (isEdit) {
+        setEditLogoUrl(data.url)
+      } else {
+        setNewLogoUrl(data.url)
+      }
+      toast.success('Logo uploaded successfully')
+    } catch (err: any) {
+      toast.error(err.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const createMutation = useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async ({ name, logoUrl }: { name: string, logoUrl?: string }) => {
       const res = await fetch('/api/cms/developers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name, logoUrl })
       })
       if (!res.ok) throw new Error('Failed to create developer')
       return res.json()
@@ -47,17 +82,18 @@ export default function DevelopersPage() {
       queryClient.invalidateQueries({ queryKey: ['developers'] })
       setIsAdding(false)
       setNewDevName('')
+      setNewLogoUrl('')
       toast.success('Developer created successfully')
     },
     onError: () => toast.error('Error creating developer')
   })
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, name }: { id: number, name: string }) => {
+    mutationFn: async ({ id, name, logoUrl }: { id: number, name: string, logoUrl?: string }) => {
       const res = await fetch(`/api/cms/developers/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name, logoUrl })
       })
       if (!res.ok) throw new Error('Failed to update developer')
       return res.json()
@@ -73,6 +109,7 @@ export default function DevelopersPage() {
   const startEditing = (dev: any) => {
     setEditingId(dev.id)
     setEditName(dev.name)
+    setEditLogoUrl(dev.logoUrl || '')
   }
 
   if (permissionsLoading) return <div className="p-8 text-center text-neutral-400">Loading...</div>
@@ -92,7 +129,7 @@ export default function DevelopersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Developers</h1>
         {canEdit && (
-          <Button onClick={() => setIsAdding(!isAdding)} className="bg-red-600 hover:bg-red-700 w-full sm:w-auto">
+          <Button onClick={() => { setIsAdding(!isAdding); setNewDevName(''); setNewLogoUrl(''); }} className="bg-red-600 hover:bg-red-700 w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" /> Add Developer
           </Button>
         )}
@@ -103,17 +140,43 @@ export default function DevelopersPage() {
           <CardHeader>
             <CardTitle className="text-lg">New Developer</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col sm:flex-row gap-3">
-            <Input 
-              placeholder="Developer Name" 
-              value={newDevName} 
-              onChange={(e) => setNewDevName(e.target.value)} 
-              className="w-full sm:max-w-sm"
-            />
-            <div className="flex gap-2">
+          <CardContent className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="space-y-1 w-full sm:max-w-sm">
+                <Label>Developer Name *</Label>
+                <Input 
+                  placeholder="Developer Name" 
+                  value={newDevName} 
+                  onChange={(e) => setNewDevName(e.target.value)} 
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Developer Logo</Label>
+                <div className="flex items-center gap-3">
+                  {newLogoUrl && (
+                    <img src={newLogoUrl} alt="Logo Preview" className="w-12 h-12 object-contain border border-neutral-200 rounded p-1" />
+                  )}
+                  <div>
+                    <input type="file" id="new-logo-upload" className="hidden" accept="image/*" onChange={e => e.target.files?.[0] && uploadLogo(e.target.files[0], false)} />
+                    <Label htmlFor="new-logo-upload" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-sm font-medium">
+                      {uploading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2 text-neutral-400" />
+                      )}
+                      Upload Logo
+                    </Label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
               <Button 
-                onClick={() => createMutation.mutate(newDevName)}
-                disabled={!newDevName || createMutation.isPending}
+                onClick={() => createMutation.mutate({ name: newDevName, logoUrl: newLogoUrl || undefined })}
+                disabled={!newDevName || createMutation.isPending || uploading}
+                className="bg-red-600 hover:bg-red-700 text-white"
               >
                 Save
               </Button>
@@ -141,6 +204,7 @@ export default function DevelopersPage() {
              <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
                 <tr>
+                  <th className="px-6 py-3 font-medium w-16">Logo</th>
                   <th className="px-6 py-3 font-medium">Name</th>
                   <th className="px-6 py-3 font-medium">Added On</th>
                   <th className="px-6 py-3 font-medium text-right">Actions</th>
@@ -149,6 +213,27 @@ export default function DevelopersPage() {
               <tbody>
                 {searchedDevelopers?.map((dev: any) => (
                   <tr key={dev.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                    <td className="px-6 py-4">
+                      {editingId === dev.id ? (
+                        <div className="flex items-center gap-2">
+                          {editLogoUrl && (
+                            <img src={editLogoUrl} alt="Logo" className="w-8 h-8 object-contain border border-neutral-200 rounded p-0.5" />
+                          )}
+                          <input type="file" id={`edit-logo-upload-${dev.id}`} className="hidden" accept="image/*" onChange={e => e.target.files?.[0] && uploadLogo(e.target.files[0], true)} />
+                          <Label htmlFor={`edit-logo-upload-${dev.id}`} className="p-1 border border-neutral-200 rounded bg-neutral-50 cursor-pointer hover:bg-neutral-100">
+                            <Upload className="w-3.5 h-3.5 text-neutral-500" />
+                          </Label>
+                        </div>
+                      ) : (
+                        dev.logoUrl ? (
+                          <img src={dev.logoUrl} alt={dev.name} className="w-8 h-8 object-contain border border-neutral-100 rounded p-0.5" />
+                        ) : (
+                          <div className="w-8 h-8 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase">
+                            No Lg
+                          </div>
+                        )
+                      )}
+                    </td>
                     <td className="px-6 py-4 font-medium text-neutral-900">
                       {editingId === dev.id ? (
                         <Input 
@@ -170,7 +255,7 @@ export default function DevelopersPage() {
                     <td className="px-6 py-4 text-right">
                       {editingId === dev.id ? (
                         <div className="flex justify-end gap-2">
-                          <Button size="sm" onClick={() => updateMutation.mutate({ id: dev.id, name: editName })}>Save</Button>
+                          <Button size="sm" onClick={() => updateMutation.mutate({ id: dev.id, name: editName, logoUrl: editLogoUrl || undefined })}>Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
                         </div>
                       ) : (
