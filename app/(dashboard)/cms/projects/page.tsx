@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Eye, Loader2 } from 'lucide-react'
+import { Plus, Eye, Loader2, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -123,6 +123,19 @@ function ProjectsList() {
       setSelectedIds([])
       toast.success('Selected projects removed')
     }
+  })
+
+  const duplicateMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/cms/projects/${id}/duplicate`, { method: 'POST' })
+      if (!res.ok) throw new Error('Failed to duplicate project')
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      toast.success('Project duplicated successfully')
+    },
+    onError: () => toast.error('Failed to duplicate project')
   })
 
   const toggleSelectAll = () => {
@@ -287,9 +300,24 @@ function ProjectsList() {
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-1">
                           {canEdit && (
-                            <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEdit(project)}>
-                              Edit
-                            </Button>
+                            <>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-neutral-500 hover:text-green-600 h-8 px-2"
+                                onClick={() => {
+                                  if (confirm(`Duplicate project "${project.name}"?`)) {
+                                    duplicateMutation.mutate(project.id)
+                                  }
+                                }}
+                                disabled={duplicateMutation.isPending}
+                              >
+                                <Copy className="w-4 h-4 mr-1" /> Duplicate
+                              </Button>
+                              <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEdit(project)}>
+                                Edit
+                              </Button>
+                            </>
                           )}
                           <Link href={`/cms/projects/${project.id}`}>
                             <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-red-600 h-8 px-2">
