@@ -649,7 +649,9 @@ export default function ProjectDetailPage() {
               <Card className="shadow-sm border-red-100">
                 <CardHeader><CardTitle className="text-lg">{editingUnit ? 'Edit Unit' : 'New Unit'}</CardTitle></CardHeader>
                 <CardContent>
-                  <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data))} className="space-y-4">
+                  <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data), (errors) => {
+                    toast.error('Please fill in all required unit fields (Unit Number, Type, Bedrooms, Bathrooms, Size, Price)')
+                  })} className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-1"><Label>Unit Number *</Label><Input placeholder="A-101" {...regUnit('unitNumber', { required: true })} /></div>
                       <div className="space-y-1"><Label>Type *</Label>
