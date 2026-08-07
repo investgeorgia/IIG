@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { ProposalService } from '@/server/services/ProposalService'
 import { buildProposalHtml } from '@/server/services/ProposalHtmlBuilder'
-import puppeteer from 'puppeteer'
 import path from 'path'
 import { writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
@@ -12,6 +11,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   let browser = null
   const idStr = (await params).id
   const id = Number(idStr)
+  const fallbackUrl = `/proposals/${id}/template?print=true`
+
   try {
     const proposal = await ProposalService.getById(id)
     if (!proposal) return NextResponse.json({ error: 'Proposal not found' }, { status: 404 })
@@ -22,6 +23,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     // Build fully-rendered HTML (inlines logo, substitutes all placeholders, appends gallery)
     const html = buildProposalHtml(proposal, baseUrl)
+
+    // Dynamic import of puppeteer to prevent top-level module load crashes on restricted servers
+    let puppeteer: any
+    try {
+      puppeteer = (await import('puppeteer')).default
+    } catch (e: any) {
+      console.warn('[PDF Route] Puppeteer module load failed, returning print template:', e.message)
+      return NextResponse.json({ pdfUrl: fallbackUrl })
+    }
 
     // Discover system chromium/chrome if PUPPETEER_EXECUTABLE_PATH is not set
     let executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
@@ -60,9 +70,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       launchOptions.executablePath = executablePath
     }
 
-    browser = await puppeteer.launch(launchOptions)
-    const page = await browser.newPage()
+    try {
+      browser = await puppeteer.launch(launchOptions)
+    } catch (launchErr: any) {
+      console.warn('[PDF Route] Puppeteer browser launch failed:', launchErr.message)
+      return NextResponse.json({ pdfUrl: fallbackUrl })
+    }
 
+    const page = await browser.newPage()
     await page.setContent(html, { waitUntil: 'load', timeout: 30000 })
 
     const pdfBuffer = await page.pdf({
@@ -72,7 +87,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     })
 
     const envPath = process.env.MEDIA_STORAGE_PATH
-    const baseDir = envPath || path.join(process.cwd(), 'public', 'media')
+    let baseDir = path.join(process.cwd(), 'public', 'media')
+    if (envPath) {
+      try {
+        const parent = path.dirname(envPath)
+        if (existsSync(parent)) baseDir = envPath
+      } catch {}
+    }
+
     const userFolder = proposal.createdById ? `user-${proposal.createdById}` : 'user-general'
     const pdfDir = path.join(baseDir, 'proposals', userFolder)
 
@@ -81,16 +103,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await writeFile(path.join(pdfDir, filename), pdfBuffer)
 
     const pdfUrl = `/media/proposals/${userFolder}/${filename}`
-      
     return NextResponse.json({ pdfUrl })
   } catch (error: any) {
     console.error('[PDF Generation Error]', error)
-    // Fallback: Return printable HTML view if headless browser is unavailable on host server
-    const fallbackUrl = `/proposals/${id}/template?print=true`
-    return NextResponse.json({ 
-      pdfUrl: fallbackUrl,
-      warning: `Server PDF generator note: ${error.message}. Opening printable document.` 
-    })
+    return NextResponse.json({ pdfUrl: fallbackUrl })
   } finally {
     if (browser) {
       try { await browser.close() } catch {}

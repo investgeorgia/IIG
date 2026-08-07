@@ -78,20 +78,26 @@ export default function ProposalDetailsPage() {
 
   const generatePdfMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/proposals/${id}/pdf`, { method: 'POST' })
-      const text = await res.text()
-      let data: any = {}
       try {
-        data = JSON.parse(text)
-      } catch (err) {
-        throw new Error(text || `Server error (${res.status})`)
+        const res = await fetch(`/api/proposals/${id}/pdf`, { method: 'POST' })
+        const text = await res.text()
+        let data: any = {}
+        try {
+          data = JSON.parse(text)
+        } catch {
+          window.open(`/proposals/${id}/template?print=true`, '_blank')
+          return
+        }
+        if (data.pdfUrl) {
+          window.open(data.pdfUrl, '_blank')
+        } else {
+          window.open(`/proposals/${id}/template?print=true`, '_blank')
+        }
+      } catch {
+        window.open(`/proposals/${id}/template?print=true`, '_blank')
       }
-      if (!res.ok) throw new Error(data.error || 'Failed to generate PDF')
-      
-      // Open the generated PDF in a new tab
-      window.open(data.pdfUrl, '_blank')
     },
-    onSuccess: () => toast.success('PDF Generated successfully!'),
+    onSuccess: () => toast.success('Proposal document opened!'),
     onError: (e: any) => toast.error(e.message)
   })
 
