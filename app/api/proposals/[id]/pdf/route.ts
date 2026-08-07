@@ -36,18 +36,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       margin: { top: '0', right: '0', bottom: '0', left: '0' }
     })
 
-    const envPath = process.platform === 'linux' ? process.env.MEDIA_STORAGE_PATH : null
-    const pdfDir = envPath 
-      ? path.join(envPath, 'proposals')
-      : path.join(process.cwd(), 'public', 'media', 'proposals')
+    const envPath = process.env.MEDIA_STORAGE_PATH
+    const baseDir = envPath || path.join(process.cwd(), 'public', 'media')
+    const userFolder = proposal.createdById ? `user-${proposal.createdById}` : 'user-general'
+    const pdfDir = path.join(baseDir, 'proposals', userFolder)
 
     if (!existsSync(pdfDir)) await mkdir(pdfDir, { recursive: true })
     const filename = `proposal-${id}-${Date.now()}.pdf`
     await writeFile(path.join(pdfDir, filename), pdfBuffer)
 
-    const pdfUrl = envPath
-      ? `/media/proposals/${filename}`
-      : `/media/proposals/${filename}`
+    const pdfUrl = `/media/proposals/${userFolder}/${filename}`
       
     return NextResponse.json({ pdfUrl })
   } catch (error: any) {

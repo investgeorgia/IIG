@@ -55,6 +55,24 @@ export async function GET(request: Request) {
     { table: 'Customer', col: 'salesperson_name', sql: 'ADD COLUMN IF NOT EXISTS `salesperson_name` varchar(191) DEFAULT NULL' },
     { table: 'Customer', col: 'salesperson_slug', sql: 'ADD COLUMN IF NOT EXISTS `salesperson_slug` varchar(191) DEFAULT NULL' },
     { table: 'PaymentPlan', col: 'unitId', sql: 'ADD COLUMN IF NOT EXISTS `unitId` int DEFAULT NULL' },
+    // Unit new columns
+    { table: 'Unit', col: 'livingAreaSize',  sql: 'ADD COLUMN IF NOT EXISTS `livingAreaSize`  double DEFAULT NULL' },
+    { table: 'Unit', col: 'balconySize',     sql: 'ADD COLUMN IF NOT EXISTS `balconySize`     double DEFAULT NULL' },
+    { table: 'Unit', col: 'terraceSize',     sql: 'ADD COLUMN IF NOT EXISTS `terraceSize`     double DEFAULT NULL' },
+    { table: 'Unit', col: 'greenyardSize',   sql: 'ADD COLUMN IF NOT EXISTS `greenyardSize`   double DEFAULT NULL' },
+    { table: 'Unit', col: 'deliveryForm',    sql: 'ADD COLUMN IF NOT EXISTS `deliveryForm`    varchar(191) DEFAULT NULL' },
+    { table: 'Unit', col: 'blackFrame',      sql: 'ADD COLUMN IF NOT EXISTS `blackFrame`      tinyint(1) NOT NULL DEFAULT 0' },
+    { table: 'Unit', col: 'whiteFrame',      sql: 'ADD COLUMN IF NOT EXISTS `whiteFrame`      tinyint(1) NOT NULL DEFAULT 0' },
+    { table: 'Unit', col: 'greenFrame',      sql: 'ADD COLUMN IF NOT EXISTS `greenFrame`      tinyint(1) NOT NULL DEFAULT 0' },
+    { table: 'Unit', col: 'turnkey',         sql: 'ADD COLUMN IF NOT EXISTS `turnkey`         tinyint(1) NOT NULL DEFAULT 0' },
+    { table: 'Unit', col: 'blackFramePrice', sql: 'ADD COLUMN IF NOT EXISTS `blackFramePrice` decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'whiteFramePrice', sql: 'ADD COLUMN IF NOT EXISTS `whiteFramePrice` decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'greenFramePrice', sql: 'ADD COLUMN IF NOT EXISTS `greenFramePrice` decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'turnkeyPrice',    sql: 'ADD COLUMN IF NOT EXISTS `turnkeyPrice`    decimal(15,2) DEFAULT NULL' },
+    // Proposal new columns
+    { table: 'Proposal', col: 'pricingType',     sql: 'ADD COLUMN IF NOT EXISTS `pricingType`     varchar(191) DEFAULT NULL' },
+    { table: 'Proposal', col: 'selectedPrice',   sql: 'ADD COLUMN IF NOT EXISTS `selectedPrice`   decimal(15,2) DEFAULT NULL' },
+    { table: 'Proposal', col: 'paymentPlanName', sql: 'ADD COLUMN IF NOT EXISTS `paymentPlanName` varchar(191) DEFAULT NULL' },
   ]
 
   for (const { table, col, sql } of alterColumns) {

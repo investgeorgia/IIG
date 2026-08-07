@@ -72,6 +72,14 @@ export default function ProjectDetailPage() {
   const [bulkMapping, setBulkMapping] = useState<Record<string, string>>({})
   const [bulkUploading, setBulkUploading] = useState(false)
 
+  // Bulk floor plan states
+  const [showBulkFloorPlan, setShowBulkFloorPlan] = useState(false)
+  const [bulkFloorPlanUrl, setBulkFloorPlanUrl] = useState('')
+  const [bulkFloorPlanBeds, setBulkFloorPlanBeds] = useState('')
+  const [bulkFloorPlanType, setBulkFloorPlanType] = useState('')
+  const [bulkFloorPlanUploading, setBulkFloorPlanUploading] = useState(false)
+  const [bulkFloorPlanSubmitting, setBulkFloorPlanSubmitting] = useState(false)
+
   // Unit filter states
   const [unitFilterSearch, setUnitFilterSearch] = useState('')
   const [unitFilterType, setUnitFilterType] = useState('')
@@ -143,6 +151,7 @@ export default function ProjectDetailPage() {
   const projectAmenities = Array.isArray(rawProjectAmenities) ? rawProjectAmenities : []
   const paymentPlans = Array.isArray(rawPaymentPlans) ? rawPaymentPlans : []
   const mediaFiles = Array.isArray(rawMediaFiles) ? rawMediaFiles : []
+  const projectFloorPlans = mediaFiles.filter((m: any) => m.type === 'FLOOR_PLAN')
 
   const linkedAmenityIds = new Set(projectAmenities.map((pa: any) => pa.amenityId))
 
@@ -674,6 +683,9 @@ export default function ProjectDetailPage() {
               <div className="flex justify-end gap-2">
                 {canEdit && (
                   <>
+                    <Button onClick={() => setShowBulkFloorPlan(true)} variant="outline">
+                      <Building2 className="w-4 h-4 mr-2" /> Assign Floor Plan
+                    </Button>
                     <Button onClick={() => setShowBulkUpload(true)} variant="outline">
                       <Upload className="w-4 h-4 mr-2" /> Bulk Upload Units
                     </Button>
@@ -1258,6 +1270,172 @@ export default function ProjectDetailPage() {
           </div>
         )
       })()}
+      {showBulkFloorPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <Card className="w-full max-w-lg bg-white shadow-xl flex flex-col">
+            <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+              <CardTitle className="text-xl font-bold">Assign Floor Plan to Units</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => {
+                setShowBulkFloorPlan(false)
+                setBulkFloorPlanUrl('')
+                setBulkFloorPlanBeds('')
+                setBulkFloorPlanType('')
+              }}>
+                <X className="w-5 h-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-neutral-700">Floor Plan Image URL *</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://..."
+                    value={bulkFloorPlanUrl}
+                    onChange={e => setBulkFloorPlanUrl(e.target.value)}
+                    className="flex-1 text-xs"
+                  />
+                  <input
+                    type="file"
+                    id="bulk-floorplan-upload-input"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const files = e.target.files
+                      if (!files || files.length === 0) return
+                      setBulkFloorPlanUploading(true)
+                      try {
+                        const formData = new FormData()
+                        formData.append('file', files[0])
+                        formData.append('type', 'FLOOR_PLAN')
+                        const res = await fetch('/api/uploads', { method: 'POST', body: formData })
+                        const data = await res.json()
+                        if (res.ok) {
+                          setBulkFloorPlanUrl(data.url)
+                          toast.success('Floor plan uploaded!')
+                        } else {
+                          throw new Error(data.error)
+                        }
+                      } catch (err: any) {
+                        toast.error(err.message || 'Upload failed')
+                      } finally {
+                        setBulkFloorPlanUploading(false)
+                      }
+                    }}
+                  />
+                  <label htmlFor="bulk-floorplan-upload-input" className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600">
+                    {bulkFloorPlanUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  </label>
+                </div>
+                {projectFloorPlans.length > 0 && (
+                  <select
+                    value={bulkFloorPlanUrl}
+                    onChange={e => setBulkFloorPlanUrl(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 mt-2"
+                  >
+                    <option value="">Or pick existing project floor plan...</option>
+                    {projectFloorPlans.map((fp: any) => (
+                      <option key={fp.id} value={fp.url}>{fp.name || fp.url.split('/').pop()}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {bulkFloorPlanUrl && (
+                <div className="border rounded-lg overflow-hidden h-36 bg-neutral-50 flex items-center justify-center p-2">
+                  <img src={bulkFloorPlanUrl} alt="Preview" className="max-h-full max-w-full object-contain rounded" />
+                </div>
+              )}
+
+              <div className="space-y-3 pt-2 border-t">
+                <Label className="text-xs font-semibold text-neutral-800">Target Units Filter</Label>
+                
+                {selectedUnitIds.length > 0 ? (
+                  <div className="p-3 bg-red-50 rounded-md border border-red-100 text-xs text-red-700">
+                    💡 Applying to <strong>{selectedUnitIds.length} checked unit(s)</strong> in table.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Bedrooms</Label>
+                      <select
+                        value={bulkFloorPlanBeds}
+                        onChange={e => setBulkFloorPlanBeds(e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                      >
+                        <option value="">All Bedrooms</option>
+                        {[0, 1, 2, 3, 4, 5].map(b => (
+                          <option key={b} value={b}>{b} Bed</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-xs">Unit Type</Label>
+                      <select
+                        value={bulkFloorPlanType}
+                        onChange={e => setBulkFloorPlanType(e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                      >
+                        <option value="">All Types</option>
+                        {Object.entries(UNIT_TYPE_LABELS).map(([val, label]) => (
+                          <option key={val} value={val}>{label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button variant="outline" onClick={() => {
+                  setShowBulkFloorPlan(false)
+                  setBulkFloorPlanUrl('')
+                  setBulkFloorPlanBeds('')
+                  setBulkFloorPlanType('')
+                }}>Cancel</Button>
+                <Button
+                  disabled={bulkFloorPlanSubmitting || !bulkFloorPlanUrl}
+                  onClick={async () => {
+                    setBulkFloorPlanSubmitting(true)
+                    try {
+                      const res = await fetch(`/api/cms/projects/${id}/units/bulk-floor-plan`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          floorPlanUrl: bulkFloorPlanUrl,
+                          unitIds: selectedUnitIds.length > 0 ? selectedUnitIds : undefined,
+                          bedrooms: bulkFloorPlanBeds !== '' ? Number(bulkFloorPlanBeds) : undefined,
+                          type: bulkFloorPlanType !== '' ? bulkFloorPlanType : undefined
+                        })
+                      })
+                      const result = await res.json()
+                      if (res.ok) {
+                        toast.success(`Floor plan assigned to ${result.count} unit(s)!`)
+                        queryClient.invalidateQueries({ queryKey: ['units', id] })
+                        setShowBulkFloorPlan(false)
+                        setBulkFloorPlanUrl('')
+                        setBulkFloorPlanBeds('')
+                        setBulkFloorPlanType('')
+                      } else {
+                        throw new Error(result.error || 'Failed to apply floor plan')
+                      }
+                    } catch (err: any) {
+                      toast.error(err.message || 'Failed to assign floor plan')
+                    } finally {
+                      setBulkFloorPlanSubmitting(false)
+                    }
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {bulkFloorPlanSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Assign Floor Plan
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {showBulkUpload && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white shadow-xl flex flex-col">
