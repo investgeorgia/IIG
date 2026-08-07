@@ -78,8 +78,8 @@ function buildPaymentPlanPages(
     }
   })
 
-  // Page 1 can fit up to 8 rows comfortably.
-  const PAGE_1_LIMIT = 8
+  // Page 1 can fit up to 4 rows comfortably without overflowing A4.
+  const PAGE_1_LIMIT = 4
   // Overflow pages can fit up to 16 rows.
   const OVERFLOW_LIMIT = 16
 
