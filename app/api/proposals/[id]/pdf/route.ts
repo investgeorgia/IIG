@@ -22,10 +22,44 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     // Build fully-rendered HTML (inlines logo, substitutes all placeholders, appends gallery)
     const html = buildProposalHtml(proposal, baseUrl)
 
-    browser = await puppeteer.launch({
+    // Discover system chromium/chrome if PUPPETEER_EXECUTABLE_PATH is not set
+    let executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
+    if (!executablePath) {
+      const possiblePaths = [
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium',
+        '/snap/bin/chromium',
+        '/usr/bin/chromium-freeworld',
+      ]
+      for (const p of possiblePaths) {
+        if (existsSync(p)) {
+          executablePath = p
+          break
+        }
+      }
+    }
+
+    const launchOptions: any = {
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-    })
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process'
+      ]
+    }
+
+    if (executablePath) {
+      launchOptions.executablePath = executablePath
+    }
+
+    browser = await puppeteer.launch(launchOptions)
     const page = await browser.newPage()
 
     await page.setContent(html, { waitUntil: 'load', timeout: 30000 })

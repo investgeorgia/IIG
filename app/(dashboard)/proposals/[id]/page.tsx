@@ -79,7 +79,13 @@ export default function ProposalDetailsPage() {
   const generatePdfMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/proposals/${id}/pdf`, { method: 'POST' })
-      const data = await res.json()
+      const text = await res.text()
+      let data: any = {}
+      try {
+        data = JSON.parse(text)
+      } catch (err) {
+        throw new Error(text || `Server error (${res.status})`)
+      }
       if (!res.ok) throw new Error(data.error || 'Failed to generate PDF')
       
       // Open the generated PDF in a new tab
