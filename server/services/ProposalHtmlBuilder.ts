@@ -32,49 +32,113 @@ function buildLogoImgTag(baseUrl: string): string {
     : `<img src="${baseUrl}/logo-black.svg" style="height:46px;width:auto;object-fit:contain;" alt="Invest Georgia" />`
 }
 
-function buildPaymentPlanRows(
+function buildPaymentPlanPages(
   customPaymentPlan: { milestone: string; percentage: number; date: string, subMilestones?: any[] }[],
-  finalPriceUSD: number
-): string {
+  finalPriceUSD: number,
+  logoImgTag: string,
+  paymentPlanName: string
+): { page1RowsHtml: string; overflowPagesHtml: string } {
   if (!customPaymentPlan || customPaymentPlan.length === 0) {
-    return `<tr>
-      <td colspan="6" style="padding:42px 14px;text-align:center;color:#94A3B8;font-style:italic;font-size:12px;">
-        No payment plan milestones currently specified for this quotation.
-      </td>
-    </tr>`
+    return {
+      page1RowsHtml: `<tr>
+        <td colspan="6" style="padding:42px 14px;text-align:center;color:#94A3B8;font-style:italic;font-size:12px;">
+          No payment plan milestones currently specified for this quotation.
+        </td>
+      </tr>`,
+      overflowPagesHtml: ''
+    }
   }
 
-  return customPaymentPlan
-    .flatMap((m, i) => {
-      const amtUSD = (finalPriceUSD * m.percentage) / 100
-      const amtAED = amtUSD * USD_TO_AED
-      const rows = []
-      rows.push(`<tr>
-        <td style="text-align:center;color:#64748B;">${i + 1}</td>
-        <td style="font-weight:700;">${m.milestone}</td>
-        <td style="text-align:center;font-weight:700;">${m.percentage}%</td>
-        <td style="text-align:center;color:#475569;font-weight:600;">${m.date}</td>
-        <td style="text-align:right;font-weight:700;">$${formatNum(amtUSD)}</td>
-        <td style="text-align:right;color:#475569;font-weight:600;">AED ${formatNum(amtAED)}</td>
-      </tr>`)
+  const allRows: string[] = []
+  customPaymentPlan.forEach((m, i) => {
+    const amtUSD = (finalPriceUSD * (Number(m.percentage) || 0)) / 100
+    const amtAED = amtUSD * USD_TO_AED
+    allRows.push(`<tr>
+      <td style="text-align:center;color:#64748B;">${i + 1}</td>
+      <td style="font-weight:700;">${m.milestone}</td>
+      <td style="text-align:center;font-weight:700;">${m.percentage}%</td>
+      <td style="text-align:center;color:#475569;font-weight:600;">${m.date}</td>
+      <td style="text-align:right;font-weight:700;">$${formatNum(amtUSD)}</td>
+      <td style="text-align:right;color:#475569;font-weight:600;">AED ${formatNum(amtAED)}</td>
+    </tr>`)
 
-      if (m.subMilestones && m.subMilestones.length > 0) {
-        m.subMilestones.forEach((sub: any, subIdx: number) => {
-          const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
-          const subAmtAED = subAmtUSD * USD_TO_AED
-          rows.push(`<tr>
-            <td style="text-align:center;color:#94A3B8;font-size:10px;">${i + 1}.${subIdx + 1}</td>
-            <td style="font-weight:400;padding-left:24px;color:#475569;"><span style="color:#CBD5E1;margin-right:4px;">-</span> ${sub.milestone}</td>
-            <td style="text-align:center;color:#475569;">${sub.percentage}%</td>
-            <td style="text-align:center;color:#64748B;">${sub.date}</td>
-            <td style="text-align:right;font-weight:500;color:#475569;">$${formatNum(subAmtUSD)}</td>
-            <td style="text-align:right;color:#64748B;">AED ${formatNum(subAmtAED)}</td>
-          </tr>`)
-        })
-      }
-      return rows
-    })
-    .join('')
+    if (m.subMilestones && m.subMilestones.length > 0) {
+      m.subMilestones.forEach((sub: any, subIdx: number) => {
+        const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
+        const subAmtAED = subAmtUSD * USD_TO_AED
+        allRows.push(`<tr>
+          <td style="text-align:center;color:#94A3B8;font-size:10px;">${i + 1}.${subIdx + 1}</td>
+          <td style="font-weight:400;padding-left:24px;color:#475569;"><span style="color:#CBD5E1;margin-right:4px;">-</span> ${sub.milestone}</td>
+          <td style="text-align:center;color:#475569;">${sub.percentage}%</td>
+          <td style="text-align:center;color:#64748B;">${sub.date}</td>
+          <td style="text-align:right;font-weight:500;color:#475569;">$${formatNum(subAmtUSD)}</td>
+          <td style="text-align:right;color:#64748B;">AED ${formatNum(subAmtAED)}</td>
+        </tr>`)
+      })
+    }
+  })
+
+  // Page 1 can comfortably fit up to 8 rows alongside overview & summary
+  const PAGE_1_LIMIT = 8
+  const OVERFLOW_LIMIT = 16
+
+  const page1Rows = allRows.slice(0, PAGE_1_LIMIT)
+  const remainingRows = allRows.slice(PAGE_1_LIMIT)
+
+  const page1RowsHtml = page1Rows.join('')
+
+  if (remainingRows.length === 0) {
+    return { page1RowsHtml, overflowPagesHtml: '' }
+  }
+
+  let overflowPagesHtml = ''
+  for (let i = 0; i < remainingRows.length; i += OVERFLOW_LIMIT) {
+    const chunk = remainingRows.slice(i, i + OVERFLOW_LIMIT)
+    overflowPagesHtml += `
+<div class="page">
+  <div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; border-bottom: 2px solid #F1F5F9; margin-bottom: 32px;">
+      <div>
+        <div style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #0F172A;">SALES OFFER</div>
+        <div style="font-size: 12px; color: #64748B; margin-top: 4px; font-weight: 500;">Payment Schedule (Continued)</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">${logoImgTag}</div>
+    </div>
+
+    <div class="payment-plan-section" style="margin-bottom: 24px;">
+      <div style="margin-bottom: 12px;">
+        <div class="section-label" style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #C0392B;">03 / Payment Plan (Continued)</div>
+        <div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-top: 4px;">${paymentPlanName}</div>
+      </div>
+      
+      <table class="table-custom" style="border-radius: 8px; overflow: visible;">
+        <thead>
+          <tr>
+            <th style="text-align: center; width: 8%;">#</th>
+            <th style="text-align: left; width: 34%;">Milestone</th>
+            <th style="text-align: center; width: 12%;">%</th>
+            <th style="text-align: center; width: 18%;">Date</th>
+            <th style="text-align: right; width: 14%;">USD</th>
+            <th style="text-align: right; width: 14%;">AED</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${chunk.join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div style="border-top: 1px solid #E2E8F0; padding-top: 16px;">
+    <div style="font-size: 10px; color: #94A3B8; line-height: 1.6;">
+      <div>• Prices and availability are subject to official confirmation and change without prior notice.</div>
+      <div>• Completion dates are estimated and subject to developer adjustments based on project progression.</div>
+    </div>
+  </div>
+</div>`
+  }
+
+  return { page1RowsHtml, overflowPagesHtml }
 }
 
 function buildFloorPlanHtml(floorPlanUrl: string | undefined): string {
@@ -275,7 +339,8 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
 
   // --- Build HTML fragments ---
   const logoImgTag = buildLogoImgTag(baseUrl)
-  const paymentPlanRows = buildPaymentPlanRows(customPaymentPlan, finalPriceUSD)
+  const paymentPlanName = proposal.paymentPlanName || 'Standard Plan'
+  const { page1RowsHtml, overflowPagesHtml } = buildPaymentPlanPages(customPaymentPlan, finalPriceUSD, logoImgTag, paymentPlanName)
   const floorPlanHtml = buildFloorPlanHtml(snap?.unit?.floorPlanUrl)
   const amenitiesHtml = buildAmenitiesHtml(amenities)
   const galleryPageHtml = buildGalleryPageHtml(selectedImages, logoImgTag)
@@ -296,7 +361,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{consultantPhone}}/g, consultantPhone)
     .replace(/{{consultantEmail}}/g, consultantEmail)
     .replace(/{{baseUrl}}/g, baseUrl)
-    .replace(/{{paymentPlanName}}/g, proposal.paymentPlanName || 'Standard Plan')
+    .replace(/{{paymentPlanName}}/g, paymentPlanName)
     // Unit Specs
     .replace(/{{unitType}}/g, unitType)
     .replace(/{{type}}/g, unitType)
@@ -312,7 +377,8 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{bathrooms}}/g, unitBathrooms)
     .replace(/{{deliveryForm}}/g, deliveryForm)
     // Dynamic HTML blocks
-    .replace(/{{paymentPlanRows}}/g, paymentPlanRows)
+    .replace(/{{paymentPlanRows}}/g, page1RowsHtml)
+    .replace(/{{paymentPlanOverflowPagesHtml}}/g, overflowPagesHtml)
     .replace(/{{floorPlanHtml}}/g, floorPlanHtml)
     .replace(/{{amenitiesHtml}}/g, amenitiesHtml)
     .replace(/{{galleryPage}}/g, galleryPageHtml)
