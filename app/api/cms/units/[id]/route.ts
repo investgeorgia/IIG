@@ -31,6 +31,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const id = Number((await params).id)
     const body = await request.json()
     
+    // Normalize type enum if provided
+    if (body.type !== undefined) {
+      const VALID_TYPES = ['STUDIO', 'APARTMENT', 'VILLA', 'TOWNHOUSE', 'PENTHOUSE', 'PLOT', 'COMMERCIAL']
+      const typeUpper = String(body.type || '').trim().toUpperCase()
+      body.type = VALID_TYPES.includes(typeUpper) ? typeUpper : 'APARTMENT'
+    }
+
     // Parse numeric fields
     if (body.bedrooms) body.bedrooms = Number(body.bedrooms)
     if (body.bathrooms) body.bathrooms = Number(body.bathrooms)

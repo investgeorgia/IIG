@@ -12,6 +12,11 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
+    // Normalize type enum
+    const VALID_TYPES = ['STUDIO', 'APARTMENT', 'VILLA', 'TOWNHOUSE', 'PENTHOUSE', 'PLOT', 'COMMERCIAL']
+    const typeUpper = String(body.type || '').trim().toUpperCase()
+    body.type = VALID_TYPES.includes(typeUpper) ? typeUpper : 'APARTMENT'
+
     // Parse numeric fields
     if (body.bedrooms) body.bedrooms = Number(body.bedrooms)
     if (body.bathrooms) body.bathrooms = Number(body.bathrooms)

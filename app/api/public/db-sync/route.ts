@@ -75,6 +75,14 @@ export async function GET(request: Request) {
     { table: 'Proposal', col: 'paymentPlanName', sql: 'ADD COLUMN IF NOT EXISTS `paymentPlanName` varchar(191) DEFAULT NULL' },
   ]
 
+  // Ensure Unit.type is flexible varchar(191)
+  try {
+    await prisma.$executeRawUnsafe(`ALTER TABLE \`Unit\` MODIFY COLUMN \`type\` varchar(191) NOT NULL DEFAULT 'APARTMENT';`)
+    logs.push('✓ Unit.type column modified to varchar(191)')
+  } catch (e: any) {
+    logs.push('• Unit.type modification note: ' + e.message)
+  }
+
   for (const { table, col, sql } of alterColumns) {
     try {
       await prisma.$executeRawUnsafe(`ALTER TABLE \`${table}\` ${sql};`)
