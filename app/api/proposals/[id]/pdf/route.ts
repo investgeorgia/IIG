@@ -10,8 +10,9 @@ export const runtime = 'nodejs'
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   let browser = null
+  const idStr = (await params).id
+  const id = Number(idStr)
   try {
-    const id = Number((await params).id)
     const proposal = await ProposalService.getById(id)
     if (!proposal) return NextResponse.json({ error: 'Proposal not found' }, { status: 404 })
 
@@ -84,8 +85,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ pdfUrl })
   } catch (error: any) {
     console.error('[PDF Generation Error]', error)
-    return NextResponse.json({ error: `Failed to generate PDF: ${error.message}` }, { status: 500 })
+    // Fallback: Return printable HTML view if headless browser is unavailable on host server
+    const fallbackUrl = `/proposals/${id}/template?print=true`
+    return NextResponse.json({ 
+      pdfUrl: fallbackUrl,
+      warning: `Server PDF generator note: ${error.message}. Opening printable document.` 
+    })
   } finally {
-    if (browser) await browser.close()
+    if (browser) {
+      try { await browser.close() } catch {}
+    }
   }
 }

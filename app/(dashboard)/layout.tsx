@@ -1,5 +1,6 @@
 import { Sidebar } from '@/components/sidebar'
-import { Bell, Search, User as UserIcon } from 'lucide-react'
+import { UserNav } from '@/components/user-nav'
+import { Bell } from 'lucide-react'
 import { getCurrentUser } from '@/server/utils/auth'
 import { redirect } from 'next/navigation'
 
@@ -26,15 +27,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-neutral-500 hover:text-neutral-900 shadow-sm transition-colors">
               <Bell className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-3 bg-white pl-2 pr-4 py-1.5 rounded-full shadow-sm cursor-pointer hover:bg-neutral-50 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                <UserIcon className="w-4 h-4" />
-              </div>
-              <div className="hidden md:block">
-                <p className="text-sm font-bold text-neutral-900 leading-none">{user.name}</p>
-                <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-wider font-semibold">{user.role?.name || 'User'}</p>
-              </div>
-            </div>
+            <UserNav user={user} />
           </div>
         </header>
         

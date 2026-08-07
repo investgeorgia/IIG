@@ -894,6 +894,7 @@ export default function CreateProposalPage() {
                           )
                           
                           if (p.subMilestones && p.subMilestones.length > 0) {
+                            const subSum = p.subMilestones.reduce((sum, s) => sum + (Number(s.percentage) || 0), 0)
                             p.subMilestones.forEach((sub, subIdx) => {
                               const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
                               const subAmtAED = subAmtUSD * 3.6725
@@ -949,6 +950,15 @@ export default function CreateProposalPage() {
                                 </tr>
                               )
                             })
+                            if (subSum > 100) {
+                              rows.push(
+                                <tr key={`sub-warn-${p.id}`} className="bg-red-50 border-t border-red-200">
+                                  <td colSpan={7} className="px-4 py-1.5 text-xs text-red-700 font-semibold">
+                                    ⚠️ Sub-milestones for "{p.milestone || `Milestone ${idx + 1}`}" total {subSum}%. Sub-milestones percentage cannot exceed 100%.
+                                  </td>
+                                </tr>
+                              )
+                            }
                           }
 
                           return rows

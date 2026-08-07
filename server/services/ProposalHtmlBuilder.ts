@@ -211,6 +211,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const unitFloor = snap?.unit?.floor !== undefined && snap?.unit?.floor !== null ? String(snap.unit.floor) : '—'
   const unitBedrooms = snap?.unit?.bedrooms !== undefined && snap?.unit?.bedrooms !== null ? String(snap.unit.bedrooms) : '—'
   const unitBathrooms = snap?.unit?.bathrooms !== undefined && snap?.unit?.bathrooms !== null ? String(snap.unit.bathrooms) : '—'
+  const deliveryForm = proposal.unitCondition || snap?.unitCondition || snap?.unit?.condition || snap?.unit?.deliveryForm || '—'
 
   const defaultCustomerMessage =
     'Taking into consideration your preferences and key investment goals, we have carefully selected the following opportunity that aligns with your criteria and demonstrates exceptional growth potential.'
@@ -309,7 +310,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{view}}/g, snap?.unit?.view || '—')
     .replace(/{{unitBathrooms}}/g, unitBathrooms)
     .replace(/{{bathrooms}}/g, unitBathrooms)
-    .replace(/{{deliveryForm}}/g, snap?.unit?.deliveryForm || '—')
+    .replace(/{{deliveryForm}}/g, deliveryForm)
     // Dynamic HTML blocks
     .replace(/{{paymentPlanRows}}/g, paymentPlanRows)
     .replace(/{{floorPlanHtml}}/g, floorPlanHtml)

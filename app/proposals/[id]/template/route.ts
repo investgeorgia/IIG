@@ -15,7 +15,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const protocol = request.headers.get('x-forwarded-proto') || 'http'
     const baseUrl = `${protocol}://${host}`
 
-    const html = buildProposalHtml(proposal, baseUrl)
+    const { searchParams } = new URL(request.url)
+    let html = buildProposalHtml(proposal, baseUrl)
+
+    if (searchParams.get('print') === 'true') {
+      const autoPrintScript = `<script>window.addEventListener('load', () => { setTimeout(() => window.print(), 500); });</script></body>`
+      html = html.replace('</body>', autoPrintScript)
+    }
 
     return new NextResponse(html, {
       status: 200,
