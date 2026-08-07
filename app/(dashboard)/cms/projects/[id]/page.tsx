@@ -513,8 +513,8 @@ export default function ProjectDetailPage() {
       </Card>
 
       {/* Tabs */}
-      <div className="border-b border-neutral-200">
-        <nav className="flex space-x-0 -mb-px">
+      <div className="border-b border-neutral-200 overflow-x-auto custom-scrollbar">
+        <nav className="flex space-x-0 -mb-px whitespace-nowrap min-w-max">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -660,7 +660,7 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-between items-center gap-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>
                 {canEdit && selectedUnitIds.length > 0 && (
                   <Button
@@ -676,7 +676,7 @@ export default function ProjectDetailPage() {
                   </Button>
                 )}
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                 {canEdit && (
                   <>
                     <Button onClick={() => setShowBulkFloorPlan(true)} variant="outline">
@@ -813,11 +813,11 @@ export default function ProjectDetailPage() {
             )}
 
             <Card className="shadow-sm">
-              <CardContent className="p-0">
+              <CardContent className="p-0 overflow-x-auto custom-scrollbar">
                 {filteredUnits.length === 0 ? (
                   <div className="p-8 text-center text-neutral-500">No units match these filters.</div>
                 ) : (
-                  <table className="w-full text-sm text-left">
+                  <table className="w-full text-sm text-left whitespace-nowrap">
                     <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
                       <tr>
                         {canEdit && (
@@ -1270,8 +1270,8 @@ export default function ProjectDetailPage() {
         )
       })()}
       {showBulkFloorPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-lg bg-white shadow-xl flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4 overflow-y-auto">
+          <Card className="w-full max-w-lg bg-white shadow-xl flex flex-col my-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
             <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
               <CardTitle className="text-xl font-bold">Assign Floor Plan to Units</CardTitle>
               <Button variant="ghost" size="sm" onClick={() => {
