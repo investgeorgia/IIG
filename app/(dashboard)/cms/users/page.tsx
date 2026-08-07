@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, Loader2, UserCheck, UserX, Shield, Key } from 'lucide-react'
+import { Plus, Trash2, Loader2, UserCheck, UserX, Shield, Key, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -176,9 +176,22 @@ export default function UsersPage() {
   const { hasPermission, isLoading: permissionsLoading } = usePermissions()
   const router = useRouter()
   const [isAdding, setIsAdding] = useState(false)
+  const [editingUserId, setEditingUserId] = useState<number | null>(null)
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [passwordUser, setPasswordUser] = useState<any>(null)
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', roleId: '' })
+
+  const openEdit = (user: any) => {
+    setEditingUserId(user.id)
+    setForm({
+      name: user.name || '',
+      email: user.email || '',
+      password: '', // Leave password blank on edits
+      phone: user.phone || '',
+      roleId: user.role?.id?.toString() || ''
+    })
+    setIsAdding(true)
+  }
 
   useEffect(() => {
     if (!permissionsLoading && !hasPermission('Users', 'VIEW')) {
@@ -209,12 +222,21 @@ export default function UsersPage() {
     enabled: hasPermission('Users', 'EDIT')
   })
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch('/api/cms/users', {
-        method: 'POST',
+      const payload = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone || undefined,
+        roleId: Number(form.roleId),
+        ...(!editingUserId ? { password: form.password } : {})
+      }
+      const url = editingUserId ? `/api/cms/users/${editingUserId}` : '/api/cms/users'
+      const method = editingUserId ? 'PUT' : 'POST'
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, roleId: Number(form.roleId) })
+        body: JSON.stringify(payload)
       })
       if (!res.ok) { const e = await res.json(); throw new Error(e.error) }
       return res.json()
@@ -223,7 +245,8 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       setForm({ name: '', email: '', password: '', phone: '', roleId: '' })
       setIsAdding(false)
-      toast.success('User created')
+      setEditingUserId(null)
+      toast.success(editingUserId ? 'User updated successfully' : 'User created successfully')
     },
     onError: (e: any) => toast.error(e.message)
   })
@@ -280,12 +303,14 @@ export default function UsersPage() {
 
       {isAdding && canEdit && (
         <Card className="shadow-sm">
-          <CardHeader><CardTitle className="text-lg">New User</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">{editingUserId ? 'Edit User' : 'New User'}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1"><Label>Full Name *</Label><Input placeholder="John Doe" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
               <div className="space-y-1"><Label>Email *</Label><Input type="email" placeholder="john@example.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Password *</Label><Input type="password" placeholder="Minimum 8 characters" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></div>
+              {!editingUserId && (
+                <div className="space-y-1"><Label>Password *</Label><Input type="password" placeholder="Minimum 8 characters" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /></div>
+              )}
               <div className="space-y-1"><Label>Phone</Label><Input placeholder="+1 234 567 890" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /></div>
               <div className="space-y-1 md:col-span-2"><Label>Role *</Label>
                 <select value={form.roleId} onChange={e => setForm({ ...form, roleId: e.target.value })}
@@ -296,10 +321,10 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="flex gap-3">
-              <Button onClick={() => createMutation.mutate()} disabled={!form.name || !form.email || !form.password || !form.roleId || createMutation.isPending} className="bg-red-600 hover:bg-red-700 text-white">
-                {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create User
+              <Button onClick={() => saveMutation.mutate()} disabled={!form.name || !form.email || (!form.password && !editingUserId) || !form.roleId || saveMutation.isPending} className="bg-red-600 hover:bg-red-700 text-white">
+                {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} {editingUserId ? 'Save Changes' : 'Create User'}
               </Button>
-              <Button variant="outline" onClick={() => setIsAdding(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => { setIsAdding(false); setEditingUserId(null); setForm({ name: '', email: '', password: '', phone: '', roleId: '' }) }}>Cancel</Button>
             </div>
           </CardContent>
         </Card>
@@ -315,6 +340,7 @@ export default function UsersPage() {
                 <tr>
                   <th className="px-6 py-3">Name</th>
                   <th className="px-6 py-3">Email</th>
+                  <th className="px-6 py-3">Phone</th>
                   <th className="px-6 py-3">Role</th>
                   <th className="px-6 py-3">Status</th>
                   <th className="px-6 py-3 text-right">Actions</th>
@@ -325,6 +351,7 @@ export default function UsersPage() {
                   <tr key={user.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
                     <td className="px-6 py-4 font-medium text-neutral-900">{user.name}</td>
                     <td className="px-6 py-4 text-neutral-600">{user.email}</td>
+                    <td className="px-6 py-4 text-neutral-500">{user.phone || '-'}</td>
                     <td className="px-6 py-4">
                       <span className="px-2 py-1 bg-neutral-100 text-neutral-700 text-xs rounded-full font-medium">{user.role?.name}</span>
                     </td>
@@ -336,6 +363,12 @@ export default function UsersPage() {
                     <td className="px-6 py-4 text-right flex justify-end gap-1">
                       {canEdit ? (
                         <>
+                          <Button variant="ghost" size="icon"
+                            className="text-neutral-400 hover:text-blue-600"
+                            title="Edit User Details"
+                            onClick={() => openEdit(user)}>
+                            <Pencil className="w-4 h-4" />
+                          </Button>
                           <Button variant="ghost" size="icon"
                             className="text-neutral-400 hover:text-amber-600"
                             title="Change Password"
