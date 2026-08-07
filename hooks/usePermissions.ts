@@ -31,7 +31,7 @@ export function usePermissions() {
     }
 
     // Strict check: sensitive system modules are only ever accessible by Admin
-    if (moduleName === 'Users' || moduleName === 'Settings' || moduleName === 'Pages' || moduleName === 'Salespersons' || moduleName === 'Analytics') {
+    if (moduleName === 'Users' || moduleName === 'Settings' || moduleName === 'Pages' || moduleName === 'Salespersons' || moduleName === 'Analytics' || moduleName === 'Templates') {
       return user.role.name === 'Admin'
     }
 

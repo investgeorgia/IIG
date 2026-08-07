@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!checkPermission(user, 'Media', AccessLevel.EDIT)) {
+  if (!checkPermission(user, 'Media', AccessLevel.EDIT, true)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

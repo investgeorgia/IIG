@@ -23,7 +23,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!checkPermission(user, 'Amenities', AccessLevel.EDIT)) {
+  if (!checkPermission(user, 'Amenities', AccessLevel.EDIT, true)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

@@ -21,13 +21,19 @@ const levelPower = {
 export function checkPermission(
   user: any, // expecting User with role and moduleAccess relations
   moduleName: string,
-  requiredLevel: AccessLevel
+  requiredLevel: AccessLevel,
+  isDelete: boolean = false
 ): boolean {
   if (!user || !user.role) return false
 
+  // Sales users are explicitly forbidden from deleting any records
+  if (isDelete && user.role.name === 'Sales') {
+    return false
+  }
+
   // If checking Units, fallback to Projects permissions
   if (moduleName === 'Units') {
-    return checkPermission(user, 'Projects', requiredLevel)
+    return checkPermission(user, 'Projects', requiredLevel, isDelete)
   }
 
   // 1. Admins bypass all restrictions
@@ -40,8 +46,15 @@ export function checkPermission(
   }
 
   // 3. Fallback to Role-based defaults
-  if (moduleName === 'Users' || moduleName === 'Settings' || moduleName === 'Salespersons' || moduleName === 'Analytics') {
-    // Only Admin can access Users, Settings, Salespersons, and Analytics (unless overridden)
+  if (
+    moduleName === 'Users' ||
+    moduleName === 'Settings' ||
+    moduleName === 'Salespersons' ||
+    moduleName === 'Analytics' ||
+    moduleName === 'Templates' ||
+    moduleName === 'Pages'
+  ) {
+    // Only Admin can access these core modules unless explicitly overridden
     return false
   }
 
@@ -51,7 +64,7 @@ export function checkPermission(
   }
 
   if (user.role.name === 'Sales') {
-    // Sales can only View other modules
+    // Sales can only View other modules by default
     return levelPower[AccessLevel.VIEW] >= levelPower[requiredLevel]
   }
 
