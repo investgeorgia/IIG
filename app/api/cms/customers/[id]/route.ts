@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/server/utils/auth'
 import { isRestricted } from '@/server/utils/roles'
 import { NextResponse } from 'next/server'
 import { CustomerService } from '@/server/services/CustomerService'
+import { safeErrorMessage } from '@/server/utils/errors'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
@@ -17,7 +18,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (!customer) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json(customer)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }
 
@@ -44,7 +45,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const customer = await CustomerService.update(id, body)
     return NextResponse.json(customer)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }
 
@@ -60,6 +61,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await CustomerService.delete(id)
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }

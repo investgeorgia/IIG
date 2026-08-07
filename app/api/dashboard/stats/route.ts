@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/server/utils/auth'
 import { isRestricted } from '@/server/utils/roles'
 import { prisma } from '@/lib/prisma'
+import { safeErrorMessage } from '@/server/utils/errors'
 
 export async function GET() {
   try {
@@ -65,6 +66,6 @@ export async function GET() {
       recentProposals,
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }

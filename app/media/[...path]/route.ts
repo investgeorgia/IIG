@@ -56,11 +56,15 @@ export async function GET(
     const ext = path.extname(filePath)
     const contentType = getContentType(ext)
 
+    const host = request.headers.get('host') || 'localhost:3000'
+    const protocol = request.headers.get('x-forwarded-proto') || 'http'
+    const ownOrigin = `${protocol}://${host}`
+
     return new NextResponse(fileBuffer, {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': ownOrigin,
       },
     })
   } catch (error) {

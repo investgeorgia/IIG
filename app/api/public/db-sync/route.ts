@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/server/utils/auth'
 
 const salespersons = [
   { name: 'Ivane Kurasbediani',           slug: 'ivane',    phone: '971542574715', email: 'ivane@investingeorgia.ae' },
@@ -18,10 +19,12 @@ const salespersons = [
 ]
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const token = searchParams.get('token')
-  if (token !== 'sync1234') {
+  const user = await getCurrentUser()
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  if (user.role.name !== 'Admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const logs: string[] = []

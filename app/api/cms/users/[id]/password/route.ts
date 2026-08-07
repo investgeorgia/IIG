@@ -15,13 +15,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const id = Number((await params).id)
     const { newPassword } = await request.json()
 
-    if (!newPassword || newPassword.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
+    if (!newPassword || newPassword.length < 8) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
     }
 
     await UserService.updatePassword(id, newPassword)
     return NextResponse.json({ success: true, message: 'User password updated successfully' })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to update user password' }, { status: 500 })
+    const { safeErrorMessage } = require('@/server/utils/errors')
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }

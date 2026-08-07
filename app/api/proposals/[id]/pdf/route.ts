@@ -4,6 +4,8 @@ import { buildProposalHtml } from '@/server/services/ProposalHtmlBuilder'
 import path from 'path'
 import { writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
+import { getCurrentUser } from '@/server/utils/auth'
+import { isRestricted } from '@/server/utils/roles'
 
 export const runtime = 'nodejs'
 
@@ -14,8 +16,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const fallbackUrl = `/proposals/${id}/template?print=true`
 
   try {
+    const user = await getCurrentUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const proposal = await ProposalService.getById(id)
     if (!proposal) return NextResponse.json({ error: 'Proposal not found' }, { status: 404 })
+
+    if (isRestricted(user) && proposal.createdById !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     const host = request.headers.get('host') || 'localhost:3000'
     const protocol = request.headers.get('x-forwarded-proto') || 'http'

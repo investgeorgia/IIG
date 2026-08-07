@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { ProposalService } from '@/server/services/ProposalService'
 import { getCurrentUser } from '@/server/utils/auth'
 import { isRestricted } from '@/server/utils/roles'
+import { safeErrorMessage } from '@/server/utils/errors'
 
 export async function GET(request: Request) {
   try {
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
     const proposals = await ProposalService.getAll(where)
     return NextResponse.json(proposals)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }
 
@@ -33,6 +34,6 @@ export async function POST(request: Request) {
     const proposal = await ProposalService.create({ ...body, createdById })
     return NextResponse.json(proposal, { status: 201 })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }

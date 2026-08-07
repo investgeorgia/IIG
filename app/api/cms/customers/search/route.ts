@@ -16,9 +16,7 @@ export async function GET(request: Request) {
     const q = searchParams.get('q') || ''
 
     const where = isRestricted(user) ? { assignedToId: user.id } : undefined
-    console.log('[Search] User:', user.email, 'Role:', user.role.name, 'Where:', where, 'Query:', q)
     const customers = await CustomerService.search(q, where)
-    console.log('[Search] Found customers:', customers.length)
     return NextResponse.json(customers)
   } catch (error: any) {
     console.error('[Search] Error:', error)

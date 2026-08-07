@@ -16,4 +16,10 @@ export class SessionRepository {
   static async deleteByToken(token: string): Promise<void> {
     await prisma.session.delete({ where: { token } }).catch(() => {})
   }
+
+  static async deleteExpired(): Promise<void> {
+    await prisma.session.deleteMany({
+      where: { expiresAt: { lt: new Date() } }
+    }).catch(() => {})
+  }
 }

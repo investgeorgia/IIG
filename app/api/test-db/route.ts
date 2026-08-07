@@ -1,31 +1,32 @@
 import { NextResponse } from 'next/server'
 import mariadb from 'mariadb'
+import { getCurrentUser } from '@/server/utils/auth'
 
 export async function GET() {
+  const user = await getCurrentUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  if (user.role.name !== 'Admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const dbUrl = process.env.DATABASE_URL
   if (!dbUrl) {
     return NextResponse.json({ error: 'DATABASE_URL env variable is missing' })
   }
 
   const results: any = {
-    dbUrlParsed: {},
     rawConnection: 'Not tested',
     poolConnection: 'Not tested',
   }
 
   let url: URL
   try {
-    url = new URL(dbUrl)
-    results.dbUrlParsed = {
-      protocol: url.protocol,
-      host: url.hostname,
-      port: url.port || '3306',
-      user: url.username,
-      database: url.pathname.replace('/', ''),
-      passwordLength: url.password.length,
-    }
+    const cleanUrl = dbUrl.split('?')[0]
+    url = new URL(cleanUrl)
   } catch (err: any) {
-    return NextResponse.json({ error: 'Failed to parse DATABASE_URL: ' + err.message })
+    return NextResponse.json({ error: 'Failed to parse DATABASE_URL' })
   }
 
   const connConfig = {
@@ -40,19 +41,15 @@ export async function GET() {
   // Test 1: single non-pooled connection
   try {
     const conn = await mariadb.createConnection(connConfig)
-    const rows = await conn.query('SELECT USER() as u, @@hostname as h')
+    const rows = await conn.query('SELECT 1 as ok')
     await conn.end()
     results.rawConnection = {
-      status: 'SUCCESS',
-      user: String(rows[0]?.u ?? ''),
-      host: String(rows[0]?.h ?? ''),
+      status: 'SUCCESS'
     }
   } catch (err: any) {
     results.rawConnection = {
       status: 'FAILED',
-      message: err.message,
-      code: err.code,
-      errno: err.errno,
+      code: err.code
     }
   }
 
@@ -68,13 +65,11 @@ export async function GET() {
     const conn = await pool.getConnection()
     const rows = await conn.query('SELECT 1 as ok')
     conn.release()
-    results.poolConnection = { status: 'SUCCESS', result: rows[0] }
+    results.poolConnection = { status: 'SUCCESS' }
   } catch (err: any) {
     results.poolConnection = {
       status: 'FAILED',
-      message: err.message,
-      code: err.code,
-      errno: err.errno,
+      code: err.code
     }
   } finally {
     if (pool) {

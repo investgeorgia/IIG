@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { existsSync } from 'fs'
-import os from 'os'
+import { getCurrentUser } from '@/server/utils/auth'
+import { safeErrorMessage } from '@/server/utils/errors'
 
 export const runtime = 'nodejs'
 
@@ -21,6 +22,11 @@ const ALLOWED_MIME_TYPES = [
   // Spreadsheets
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+]
+
+const ALLOWED_EXTENSIONS = [
+  '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg',
+  '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'
 ]
 
 /**
@@ -44,10 +50,15 @@ function getMediaRoot(): { dir: string; urlBase: string } {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File
-    const type = formData.get('type') as string || 'IMAGE'
-    const projectId = formData.get('projectId') as string
+    const typeRaw = formData.get('type') as string || 'IMAGE'
+    const projectIdRaw = formData.get('projectId') as string || 'general'
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -61,22 +72,34 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validate file extension
+    const ext = path.extname(file.name).toLowerCase()
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json(
+        { error: `File extension not allowed: ${ext}` },
+        { status: 400 }
+      )
+    }
+
     // Max 50MB
     if (file.size > 50 * 1024 * 1024) {
       return NextResponse.json({ error: 'File too large (max 50MB)' }, { status: 400 })
     }
 
+    // Sanitize type and projectId to prevent path traversal
+    const type = typeRaw.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase() || 'image'
+    const projectId = projectIdRaw.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase() || 'general'
+
     const { dir: mediaRoot, urlBase } = getMediaRoot()
 
     // Build directory: <mediaRoot>/<type>/<projectId>/
-    const subDir = path.join(type.toLowerCase(), projectId || 'general')
+    const subDir = path.join(type, projectId)
     const uploadDir = path.join(mediaRoot, subDir)
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true })
     }
 
     // Generate safe filename
-    const ext = path.extname(file.name)
     const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
     const filePath = path.join(uploadDir, safeName)
 
@@ -85,7 +108,7 @@ export async function POST(request: Request) {
     await writeFile(filePath, buffer)
 
     // URL served statically
-    const url = `${urlBase}/${type.toLowerCase()}/${projectId || 'general'}/${safeName}`
+    const url = `${urlBase}/${type}/${projectId}/${safeName}`
 
     return NextResponse.json({
       url,
@@ -96,6 +119,6 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error('[Upload Error]', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }

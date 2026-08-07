@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/server/utils/auth'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  if (searchParams.get('token') !== 'debug123') return NextResponse.json({ error: 'unauth' })
+  const user = await getCurrentUser()
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  if (user.role.name !== 'Admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const visitors = await prisma.referralVisitor.count()
   const events = await prisma.referralTrackingEvent.count()

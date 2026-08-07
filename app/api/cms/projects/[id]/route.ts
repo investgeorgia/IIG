@@ -2,6 +2,7 @@ import { checkPermission, AccessLevel } from '@/server/utils/permissions'
 import { getCurrentUser } from '@/server/utils/auth'
 import { NextResponse } from 'next/server'
 import { ProjectService } from '@/server/services/ProjectService'
+import { safeErrorMessage } from '@/server/utils/errors'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
@@ -16,7 +17,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 })
     return NextResponse.json(project)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }
 
@@ -36,7 +37,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const project = await ProjectService.updateProject(id, body)
     return NextResponse.json(project)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }
 
@@ -52,6 +53,6 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await ProjectService.deleteProject(id)
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }

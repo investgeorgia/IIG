@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { ProjectService } from '@/server/services/ProjectService'
 import { getCurrentUser } from '@/server/utils/auth'
 import { checkPermission, AccessLevel } from '@/server/utils/permissions'
+import { safeErrorMessage } from '@/server/utils/errors'
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
     const projects = await ProjectService.getAllProjects()
     return NextResponse.json(projects)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }
 
@@ -36,6 +37,6 @@ export async function POST(request: Request) {
     const project = await ProjectService.createProject(body)
     return NextResponse.json(project, { status: 201 })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }

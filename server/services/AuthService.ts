@@ -3,7 +3,11 @@ import { SignJWT, jwtVerify } from 'jose'
 import { UserRepository } from '../repositories/UserRepository'
 import { SessionRepository } from '../repositories/SessionRepository'
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'super-secret-key-replace-in-production')
+const jwtSecretRaw = process.env.JWT_SECRET
+if (!jwtSecretRaw) {
+  throw new Error('JWT_SECRET environment variable is required. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"')
+}
+const JWT_SECRET = new TextEncoder().encode(jwtSecretRaw)
 
 export class AuthService {
   static async login(email: string, password: string) {
@@ -30,6 +34,9 @@ export class AuthService {
       expiresAt,
       user: { connect: { id: user.id } }
     })
+
+    // Clean up expired sessions asynchronously
+    SessionRepository.deleteExpired().catch(() => {})
 
     return { token, user }
   }

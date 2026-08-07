@@ -14,8 +14,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Current password and new password are required' }, { status: 400 })
     }
 
-    if (newPassword.length < 6) {
-      return NextResponse.json({ error: 'New password must be at least 6 characters' }, { status: 400 })
+    if (newPassword.length < 8) {
+      return NextResponse.json({ error: 'New password must be at least 8 characters' }, { status: 400 })
     }
 
     // Verify current password
@@ -28,6 +28,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, message: 'Password updated successfully' })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Failed to change password' }, { status: 500 })
+    const { safeErrorMessage } = require('@/server/utils/errors')
+    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
   }
 }
