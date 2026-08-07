@@ -20,26 +20,82 @@
     .page {
       width: 794px;
       min-height: 1123px;
+      height: auto;
       background: #FFFFFF;
       margin: 20px auto;
       padding: 50px 56px;
       position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+      page-break-after: always;
+      break-after: page;
+      page-break-inside: auto;
+      break-inside: auto;
     }
 
-    /* Print Optimizations */
+    .page:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    /* Print & PDF Page Break Optimizations */
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    tr, th, td {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    thead {
+      display: table-header-group;
+    }
+
     @media print {
-      body { background: white; }
-      .page { 
-        margin: 0; 
-        box-shadow: none; 
-        page-break-after: always; 
-        page-break-inside: avoid;
+      body { 
+        background: white !important; 
+        margin: 0 !important;
+        padding: 0 !important;
       }
-      .page:last-child { page-break-after: auto; }
+      .page { 
+        margin: 0 !important; 
+        width: 100% !important;
+        min-height: 100vh !important;
+        height: auto !important;
+        box-shadow: none !important; 
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      .page:last-child { 
+        page-break-after: auto !important; 
+        break-after: auto !important;
+      }
+
+      /* Allow the payment plan table to flow across pages cleanly */
+      .payment-plan-section, table, .table-custom, tbody {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+
+      /* Keep table header visible on every page */
+      .payment-plan-section table thead, table thead {
+        display: table-header-group !important;
+      }
+
+      /* Never cut a row in half across pages */
+      .payment-plan-section table tbody tr, table tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      /* Keep section label pinned to its first row */
+      .payment-plan-section .section-label {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
     }
 
     /* Standard Utilities */
