@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
@@ -30,10 +30,14 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { hasPermission } = usePermissions()
+  const lastPathname = useRef(pathname)
 
-  // Close drawer when route changes
+  // Close drawer only when route actually changes
   useEffect(() => {
-    onClose()
+    if (lastPathname.current !== pathname) {
+      lastPathname.current = pathname
+      onClose()
+    }
   }, [pathname, onClose])
 
   // Prevent background scrolling when drawer is open
