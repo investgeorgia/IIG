@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
-import { ArrowLeft, Building2, MapPin, Calendar, Globe, Loader2, Plus, Trash2, Upload, X, CheckSquare, Square, Download, Eye } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Globe, Loader2, Plus, Trash2, Upload, X, CheckSquare, Square, Download, Eye, Pencil } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -277,6 +277,24 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['media', id] })
       toast.success('File deleted')
+    }
+  })
+
+  const renameMediaMutation = useMutation({
+    mutationFn: async ({ id, name }: { id: number; name: string }) => {
+      const res = await fetch(`/api/cms/media/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      })
+      if (!res.ok) throw new Error('Failed to rename file')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['media', id] })
+      toast.success('File renamed')
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to rename file')
     }
   })
 
@@ -870,7 +888,7 @@ export default function ProjectDetailPage() {
                     </thead>
                     <tbody>
                       {filteredUnits.map((unit: any) => (
-                        <>
+                        <Fragment key={unit.id}>
                           <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
                             {canEdit && (
                               <td className="px-4 py-4 w-10">
@@ -1085,7 +1103,7 @@ export default function ProjectDetailPage() {
                               </td>
                             </tr>
                           )}
-                        </>
+                        </Fragment>
                       ))}
                     </tbody>
                   </table>
@@ -1451,6 +1469,21 @@ export default function ProjectDetailPage() {
                         >
                           <Download className="w-3.5 h-3.5" />
                         </a>
+                        {canEdit && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              const newName = prompt('Enter new name:', file.name || file.url.split('/').pop())
+                              if (newName !== null && newName.trim() !== '') {
+                                renameMediaMutation.mutate({ id: file.id, name: newName.trim() })
+                              }
+                            }}
+                            className="bg-white hover:bg-neutral-100 text-neutral-700 rounded-lg p-1.5 shadow-md border border-neutral-200"
+                            title="Rename"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         {canEdit && (
                           <button
                             onClick={(e) => {

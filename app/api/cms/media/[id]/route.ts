@@ -4,6 +4,26 @@ import { NextResponse } from 'next/server'
 import { MediaService } from '@/server/services/MediaService'
 import { prisma } from '@/lib/prisma'
 
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!checkPermission(user, 'Media', AccessLevel.EDIT, true)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  try {
+    const id = Number((await params).id)
+    const { name } = await request.json()
+    const updated = await prisma.media.update({
+      where: { id },
+      data: { name }
+    })
+    return NextResponse.json(updated)
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
