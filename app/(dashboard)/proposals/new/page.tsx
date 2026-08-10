@@ -38,7 +38,7 @@ export default function CreateProposalPage() {
   const [customPrice, setCustomPrice] = useState('')
   const [discountPercent, setDiscountPercent] = useState('')
   const [notes, setNotes] = useState('')
-  const [customerMessage, setCustomerMessage] = useState('')
+  const [customerMessage, setCustomerMessage] = useState('Taking into consideration your preferences and key investment goals, we have carefully selected the following opportunity that aligns with your criteria and demonstrates exceptional growth potential.')
   const [selectedImages, setSelectedImages] = useState<string[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null)
   
@@ -108,6 +108,8 @@ export default function CreateProposalPage() {
     queryFn: async () => (await fetch(`/api/cms/projects/${selectedProjectId}/media`)).json(),
     enabled: !!selectedProjectId && step === 4
   })
+
+  const projectFloorPlans = (Array.isArray(projectMedia) ? projectMedia : []).filter((m: any) => m.type === 'FLOOR_PLAN')
 
   const { data: templates = [] } = useQuery({
     queryKey: ['templates'],
@@ -579,6 +581,7 @@ export default function CreateProposalPage() {
                     setSelectedPriceVal(Number(unit.price))
                     setSelectedPricingType('Base Price')
                     setUnitCondition(unit.deliveryForm || '')
+                    setTowerBlock(unit.towerBlock || '')
                     const plan = (unit.paymentPlans && unit.paymentPlans.length > 0) ? unit.paymentPlans[0] : (projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans?.[0])
                     setSelectedPaymentPlanName(plan ? plan.name : 'Standard Plan')
                     if (plan && plan.schedule) {
@@ -738,14 +741,26 @@ export default function CreateProposalPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1"><Label>Internal Notes</Label><Input placeholder="Private notes (not shown in PDF)..." value={notes} onChange={e => setNotes(e.target.value)} /></div>
                 <div className="space-y-1">
-                  <Label>Custom Floor Plan Image</Label>
+                  <Label>Floor Plan Image</Label>
                   <div className="flex gap-2">
-                    <Input placeholder="URL or upload..." value={customFloorPlanUrl} onChange={e => setCustomFloorPlanUrl(e.target.value)} className="flex-1" />
+                    <Input placeholder="URL or upload..." value={customFloorPlanUrl} onChange={e => setCustomFloorPlanUrl(e.target.value)} className="flex-1 text-xs" />
                     <input type="file" id="custom-floor-upload" className="hidden" accept="image/*" onChange={handleFloorPlanUpload} />
-                    <label htmlFor="custom-floor-upload" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-sm">
+                    <label htmlFor="custom-floor-upload" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-xs">
                       {floorPlanUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                     </label>
                   </div>
+                  {projectFloorPlans.length > 0 && (
+                    <select
+                      value={customFloorPlanUrl}
+                      onChange={e => setCustomFloorPlanUrl(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 mt-1.5"
+                    >
+                      <option value="">Or select project floor plan...</option>
+                      {projectFloorPlans.map((fp: any) => (
+                        <option key={fp.id} value={fp.url}>{fp.name || fp.url.split('/').pop()}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
               

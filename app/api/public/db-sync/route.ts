@@ -73,18 +73,29 @@ export async function GET(request: Request) {
     { table: 'Unit', col: 'whiteFramePrice', sql: 'ADD COLUMN IF NOT EXISTS `whiteFramePrice` decimal(15,2) DEFAULT NULL' },
     { table: 'Unit', col: 'greenFramePrice', sql: 'ADD COLUMN IF NOT EXISTS `greenFramePrice` decimal(15,2) DEFAULT NULL' },
     { table: 'Unit', col: 'turnkeyPrice',    sql: 'ADD COLUMN IF NOT EXISTS `turnkeyPrice`    decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'towerBlock',      sql: 'ADD COLUMN IF NOT EXISTS `towerBlock`      varchar(191) DEFAULT NULL' },
+    { table: 'Unit', col: 'priceSqm',        sql: 'ADD COLUMN IF NOT EXISTS `priceSqm`        decimal(15,2) DEFAULT NULL' },
     // Proposal new columns
     { table: 'Proposal', col: 'pricingType',     sql: 'ADD COLUMN IF NOT EXISTS `pricingType`     varchar(191) DEFAULT NULL' },
     { table: 'Proposal', col: 'selectedPrice',   sql: 'ADD COLUMN IF NOT EXISTS `selectedPrice`   decimal(15,2) DEFAULT NULL' },
     { table: 'Proposal', col: 'paymentPlanName', sql: 'ADD COLUMN IF NOT EXISTS `paymentPlanName` varchar(191) DEFAULT NULL' },
   ]
 
-  // Ensure Unit.type is flexible varchar(191)
-  try {
-    await prisma.$executeRawUnsafe(`ALTER TABLE \`Unit\` MODIFY COLUMN \`type\` varchar(191) NOT NULL DEFAULT 'APARTMENT';`)
-    logs.push('✓ Unit.type column modified to varchar(191)')
-  } catch (e: any) {
-    logs.push('• Unit.type modification note: ' + e.message)
+  // Ensure Unit fields are nullable and flexible
+  const unitNullableModifications = [
+    `ALTER TABLE \`Unit\` MODIFY COLUMN \`unitNumber\` varchar(191) NULL;`,
+    `ALTER TABLE \`Unit\` MODIFY COLUMN \`type\` varchar(191) NULL DEFAULT 'APARTMENT';`,
+    `ALTER TABLE \`Unit\` MODIFY COLUMN \`bedrooms\` int NULL;`,
+    `ALTER TABLE \`Unit\` MODIFY COLUMN \`bathrooms\` int NULL;`,
+    `ALTER TABLE \`Unit\` MODIFY COLUMN \`size\` double NULL;`,
+    `ALTER TABLE \`Unit\` MODIFY COLUMN \`price\` decimal(15,2) NULL;`
+  ]
+  for (const query of unitNullableModifications) {
+    try {
+      await prisma.$executeRawUnsafe(query)
+    } catch (e: any) {
+      logs.push('• Unit column modification note: ' + e.message)
+    }
   }
 
   for (const { table, col, sql } of alterColumns) {

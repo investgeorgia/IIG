@@ -252,11 +252,10 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
       : []
 
   const amenities: string[] = snap?.amenities || []
-  const consultantName = proposal.createdBy?.name || 'Invest Georgia UAE'
+  const consultantName = proposal.createdBy?.name || ''
   const consultantPhone = proposal.createdBy?.phone || ''
-  const consultantEmail = proposal.createdBy?.email || 'info@investgeorgia.ae'
+  const consultantEmail = proposal.createdBy?.email || ''
 
-  // --- Unit details ---
   const unitTypeMap: Record<string, string> = {
     STUDIO: 'Studio',
     ONE_BHK: '1 BHK',
@@ -278,8 +277,54 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const unitBathrooms = snap?.unit?.bathrooms !== undefined && snap?.unit?.bathrooms !== null ? String(snap.unit.bathrooms) : '—'
   const deliveryForm = proposal.unitCondition || snap?.unitCondition || snap?.unit?.condition || snap?.unit?.deliveryForm || '—'
 
-  const defaultCustomerMessage =
-    'Taking into consideration your preferences and key investment goals, we have carefully selected the following opportunity that aligns with your criteria and demonstrates exceptional growth potential.'
+  const projectLocation = [snap?.project?.address, snap?.project?.city, snap?.project?.country].filter(Boolean).join(', ') || '—'
+
+  // --- Dynamic Customer Message Banner ---
+  let customerMessageBanner = ''
+  if (proposal.customerMessage && proposal.customerMessage.trim() !== '') {
+    customerMessageBanner = `
+    <div style="background: #F8FAFC; border-left: 4px solid #C0392B; padding: 12px 18px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+      <div style="font-size: 16px; font-weight: 700; color: #0F172A;">Dear ${proposal.customer?.name || ''},</div>
+      <p style="font-size: 13px; color: #475569; margin-top: 6px; line-height: 1.6;">
+        ${proposal.customerMessage}
+      </p>
+    </div>`
+  }
+
+  // --- Dynamic Unit Specs Table (Hides Bed/Bath if empty) ---
+  const showBedrooms = snap?.unit?.bedrooms !== undefined && snap?.unit?.bedrooms !== null && snap?.unit?.bedrooms !== ''
+  const showBathrooms = snap?.unit?.bathrooms !== undefined && snap?.unit?.bathrooms !== null && snap?.unit?.bathrooms !== ''
+
+  const specCols = [
+    { label: 'Unit Type', val: unitType, align: 'left' },
+    { label: 'Size', val: unitSize !== '—' ? `${unitSize} m²` : '—', align: 'center' },
+    { label: 'Floor', val: unitFloor, align: 'center' }
+  ]
+  if (showBedrooms) {
+    specCols.push({ label: 'Bedrooms', val: String(snap.unit.bedrooms), align: 'center' })
+  }
+  if (showBathrooms) {
+    specCols.push({ label: 'Bathrooms', val: String(snap.unit.bathrooms), align: 'right' })
+  }
+  if (specCols.length > 0) {
+    specCols[0].align = 'left'
+    specCols[specCols.length - 1].align = 'right'
+  }
+  const colWidthPct = Math.floor(100 / specCols.length)
+  const unitSpecsTableHtml = `
+    <table class="table-custom" style="margin-top: 10px;">
+      <thead>
+        <tr>
+          ${specCols.map(c => `<th style="text-align: ${c.align}; width: ${colWidthPct}%;">${c.label}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          ${specCols.map(c => `<td style="text-align: ${c.align}; font-weight: 500;${c.label === 'Unit Type' ? ' text-transform: capitalize;' : ''}">${c.val}</td>`).join('')}
+        </tr>
+      </tbody>
+    </table>
+  `
 
   // --- Extra Unit Sizes ---
   const lvSize = snap?.unit?.livingAreaSize
@@ -342,7 +387,8 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const logoImgTag = buildLogoImgTag(baseUrl)
   const paymentPlanName = proposal.paymentPlanName || 'Standard Plan'
   const { page1RowsHtml, overflowPagesHtml } = buildPaymentPlanPages(customPaymentPlan, finalPriceUSD, logoImgTag, paymentPlanName)
-  const floorPlanHtml = buildFloorPlanHtml(snap?.unit?.floorPlanUrl)
+  const chosenFloorPlanUrl = proposal.customFloorPlanUrl || snap?.unit?.floorPlanUrl
+  const floorPlanHtml = buildFloorPlanHtml(chosenFloorPlanUrl)
   const amenitiesHtml = buildAmenitiesHtml(amenities)
   const galleryPageHtml = buildGalleryPageHtml(selectedImages, logoImgTag)
 
@@ -350,10 +396,12 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   let html = proposal.template.content
     // Core data
     .replace(/{{customerName}}/g, proposal.customer?.name || '')
-    .replace(/{{customerMessage}}/g, proposal.customerMessage || defaultCustomerMessage)
+    .replace(/{{customerMessage}}/g, proposal.customerMessage || '')
+    .replace(/{{customerMessageBanner}}/g, customerMessageBanner)
     .replace(/{{unitNumber}}/g, snap?.unit?.unitNumber || '—')
-    .replace(/{{towerBlock}}/g, snap?.unit?.towerBlock || '—')
+    .replace(/{{towerBlock}}/g, snap?.unit?.towerBlock || proposal.towerBlock || '—')
     .replace(/{{projectName}}/g, snap?.project?.name || '—')
+    .replace(/{{projectLocation}}/g, projectLocation)
     .replace(/{{completionDate}}/g, completionDate)
     .replace(/{{finalPriceUSD}}/g, `$${formatNum(finalPriceUSD)}`)
     .replace(/{{finalPriceAED}}/g, `AED ${formatNum(finalPriceAED)}`)
@@ -378,6 +426,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{bathrooms}}/g, unitBathrooms)
     .replace(/{{deliveryForm}}/g, deliveryForm)
     // Dynamic HTML blocks
+    .replace(/{{unitSpecsTableHtml}}/g, unitSpecsTableHtml)
     .replace(/{{paymentPlanRows}}/g, page1RowsHtml)
     .replace(/{{paymentPlanOverflowPagesHtml}}/g, overflowPagesHtml)
     .replace(/{{floorPlanHtml}}/g, floorPlanHtml)

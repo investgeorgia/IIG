@@ -15,10 +15,16 @@ export async function POST(request: Request) {
     body.type = String(body.type || '').trim() || 'APARTMENT'
 
     // Parse numeric fields
-    if (body.bedrooms) body.bedrooms = Number(body.bedrooms)
-    if (body.bathrooms) body.bathrooms = Number(body.bathrooms)
-    if (body.size) body.size = Number(body.size)
-    if (body.price) body.price = Number(body.price)
+    if (body.bedrooms !== undefined && body.bedrooms !== null && body.bedrooms !== '') body.bedrooms = Number(body.bedrooms)
+    else delete body.bedrooms
+    if (body.bathrooms !== undefined && body.bathrooms !== null && body.bathrooms !== '') body.bathrooms = Number(body.bathrooms)
+    else delete body.bathrooms
+    if (body.size !== undefined && body.size !== null && body.size !== '') body.size = Number(body.size)
+    else delete body.size
+    if (body.price !== undefined && body.price !== null && body.price !== '') body.price = Number(body.price)
+    else delete body.price
+    if (body.priceSqm !== undefined && body.priceSqm !== null && body.priceSqm !== '') body.priceSqm = Number(body.priceSqm)
+    else delete body.priceSqm
     if (body.projectId) body.projectId = Number(body.projectId)
     if (body.livingAreaSize !== undefined && body.livingAreaSize !== null && body.livingAreaSize !== '') body.livingAreaSize = Number(body.livingAreaSize)
     else delete body.livingAreaSize

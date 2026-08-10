@@ -36,10 +36,16 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     // Parse numeric fields
-    if (body.bedrooms) body.bedrooms = Number(body.bedrooms)
-    if (body.bathrooms) body.bathrooms = Number(body.bathrooms)
-    if (body.size) body.size = Number(body.size)
-    if (body.price) body.price = Number(body.price)
+    if (body.bedrooms !== undefined && body.bedrooms !== null && body.bedrooms !== '') body.bedrooms = Number(body.bedrooms)
+    else if (body.bedrooms === '' || body.bedrooms === null) body.bedrooms = null
+    if (body.bathrooms !== undefined && body.bathrooms !== null && body.bathrooms !== '') body.bathrooms = Number(body.bathrooms)
+    else if (body.bathrooms === '' || body.bathrooms === null) body.bathrooms = null
+    if (body.size !== undefined && body.size !== null && body.size !== '') body.size = Number(body.size)
+    else if (body.size === '' || body.size === null) body.size = null
+    if (body.price !== undefined && body.price !== null && body.price !== '') body.price = Number(body.price)
+    else if (body.price === '' || body.price === null) body.price = null
+    if (body.priceSqm !== undefined && body.priceSqm !== null && body.priceSqm !== '') body.priceSqm = Number(body.priceSqm)
+    else if (body.priceSqm === '' || body.priceSqm === null) body.priceSqm = null
     if (body.projectId) body.projectId = Number(body.projectId)
     if (body.livingAreaSize !== undefined && body.livingAreaSize !== null && body.livingAreaSize !== '') body.livingAreaSize = Number(body.livingAreaSize)
     else delete body.livingAreaSize

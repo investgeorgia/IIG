@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
-import { ArrowLeft, Building2, MapPin, Calendar, Globe, Loader2, Plus, Trash2, Upload, X, CheckSquare, Square, Download } from 'lucide-react'
+import { ArrowLeft, Building2, MapPin, Calendar, Globe, Loader2, Plus, Trash2, Upload, X, CheckSquare, Square, Download, Eye } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -296,18 +296,36 @@ export default function ProjectDetailPage() {
   })
 
   // -- Unit add form state --
-  const { register: regUnit, handleSubmit: handleUnit, reset: resetUnit, setValue: setUnitValue } = useForm()
+  const [expandedViewUnitId, setExpandedViewUnitId] = useState<number | null>(null)
+  const [expandedEditUnitId, setExpandedEditUnitId] = useState<number | null>(null)
+
+  const { register: regUnit, handleSubmit: handleUnit, reset: resetUnit, setValue: setUnitValue, watch: watchUnit } = useForm()
+
+  const watchedPriceSqm = watchUnit('priceSqm')
+  const watchedSize = watchUnit('size')
+
+  useEffect(() => {
+    if (watchedPriceSqm !== undefined && watchedPriceSqm !== '' && watchedSize !== undefined && watchedSize !== '') {
+      const pSqm = Number(watchedPriceSqm)
+      const sz = Number(watchedSize)
+      if (!isNaN(pSqm) && !isNaN(sz)) {
+        setUnitValue('turnkeyPrice', (pSqm * sz).toFixed(2))
+      }
+    }
+  }, [watchedPriceSqm, watchedSize, setUnitValue])
 
   const createUnitMutation = useMutation({
     mutationFn: async (data: any) => {
       const payload = {
         ...data,
         projectId: Number(id),
-        bedrooms: Number(data.bedrooms),
-        bathrooms: Number(data.bathrooms),
-        size: Number(data.size),
-        price: Number(data.price),
-        floor: data.floor ? Number(data.floor) : undefined,
+        bedrooms: data.bedrooms !== undefined && data.bedrooms !== '' ? Number(data.bedrooms) : undefined,
+        bathrooms: data.bathrooms !== undefined && data.bathrooms !== '' ? Number(data.bathrooms) : undefined,
+        size: data.size !== undefined && data.size !== '' ? Number(data.size) : undefined,
+        price: data.price !== undefined && data.price !== '' ? Number(data.price) : undefined,
+        priceSqm: data.priceSqm !== undefined && data.priceSqm !== '' ? Number(data.priceSqm) : undefined,
+        towerBlock: data.towerBlock || undefined,
+        floor: data.floor !== undefined && data.floor !== '' ? Number(data.floor) : undefined,
         livingAreaSize: data.livingAreaSize ? Number(data.livingAreaSize) : undefined,
         balconySize: data.balconySize ? Number(data.balconySize) : undefined,
         terraceSize: data.terraceSize ? Number(data.terraceSize) : undefined,
@@ -339,6 +357,7 @@ export default function ProjectDetailPage() {
       resetUnit()
       setShowAddUnit(false)
       setEditingUnit(null)
+      setExpandedEditUnitId(null)
       toast.success(editingUnit ? 'Unit updated' : 'Unit added')
     },
     onError: (err: any) => {
@@ -348,16 +367,20 @@ export default function ProjectDetailPage() {
 
   const openEditUnit = (unit: any) => {
     setEditingUnit(unit)
+    setExpandedEditUnitId(unit.id)
+    setExpandedViewUnitId(null)
     resetUnit({
-      unitNumber: unit.unitNumber,
-      type: unit.type,
-      status: unit.status,
+      unitNumber: unit.unitNumber || '',
+      towerBlock: unit.towerBlock || '',
+      type: unit.type || 'APARTMENT',
+      status: unit.status || 'AVAILABLE',
       view: unit.view || '',
-      bedrooms: unit.bedrooms,
-      bathrooms: unit.bathrooms,
-      floor: unit.floor || '',
-      size: unit.size,
-      price: unit.price,
+      bedrooms: unit.bedrooms ?? '',
+      bathrooms: unit.bathrooms ?? '',
+      floor: unit.floor ?? '',
+      size: unit.size ?? '',
+      priceSqm: unit.priceSqm ?? '',
+      price: unit.price ?? '',
       floorPlanUrl: unit.floorPlanUrl || '',
       livingAreaSize: unit.livingAreaSize || '',
       balconySize: unit.balconySize || '',
@@ -373,7 +396,6 @@ export default function ProjectDetailPage() {
       greenFramePrice: unit.greenFramePrice || '',
       turnkeyPrice: unit.turnkeyPrice || ''
     })
-    setShowAddUnit(true)
   }
 
   const handleUnitFloorPlanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -693,24 +715,20 @@ export default function ProjectDetailPage() {
               </div>
             </div>
 
-            {showAddUnit && canEdit && (
-              <Card className="shadow-sm border-red-100">
-                <CardHeader><CardTitle className="text-lg">{editingUnit ? 'Edit Unit' : 'New Unit'}</CardTitle></CardHeader>
+            {showAddUnit && !editingUnit && canEdit && (
+              <Card className="shadow-sm border-red-100 mb-4">
+                <CardHeader><CardTitle className="text-lg">New Unit</CardTitle></CardHeader>
                 <CardContent>
-                  <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data), (errors) => {
-                    toast.error('Please fill in all required unit fields (Unit Number, Type, Bedrooms, Bathrooms, Size, Price)')
-                  })} className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="space-y-1"><Label>Unit Number *</Label><Input placeholder="A-101" {...regUnit('unitNumber', { required: true })} /></div>
-                      <div className="space-y-1"><Label>Type *</Label>
-                        <select {...regUnit('type', { required: true })} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                  <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data))} className="space-y-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <div className="space-y-1"><Label>Unit Number</Label><Input placeholder="A-101" {...regUnit('unitNumber')} /></div>
+                      <div className="space-y-1"><Label>Tower/Block</Label><Input placeholder="e.g. Tower A" {...regUnit('towerBlock')} /></div>
+                      <div className="space-y-1"><Label>Type</Label>
+                        <select {...regUnit('type')} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
                           <option value="">Select...</option>
                           {Object.entries(UNIT_TYPE_LABELS).map(([value, label]) => (
                             <option key={value} value={value}>{label}</option>
                           ))}
-                          {editingUnit?.type && !UNIT_TYPE_LABELS[editingUnit.type] && (
-                            <option value={editingUnit.type}>{editingUnit.type}</option>
-                          )}
                         </select>
                       </div>
                       <div className="space-y-1"><Label>Status</Label>
@@ -722,12 +740,13 @@ export default function ProjectDetailPage() {
                       </div>
                       <div className="space-y-1"><Label>View</Label><Input placeholder="Sea View" {...regUnit('view')} /></div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      <div className="space-y-1"><Label>Bedrooms *</Label><Input type="number" min={0} {...regUnit('bedrooms', { required: true })} /></div>
-                      <div className="space-y-1"><Label>Bathrooms *</Label><Input type="number" min={0} {...regUnit('bathrooms', { required: true })} /></div>
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                      <div className="space-y-1"><Label>Bedrooms</Label><Input type="number" min={0} {...regUnit('bedrooms')} /></div>
+                      <div className="space-y-1"><Label>Bathrooms</Label><Input type="number" min={0} {...regUnit('bathrooms')} /></div>
                       <div className="space-y-1"><Label>Floor</Label><Input type="number" min={0} {...regUnit('floor')} /></div>
-                      <div className="space-y-1"><Label>Size (m²) *</Label><Input type="number" step="0.01" {...regUnit('size', { required: true })} /></div>
-                      <div className="space-y-1"><Label>Price (USD) *</Label><Input type="number" step="0.01" {...regUnit('price', { required: true })} /></div>
+                      <div className="space-y-1"><Label>Size (m²)</Label><Input type="number" step="0.01" {...regUnit('size')} /></div>
+                      <div className="space-y-1"><Label>Price / m² (USD)</Label><Input type="number" step="0.01" placeholder="e.g. 1000" {...regUnit('priceSqm')} /></div>
+                      <div className="space-y-1"><Label>Total Price (USD)</Label><Input type="number" step="0.01" {...regUnit('price')} /></div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="space-y-1"><Label>Living Area (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 85.5" {...regUnit('livingAreaSize')} /></div>
@@ -772,7 +791,7 @@ export default function ProjectDetailPage() {
                           <Input type="number" step="0.01" placeholder="Price..." {...regUnit('greenFramePrice')} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Turnkey Price (USD)</Label>
+                          <Label className="text-xs">Turnkey Price (USD) <span className="text-[10px] text-neutral-400 font-normal">(auto-calc: Price/m² × Size)</span></Label>
                           <Input type="number" step="0.01" placeholder="Price..." {...regUnit('turnkeyPrice')} />
                         </div>
                       </div>
@@ -803,7 +822,7 @@ export default function ProjectDetailPage() {
                     </div>
                     <div className="flex gap-3">
                       <Button type="submit" disabled={createUnitMutation.isPending} className="bg-red-600 hover:bg-red-700">
-                        {createUnitMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} {editingUnit ? 'Update Unit' : 'Save Unit'}
+                        {createUnitMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Unit
                       </Button>
                       <Button type="button" variant="outline" onClick={() => { setShowAddUnit(false); setEditingUnit(null); resetUnit() }}>Cancel</Button>
                     </div>
@@ -838,55 +857,235 @@ export default function ProjectDetailPage() {
                           </th>
                         )}
                         <th className="px-6 py-3">Unit #</th>
+                        <th className="px-6 py-3">Tower/Block</th>
                         <th className="px-6 py-3">Type</th>
                         <th className="px-6 py-3">Floor</th>
                         <th className="px-6 py-3">Beds/Baths</th>
                         <th className="px-6 py-3">Size (m²)</th>
-                        <th className="px-6 py-3">Price</th>
+                        <th className="px-6 py-3">Price/m²</th>
+                        <th className="px-6 py-3">Total Price</th>
                         <th className="px-6 py-3">Status</th>
                         <th className="px-6 py-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredUnits.map((unit: any) => (
-                        <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
-                          {canEdit && (
-                            <td className="px-4 py-4 w-10">
-                              <input
-                                type="checkbox"
-                                checked={selectedUnitIds.includes(unit.id)}
-                                onChange={() => {
-                                  setSelectedUnitIds(prev => prev.includes(unit.id) ? prev.filter(i => i !== unit.id) : [...prev, unit.id])
-                                }}
-                                className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
-                              />
-                            </td>
-                          )}
-                          <td className="px-6 py-4 font-medium">
-                            {unit.unitNumber}
-                            {unit.floorPlanUrl && <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-blue-600 hover:underline mt-1">View Plan</a>}
-                          </td>
-                          <td className="px-6 py-4 text-neutral-600">{UNIT_TYPE_LABELS[unit.type] || unit.type?.toLowerCase()}</td>
-                          <td className="px-6 py-4 text-neutral-600">{unit.floor ?? '—'}</td>
-                          <td className="px-6 py-4 text-neutral-600">{unit.bedrooms} / {unit.bathrooms}</td>
-                          <td className="px-6 py-4 text-neutral-600">{Number(unit.size).toLocaleString()}</td>
-                          <td className="px-6 py-4 font-medium">{Number(unit.price).toLocaleString()} {unit.currency}</td>
-                          <td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full font-medium ${UNIT_STATUS_COLORS[unit.status]}`}>{unit.status}</span></td>
-                          <td className="px-6 py-4 text-right flex justify-end gap-1">
-                            {canEdit ? (
-                              <>
-                                <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEditUnit(unit)}>
-                                  Edit
-                                </Button>
-                                <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-600 h-8 px-2" onClick={() => deleteUnitMutation.mutate(unit.id)}>
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </>
-                            ) : (
-                              <span className="text-neutral-400 text-xs">Read-only</span>
+                        <>
+                          <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                            {canEdit && (
+                              <td className="px-4 py-4 w-10">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedUnitIds.includes(unit.id)}
+                                  onChange={() => {
+                                    setSelectedUnitIds(prev => prev.includes(unit.id) ? prev.filter(i => i !== unit.id) : [...prev, unit.id])
+                                  }}
+                                  className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
+                                />
+                              </td>
                             )}
-                          </td>
-                        </tr>
+                            <td className="px-6 py-4 font-medium">
+                              {unit.unitNumber || '—'}
+                              {unit.floorPlanUrl && <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-blue-600 hover:underline mt-1">View Plan</a>}
+                            </td>
+                            <td className="px-6 py-4 text-neutral-600">{unit.towerBlock || '—'}</td>
+                            <td className="px-6 py-4 text-neutral-600">{UNIT_TYPE_LABELS[unit.type] || unit.type?.toLowerCase() || '—'}</td>
+                            <td className="px-6 py-4 text-neutral-600">{unit.floor ?? '—'}</td>
+                            <td className="px-6 py-4 text-neutral-600">
+                              {unit.bedrooms !== undefined && unit.bedrooms !== null ? unit.bedrooms : '—'} / {unit.bathrooms !== undefined && unit.bathrooms !== null ? unit.bathrooms : '—'}
+                            </td>
+                            <td className="px-6 py-4 text-neutral-600">{unit.size ? Number(unit.size).toLocaleString() : '—'}</td>
+                            <td className="px-6 py-4 text-neutral-600">{unit.priceSqm ? `$${Number(unit.priceSqm).toLocaleString()}` : '—'}</td>
+                            <td className="px-6 py-4 font-medium">{unit.price ? `$${Number(unit.price).toLocaleString()}` : '—'}</td>
+                            <td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full font-medium ${UNIT_STATUS_COLORS[unit.status]}`}>{unit.status}</span></td>
+                            <td className="px-6 py-4 text-right flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-neutral-500 hover:text-blue-600 h-8 px-2"
+                                onClick={() => {
+                                  if (expandedViewUnitId === unit.id) {
+                                    setExpandedViewUnitId(null)
+                                  } else {
+                                    setExpandedViewUnitId(unit.id)
+                                    setExpandedEditUnitId(null)
+                                  }
+                                }}
+                              >
+                                <Eye className="w-3.5 h-3.5 mr-1" /> View
+                              </Button>
+                              {canEdit ? (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-neutral-500 hover:text-blue-600 h-8 px-2"
+                                    onClick={() => {
+                                      if (expandedEditUnitId === unit.id) {
+                                        setExpandedEditUnitId(null)
+                                        setEditingUnit(null)
+                                        resetUnit()
+                                      } else {
+                                        openEditUnit(unit)
+                                      }
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-600 h-8 px-2" onClick={() => deleteUnitMutation.mutate(unit.id)}>
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <span className="text-neutral-400 text-xs">Read-only</span>
+                              )}
+                            </td>
+                          </tr>
+
+                          {/* Inline View Panel */}
+                          {expandedViewUnitId === unit.id && (
+                            <tr key={`view-${unit.id}`} className="bg-neutral-50/80 border-b">
+                              <td colSpan={canEdit ? 11 : 10} className="p-4 whitespace-normal">
+                                <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-3">
+                                  <div className="flex justify-between items-center border-b pb-2">
+                                    <h4 className="font-bold text-neutral-800">Unit Details — {unit.unitNumber || 'Unnamed Unit'}</h4>
+                                    <Button variant="ghost" size="sm" onClick={() => setExpandedViewUnitId(null)}>Close</Button>
+                                  </div>
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 text-xs">
+                                    <div><span className="text-neutral-400 block font-medium">Unit #</span><span className="font-semibold text-neutral-800">{unit.unitNumber || '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Tower/Block</span><span className="font-semibold text-neutral-800">{unit.towerBlock || '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Type</span><span className="font-semibold text-neutral-800">{UNIT_TYPE_LABELS[unit.type] || unit.type || '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Status</span><span className="font-semibold text-neutral-800">{unit.status}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Floor</span><span className="font-semibold text-neutral-800">{unit.floor ?? '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">View</span><span className="font-semibold text-neutral-800">{unit.view || '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Bedrooms</span><span className="font-semibold text-neutral-800">{unit.bedrooms ?? '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Bathrooms</span><span className="font-semibold text-neutral-800">{unit.bathrooms ?? '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Total Size</span><span className="font-semibold text-neutral-800">{unit.size ? `${unit.size} m²` : '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Price / m²</span><span className="font-semibold text-neutral-800">{unit.priceSqm ? `$${Number(unit.priceSqm).toLocaleString()}` : '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Total Price</span><span className="font-semibold text-neutral-800">{unit.price ? `$${Number(unit.price).toLocaleString()}` : '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Delivery Form</span><span className="font-semibold text-neutral-800">{unit.deliveryForm || '—'}</span></div>
+                                  </div>
+                                  {(unit.livingAreaSize || unit.balconySize || unit.terraceSize || unit.greenyardSize) && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-neutral-100">
+                                      {unit.livingAreaSize && <div><span className="text-neutral-400 block">Living Area</span><span className="font-semibold">{unit.livingAreaSize} m²</span></div>}
+                                      {unit.balconySize && <div><span className="text-neutral-400 block">Balcony</span><span className="font-semibold">{unit.balconySize} m²</span></div>}
+                                      {unit.terraceSize && <div><span className="text-neutral-400 block">Terrace</span><span className="font-semibold">{unit.terraceSize} m²</span></div>}
+                                      {unit.greenyardSize && <div><span className="text-neutral-400 block">Greenyard</span><span className="font-semibold">{unit.greenyardSize} m²</span></div>}
+                                    </div>
+                                  )}
+                                  {(unit.blackFramePrice || unit.whiteFramePrice || unit.greenFramePrice || unit.turnkeyPrice) && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-neutral-100">
+                                      {unit.blackFramePrice && <div><span className="text-neutral-400 block">Black Frame Price</span><span className="font-semibold">${Number(unit.blackFramePrice).toLocaleString()}</span></div>}
+                                      {unit.whiteFramePrice && <div><span className="text-neutral-400 block">White Frame Price</span><span className="font-semibold">${Number(unit.whiteFramePrice).toLocaleString()}</span></div>}
+                                      {unit.greenFramePrice && <div><span className="text-neutral-400 block">Green Frame Price</span><span className="font-semibold">${Number(unit.greenFramePrice).toLocaleString()}</span></div>}
+                                      {unit.turnkeyPrice && <div><span className="text-neutral-400 block">Turnkey Price</span><span className="font-semibold">${Number(unit.turnkeyPrice).toLocaleString()}</span></div>}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Inline Edit Form Panel */}
+                          {expandedEditUnitId === unit.id && canEdit && (
+                            <tr key={`edit-${unit.id}`} className="bg-red-50/20 border-b">
+                              <td colSpan={canEdit ? 11 : 10} className="p-4 whitespace-normal">
+                                <div className="bg-white p-4 rounded-xl border border-red-200 shadow-sm space-y-4">
+                                  <div className="flex justify-between items-center border-b pb-2">
+                                    <h4 className="font-bold text-neutral-800">Edit Unit — {unit.unitNumber || 'Unnamed Unit'}</h4>
+                                    <Button variant="ghost" size="sm" onClick={() => { setExpandedEditUnitId(null); setEditingUnit(null); resetUnit(); }}>Cancel</Button>
+                                  </div>
+
+                                  <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data))} className="space-y-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                      <div className="space-y-1"><Label>Unit Number</Label><Input placeholder="A-101" {...regUnit('unitNumber')} /></div>
+                                      <div className="space-y-1"><Label>Tower/Block</Label><Input placeholder="e.g. Tower A" {...regUnit('towerBlock')} /></div>
+                                      <div className="space-y-1"><Label>Type</Label>
+                                        <select {...regUnit('type')} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                                          <option value="">Select...</option>
+                                          {Object.entries(UNIT_TYPE_LABELS).map(([value, label]) => (
+                                            <option key={value} value={value}>{label}</option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                      <div className="space-y-1"><Label>Status</Label>
+                                        <select {...regUnit('status')} defaultValue="AVAILABLE" className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                                          <option value="AVAILABLE">Available</option>
+                                          <option value="RESERVED">Reserved</option>
+                                          <option value="SOLD">Sold</option>
+                                        </select>
+                                      </div>
+                                      <div className="space-y-1"><Label>View</Label><Input placeholder="Sea View" {...regUnit('view')} /></div>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                                      <div className="space-y-1"><Label>Bedrooms</Label><Input type="number" min={0} {...regUnit('bedrooms')} /></div>
+                                      <div className="space-y-1"><Label>Bathrooms</Label><Input type="number" min={0} {...regUnit('bathrooms')} /></div>
+                                      <div className="space-y-1"><Label>Floor</Label><Input type="number" min={0} {...regUnit('floor')} /></div>
+                                      <div className="space-y-1"><Label>Size (m²)</Label><Input type="number" step="0.01" {...regUnit('size')} /></div>
+                                      <div className="space-y-1"><Label>Price / m² (USD)</Label><Input type="number" step="0.01" placeholder="e.g. 1000" {...regUnit('priceSqm')} /></div>
+                                      <div className="space-y-1"><Label>Total Price (USD)</Label><Input type="number" step="0.01" {...regUnit('price')} /></div>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                      <div className="space-y-1"><Label>Living Area (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 85.5" {...regUnit('livingAreaSize')} /></div>
+                                      <div className="space-y-1"><Label>Balcony (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 10.2" {...regUnit('balconySize')} /></div>
+                                      <div className="space-y-1"><Label>Terrace (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 15.0" {...regUnit('terraceSize')} /></div>
+                                      <div className="space-y-1"><Label>Greenyard (m²)</Label><Input type="number" step="0.01" placeholder="e.g. 25.4" {...regUnit('greenyardSize')} /></div>
+                                      <div className="space-y-1"><Label>Delivery Form</Label><Input placeholder="e.g. Turnkey" {...regUnit('deliveryForm')} /></div>
+                                    </div>
+
+                                    <div className="border border-neutral-100 p-3 rounded-lg bg-neutral-50/50 space-y-3">
+                                      <Label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Frames Options &amp; Pricing</Label>
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        <div className="flex items-center space-x-2">
+                                          <input type="checkbox" id={`unit-blackFrame-${unit.id}`} {...regUnit('blackFrame')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
+                                          <label htmlFor={`unit-blackFrame-${unit.id}`} className="text-sm font-medium text-neutral-700 select-none cursor-pointer">Black Frame</label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                          <input type="checkbox" id={`unit-whiteFrame-${unit.id}`} {...regUnit('whiteFrame')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
+                                          <label htmlFor={`unit-whiteFrame-${unit.id}`} className="text-sm font-medium text-neutral-700 select-none cursor-pointer">White Frame</label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                          <input type="checkbox" id={`unit-greenFrame-${unit.id}`} {...regUnit('greenFrame')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
+                                          <label htmlFor={`unit-greenFrame-${unit.id}`} className="text-sm font-medium text-neutral-700 select-none cursor-pointer">Green Frame</label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                          <input type="checkbox" id={`unit-turnkey-${unit.id}`} {...regUnit('turnkey')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
+                                          <label htmlFor={`unit-turnkey-${unit.id}`} className="text-sm font-medium text-neutral-700 select-none cursor-pointer">Turnkey</label>
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-1">
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">Black Frame Price (USD)</Label>
+                                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('blackFramePrice')} />
+                                        </div>
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">White Frame Price (USD)</Label>
+                                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('whiteFramePrice')} />
+                                        </div>
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">Green Frame Price (USD)</Label>
+                                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('greenFramePrice')} />
+                                        </div>
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">Turnkey Price (USD) <span className="text-[10px] text-neutral-400 font-normal">(auto-calc: Price/m² × Size)</span></Label>
+                                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('turnkeyPrice')} />
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-2">
+                                      <Button type="submit" disabled={createUnitMutation.isPending} className="bg-red-600 hover:bg-red-700">
+                                        {createUnitMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Update Unit
+                                      </Button>
+                                      <Button type="button" variant="outline" onClick={() => { setExpandedEditUnitId(null); setEditingUnit(null); resetUnit(); }}>Cancel</Button>
+                                    </div>
+                                  </form>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
                       ))}
                     </tbody>
                   </table>
@@ -1233,6 +1432,11 @@ export default function ProjectDetailPage() {
 
                       {/* File Rendering */}
                       {renderThumbnail(file)}
+
+                      {/* Media File Name Overlay */}
+                      <div className="absolute bottom-0 inset-x-0 bg-slate-900/75 backdrop-blur-[2px] text-white text-[11px] px-2 py-1 truncate z-10 font-medium">
+                        {file.name || file.url.split('/').pop()}
+                      </div>
 
                       {/* Individual Actions (Hover) */}
                       <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

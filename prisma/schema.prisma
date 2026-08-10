@@ -118,16 +118,18 @@ enum UnitStatus {
 
 model Unit {
   id             Int        @id @default(autoincrement())
-  unitNumber     String
+  unitNumber     String?
   projectId      Int
   project        Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  type           String     @default("APARTMENT")
-  bedrooms       Int
-  bathrooms      Int
-  size           Float
-  price          Decimal    @db.Decimal(15, 2)
+  type           String?    @default("APARTMENT")
+  bedrooms       Int?
+  bathrooms      Int?
+  size           Float?
+  price          Decimal?   @db.Decimal(15, 2)
   currency       String     @default("USD")
   status         UnitStatus @default(AVAILABLE)
+  towerBlock     String?
+  priceSqm       Decimal?   @db.Decimal(15, 2)
   floorPlanUrl   String?
   view           String?
   floor          Int?
