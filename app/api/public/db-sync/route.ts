@@ -73,12 +73,22 @@ export async function GET(request: Request) {
     { table: 'Unit', col: 'whiteFramePrice', sql: 'ADD COLUMN IF NOT EXISTS `whiteFramePrice` decimal(15,2) DEFAULT NULL' },
     { table: 'Unit', col: 'greenFramePrice', sql: 'ADD COLUMN IF NOT EXISTS `greenFramePrice` decimal(15,2) DEFAULT NULL' },
     { table: 'Unit', col: 'turnkeyPrice',    sql: 'ADD COLUMN IF NOT EXISTS `turnkeyPrice`    decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'greenFramePriceSqm', sql: 'ADD COLUMN IF NOT EXISTS `greenFramePriceSqm` decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'whiteFramePriceSqm', sql: 'ADD COLUMN IF NOT EXISTS `whiteFramePriceSqm` decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'blackFramePriceSqm', sql: 'ADD COLUMN IF NOT EXISTS `blackFramePriceSqm` decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'renovationPriceSqm', sql: 'ADD COLUMN IF NOT EXISTS `renovationPriceSqm` decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'renovationPrice',    sql: 'ADD COLUMN IF NOT EXISTS `renovationPrice`    decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'handover',           sql: 'ADD COLUMN IF NOT EXISTS `handover`           datetime(3) DEFAULT NULL' },
+    { table: 'Unit', col: 'building',           sql: 'ADD COLUMN IF NOT EXISTS `building`           varchar(191) DEFAULT NULL' },
+    { table: 'Unit', col: 'turnkeyCalcMethod',  sql: 'ADD COLUMN IF NOT EXISTS `turnkeyCalcMethod`  varchar(191) DEFAULT \'TOTAL_AREA\'' },
     { table: 'Unit', col: 'towerBlock',      sql: 'ADD COLUMN IF NOT EXISTS `towerBlock`      varchar(191) DEFAULT NULL' },
     { table: 'Unit', col: 'priceSqm',        sql: 'ADD COLUMN IF NOT EXISTS `priceSqm`        decimal(15,2) DEFAULT NULL' },
     // Proposal new columns
     { table: 'Proposal', col: 'pricingType',     sql: 'ADD COLUMN IF NOT EXISTS `pricingType`     varchar(191) DEFAULT NULL' },
     { table: 'Proposal', col: 'selectedPrice',   sql: 'ADD COLUMN IF NOT EXISTS `selectedPrice`   decimal(15,2) DEFAULT NULL' },
     { table: 'Proposal', col: 'paymentPlanName', sql: 'ADD COLUMN IF NOT EXISTS `paymentPlanName` varchar(191) DEFAULT NULL' },
+    { table: 'Proposal', col: 'visibleFields',   sql: 'ADD COLUMN IF NOT EXISTS `visibleFields`   json DEFAULT NULL' },
+    { table: 'Proposal', col: 'handover',        sql: 'ADD COLUMN IF NOT EXISTS `handover`        datetime(3) DEFAULT NULL' },
   ]
 
   // Ensure Unit fields are nullable and flexible

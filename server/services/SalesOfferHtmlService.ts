@@ -35,9 +35,22 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
   const amenities: string[] = snap.amenities || []
   const consultantName = proposal.createdBy?.name || ''
   const consultantPhone = proposal.createdBy?.phone || ''
-  const completionDate = snap.project.completionDate
-    ? new Date(snap.project.completionDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    : ''
+  const customHandoverVal = proposal.handover || snap.unit?.handover
+  const completionDate = customHandoverVal
+    ? new Date(customHandoverVal).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : (snap.project.completionDate
+      ? new Date(snap.project.completionDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      : '')
+
+  let visibleFields: string[] = ['building', 'renovationPrice']
+  if (proposal.visibleFields) {
+    try {
+      visibleFields = typeof proposal.visibleFields === 'string' ? JSON.parse(proposal.visibleFields) : proposal.visibleFields
+    } catch {}
+  }
+
+  const showBuilding = visibleFields.includes('building') && snap.unit?.building
+  const showRenovation = visibleFields.includes('renovationPrice') && snap.unit?.renovationPrice
 
   const headerHtml = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;">
@@ -140,15 +153,17 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
     <table style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead>
         <tr style="border-bottom:1.5px solid #1a1a1a;">
-          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:25%;">Project</th>
-          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:25%;">Tower/Block</th>
-          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:25%;">Unit</th>
-          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:25%;">Estimated Completion date</th>
+          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;">Project</th>
+          ${showBuilding ? `<th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;">Building</th>` : ''}
+          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;">Tower/Block</th>
+          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;">Unit</th>
+          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;">Estimated Completion date</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td style="text-align:center;padding:12px 6px;font-weight:500;">${snap.project.name}</td>
+          ${showBuilding ? `<td style="text-align:center;padding:12px 6px;">${snap.unit.building}</td>` : ''}
           <td style="text-align:center;padding:12px 6px;">${snap.unit.towerBlock || '—'}</td>
           <td style="text-align:center;padding:12px 6px;">${snap.unit.unitNumber}</td>
           <td style="text-align:center;padding:12px 6px;">${completionDate || '—'}</td>
@@ -235,6 +250,13 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
   <div style="display:flex;gap:16px;align-items:baseline;margin-bottom:20px;">
     <span style="font-size:14px;font-weight:700;">Unit Condition</span>
     <span style="font-size:14px;color:#555;">${snap.unit.condition}</span>
+  </div>` : ''}
+
+  <!-- Renovation Price Option -->
+  ${showRenovation ? `
+  <div style="display:flex;gap:16px;align-items:baseline;margin-bottom:20px;">
+    <span style="font-size:14px;font-weight:700;">Renovation Option</span>
+    <span style="font-size:14px;color:#555;">$${Number(snap.unit.renovationPrice).toLocaleString()} USD ${snap.unit.renovationPriceSqm ? `($${Number(snap.unit.renovationPriceSqm).toLocaleString()} / m²)` : ''}</span>
   </div>` : ''}
 
   <!-- Floor Plan -->

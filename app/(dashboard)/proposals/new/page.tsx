@@ -51,6 +51,14 @@ export default function CreateProposalPage() {
   const [selectedPriceVal, setSelectedPriceVal] = useState<number>(0)
   const [selectedPricingType, setSelectedPricingType] = useState<string>('Base Price')
   const [selectedPaymentPlanName, setSelectedPaymentPlanName] = useState<string>('Standard Plan')
+  const [customHandover, setCustomHandover] = useState<string>('')
+  const [visibleFields, setVisibleFields] = useState<string[]>(['building', 'renovationPrice'])
+
+  useEffect(() => {
+    if (selectedUnit) {
+      setCustomHandover(selectedUnit.handover ? new Date(selectedUnit.handover).toISOString().split('T')[0] : '')
+    }
+  }, [selectedUnit])
 
   // Data queries
   const { data: searchResults = [], isFetching: isSearchingCustomers } = useQuery({
@@ -166,7 +174,9 @@ export default function CreateProposalPage() {
           customFloorPlanUrl: customFloorPlanUrl || undefined,
           pricingType: selectedPricingType,
           selectedPrice: selectedPriceVal,
-          paymentPlanName: selectedPaymentPlanName
+          paymentPlanName: selectedPaymentPlanName,
+          handover: customHandover || undefined,
+          visibleFields
         })
       })
       if (!res.ok) { const e = await res.json(); throw new Error(e.error) }
@@ -736,6 +746,37 @@ export default function CreateProposalPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1"><Label className="font-semibold text-neutral-800">Tower/Block</Label><Input placeholder="e.g. Tower A" value={towerBlock} onChange={e => setTowerBlock(e.target.value)} /></div>
                   <div className="space-y-1"><Label className="font-semibold text-neutral-800">Delivery Form</Label><Input placeholder="e.g. White Frame, Turnkey" value={unitCondition} onChange={e => setUnitCondition(e.target.value)} /></div>
+                  <div className="space-y-1"><Label className="font-semibold text-neutral-800">Handover Date (Overrides Project/Unit)</Label><Input type="date" value={customHandover} onChange={e => setCustomHandover(e.target.value)} /></div>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-neutral-100">
+                  <Label className="font-semibold text-neutral-800">Display Fields in Proposal</Label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={visibleFields.includes('building')}
+                        onChange={e => {
+                          if (e.target.checked) setVisibleFields([...visibleFields, 'building'])
+                          else setVisibleFields(visibleFields.filter(f => f !== 'building'))
+                        }}
+                        className="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500"
+                      />
+                      Show Building
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={visibleFields.includes('renovationPrice')}
+                        onChange={e => {
+                          if (e.target.checked) setVisibleFields([...visibleFields, 'renovationPrice'])
+                          else setVisibleFields(visibleFields.filter(f => f !== 'renovationPrice'))
+                        }}
+                        className="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500"
+                      />
+                      Show Renovation Price
+                    </label>
+                  </div>
                 </div>
               <div className="space-y-1"><Label>Message to Customer</Label><textarea value={customerMessage} onChange={e => setCustomerMessage(e.target.value)} rows={3} placeholder="Dear [customer name], it is our pleasure to present this exclusive offer..." className="flex w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500" /></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

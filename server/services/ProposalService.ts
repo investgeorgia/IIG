@@ -33,6 +33,8 @@ export class ProposalService {
     pricingType?: string
     selectedPrice?: number
     paymentPlanName?: string
+    visibleFields?: string[]
+    handover?: string | Date
   }) {
     // 1. Load full unit + project + developer data for snapshot
     const unit = await prisma.unit.findUnique({
@@ -77,6 +79,14 @@ export class ProposalService {
         whiteFramePrice: unit.whiteFramePrice ? Number(unit.whiteFramePrice) : null,
         greenFramePrice: unit.greenFramePrice ? Number(unit.greenFramePrice) : null,
         turnkeyPrice: unit.turnkeyPrice ? Number(unit.turnkeyPrice) : null,
+        greenFramePriceSqm: unit.greenFramePriceSqm ? Number(unit.greenFramePriceSqm) : null,
+        whiteFramePriceSqm: unit.whiteFramePriceSqm ? Number(unit.whiteFramePriceSqm) : null,
+        blackFramePriceSqm: unit.blackFramePriceSqm ? Number(unit.blackFramePriceSqm) : null,
+        renovationPriceSqm: unit.renovationPriceSqm ? Number(unit.renovationPriceSqm) : null,
+        renovationPrice: unit.renovationPrice ? Number(unit.renovationPrice) : null,
+        handover: unit.handover ? unit.handover.toISOString() : null,
+        building: unit.building || null,
+        turnkeyCalcMethod: unit.turnkeyCalcMethod || "TOTAL_AREA",
         status: unit.status,
         floorPlanUrl: data.customFloorPlanUrl || unit.floorPlanUrl,
         towerBlock: data.towerBlock,
@@ -119,7 +129,14 @@ export class ProposalService {
       }
     }
 
-    return ProposalRepository.create({ ...data, templateId: finalTemplateId, snapshot })
+    const customHandover = data.handover ? new Date(data.handover) : undefined
+
+    return ProposalRepository.create({
+      ...data,
+      templateId: finalTemplateId,
+      snapshot,
+      handover: customHandover
+    })
   }
 
   static async updateStatus(id: number, status: string) {

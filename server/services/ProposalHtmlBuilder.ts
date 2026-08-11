@@ -237,12 +237,19 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const finalPriceUSD = finalPriceNum
   const finalPriceAED = finalPriceNum * USD_TO_AED
 
-  const completionDate = snap?.project?.completionDate
-    ? new Date(snap.project.completionDate).toLocaleDateString('en-US', {
+  // Support custom handover override
+  const customHandoverVal = proposal.handover || snap?.unit?.handover
+  const completionDate = customHandoverVal
+    ? new Date(customHandoverVal).toLocaleDateString('en-US', {
         month: 'long',
         year: 'numeric',
       })
-    : '—'
+    : (snap?.project?.completionDate
+      ? new Date(snap.project.completionDate).toLocaleDateString('en-US', {
+          month: 'long',
+          year: 'numeric',
+        })
+      : '—')
 
   const roi = snap?.project?.roi ? `${snap.project.roi}% p.a.` : '—'
 
@@ -291,15 +298,29 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     </div>`
   }
 
+  // Parse visibleFields
+  let visibleFields: string[] = ['building', 'renovationPrice']
+  if (proposal.visibleFields) {
+    try {
+      visibleFields = typeof proposal.visibleFields === 'string' ? JSON.parse(proposal.visibleFields) : proposal.visibleFields
+    } catch {}
+  }
+
   // --- Dynamic Unit Specs Table (Hides Bed/Bath if empty) ---
   const showBedrooms = snap?.unit?.bedrooms !== undefined && snap?.unit?.bedrooms !== null && snap?.unit?.bedrooms !== ''
   const showBathrooms = snap?.unit?.bathrooms !== undefined && snap?.unit?.bathrooms !== null && snap?.unit?.bathrooms !== ''
+  const showBuilding = visibleFields.includes('building') && snap?.unit?.building
 
   const specCols = [
-    { label: 'Unit Type', val: unitType, align: 'left' },
+    { label: 'Unit Type', val: unitType, align: 'left' }
+  ]
+  if (showBuilding) {
+    specCols.push({ label: 'Building', val: String(snap.unit.building), align: 'center' })
+  }
+  specCols.push(
     { label: 'Size', val: unitSize !== '—' ? `${unitSize} m²` : '—', align: 'center' },
     { label: 'Floor', val: unitFloor, align: 'center' }
-  ]
+  )
   if (showBedrooms) {
     specCols.push({ label: 'Bedrooms', val: String(snap.unit.bedrooms), align: 'center' })
   }
@@ -383,6 +404,19 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     `
   }
 
+  // Renovation Banner
+  const showRenovation = visibleFields.includes('renovationPrice') && snap?.unit?.renovationPrice
+  let renovationHtml = ''
+  if (showRenovation) {
+    renovationHtml = `
+    <div style="margin-top: 10px; padding: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-family: inherit;">
+      <span style="font-weight: 600; color: #475569;">Renovation Option</span>
+      <span style="font-weight: 700; color: #0F172A;">$${Number(snap.unit.renovationPrice).toLocaleString()} USD ${snap.unit.renovationPriceSqm ? `($${Number(snap.unit.renovationPriceSqm).toLocaleString()} / m²)` : ''}</span>
+    </div>
+    `
+    unitExtraSizesHtml += renovationHtml
+  }
+
   // --- Build HTML fragments ---
   const logoImgTag = buildLogoImgTag(baseUrl)
   const paymentPlanName = proposal.paymentPlanName || 'Standard Plan'
@@ -400,6 +434,11 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{customerMessageBanner}}/g, customerMessageBanner)
     .replace(/{{unitNumber}}/g, snap?.unit?.unitNumber || '—')
     .replace(/{{towerBlock}}/g, snap?.unit?.towerBlock || proposal.towerBlock || '—')
+    .replace(/{{building}}/g, showBuilding ? String(snap.unit.building) : '')
+    .replace(/{{renovationPrice}}/g, showRenovation ? `$${Number(snap.unit.renovationPrice).toLocaleString()}` : '')
+    .replace(/{{renovation_price}}/g, showRenovation ? `$${Number(snap.unit.renovationPrice).toLocaleString()}` : '')
+    .replace(/{{renovationHtml}}/g, renovationHtml)
+    .replace(/{{renovation_html}}/g, renovationHtml)
     .replace(/{{projectName}}/g, snap?.project?.name || '—')
     .replace(/{{projectLocation}}/g, projectLocation)
     .replace(/{{completionDate}}/g, completionDate)

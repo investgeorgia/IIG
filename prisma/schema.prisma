@@ -146,6 +146,14 @@ model Unit {
   whiteFramePrice Decimal?   @db.Decimal(15, 2)
   greenFramePrice Decimal?   @db.Decimal(15, 2)
   turnkeyPrice   Decimal?   @db.Decimal(15, 2)
+  greenFramePriceSqm Decimal?   @db.Decimal(15, 2)
+  whiteFramePriceSqm Decimal?   @db.Decimal(15, 2)
+  blackFramePriceSqm Decimal?   @db.Decimal(15, 2)
+  renovationPriceSqm Decimal?   @db.Decimal(15, 2)
+  renovationPrice    Decimal?   @db.Decimal(15, 2)
+  handover           DateTime?
+  building           String?
+  turnkeyCalcMethod  String?    @default("TOTAL_AREA")
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   paymentPlans   PaymentPlan[]
@@ -274,6 +282,8 @@ model Proposal {
   pricingType     String?
   selectedPrice   Decimal?       @db.Decimal(15, 2)
   paymentPlanName String?
+  visibleFields   Json?          // Array of string field names to display
+  handover        DateTime?      // Editable custom handover date
   
   pdfUrl          String?        // Path to generated PDF
   pdfGeneratedAt  DateTime?

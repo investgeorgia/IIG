@@ -69,6 +69,22 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     else delete body.whiteFramePrice
     if (body.greenFramePrice !== undefined && body.greenFramePrice !== null && body.greenFramePrice !== '') body.greenFramePrice = Number(body.greenFramePrice)
     else delete body.greenFramePrice
+    if (body.greenFramePriceSqm !== undefined && body.greenFramePriceSqm !== null && body.greenFramePriceSqm !== '') body.greenFramePriceSqm = Number(body.greenFramePriceSqm)
+    else delete body.greenFramePriceSqm
+    if (body.whiteFramePriceSqm !== undefined && body.whiteFramePriceSqm !== null && body.whiteFramePriceSqm !== '') body.whiteFramePriceSqm = Number(body.whiteFramePriceSqm)
+    else delete body.whiteFramePriceSqm
+    if (body.blackFramePriceSqm !== undefined && body.blackFramePriceSqm !== null && body.blackFramePriceSqm !== '') body.blackFramePriceSqm = Number(body.blackFramePriceSqm)
+    else delete body.blackFramePriceSqm
+    if (body.renovationPriceSqm !== undefined && body.renovationPriceSqm !== null && body.renovationPriceSqm !== '') body.renovationPriceSqm = Number(body.renovationPriceSqm)
+    else delete body.renovationPriceSqm
+    if (body.renovationPrice !== undefined && body.renovationPrice !== null && body.renovationPrice !== '') body.renovationPrice = Number(body.renovationPrice)
+    else delete body.renovationPrice
+    if (body.handover !== undefined && body.handover !== null && body.handover !== '') body.handover = new Date(body.handover)
+    else delete body.handover
+    if (body.building !== undefined && body.building !== null) body.building = String(body.building).trim()
+    else delete body.building
+    if (body.turnkeyCalcMethod !== undefined && body.turnkeyCalcMethod !== null) body.turnkeyCalcMethod = String(body.turnkeyCalcMethod).trim()
+    else delete body.turnkeyCalcMethod
     if (body.turnkeyPrice !== undefined && body.turnkeyPrice !== null && body.turnkeyPrice !== '') body.turnkeyPrice = Number(body.turnkeyPrice)
     else delete body.turnkeyPrice
 

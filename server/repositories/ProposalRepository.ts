@@ -39,6 +39,8 @@ export class ProposalRepository {
     pricingType?: string
     selectedPrice?: number
     paymentPlanName?: string
+    visibleFields?: string[]
+    handover?: Date
   }) {
     return prisma.proposal.create({
       data: {
@@ -56,6 +58,8 @@ export class ProposalRepository {
         pricingType: data.pricingType,
         selectedPrice: data.selectedPrice,
         paymentPlanName: data.paymentPlanName,
+        visibleFields: data.visibleFields ?? undefined,
+        handover: data.handover ?? undefined,
       }
     })
   }

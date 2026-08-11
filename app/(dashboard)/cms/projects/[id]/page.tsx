@@ -321,16 +321,70 @@ export default function ProjectDetailPage() {
 
   const watchedPriceSqm = watchUnit('priceSqm')
   const watchedSize = watchUnit('size')
+  const watchedLivingAreaSize = watchUnit('livingAreaSize')
+  const watchedTurnkeyCalcMethod = watchUnit('turnkeyCalcMethod') || 'TOTAL_AREA'
+  const watchedWhiteFramePriceSqm = watchUnit('whiteFramePriceSqm')
+  const watchedGreenFramePriceSqm = watchUnit('greenFramePriceSqm')
+  const watchedBlackFramePriceSqm = watchUnit('blackFramePriceSqm')
+  const watchedRenovationPriceSqm = watchUnit('renovationPriceSqm')
 
   useEffect(() => {
-    if (watchedPriceSqm !== undefined && watchedPriceSqm !== '' && watchedSize !== undefined && watchedSize !== '') {
+    const sz = Number(watchedSize)
+    const lsz = Number(watchedLivingAreaSize)
+    
+    // Turnkey Price
+    if (watchedPriceSqm !== undefined && watchedPriceSqm !== '') {
       const pSqm = Number(watchedPriceSqm)
-      const sz = Number(watchedSize)
-      if (!isNaN(pSqm) && !isNaN(sz)) {
-        setUnitValue('turnkeyPrice', (pSqm * sz).toFixed(2))
+      if (!isNaN(pSqm)) {
+        const area = watchedTurnkeyCalcMethod === 'LIVING_AREA' ? lsz : sz
+        if (!isNaN(area) && area > 0) {
+          setUnitValue('turnkeyPrice', (pSqm * area).toFixed(2))
+        }
       }
     }
-  }, [watchedPriceSqm, watchedSize, setUnitValue])
+
+    // White Frame Price
+    if (watchedWhiteFramePriceSqm !== undefined && watchedWhiteFramePriceSqm !== '' && !isNaN(sz) && sz > 0) {
+      const pSqm = Number(watchedWhiteFramePriceSqm)
+      if (!isNaN(pSqm)) {
+        setUnitValue('whiteFramePrice', (pSqm * sz).toFixed(2))
+      }
+    }
+
+    // Green Frame Price
+    if (watchedGreenFramePriceSqm !== undefined && watchedGreenFramePriceSqm !== '' && !isNaN(sz) && sz > 0) {
+      const pSqm = Number(watchedGreenFramePriceSqm)
+      if (!isNaN(pSqm)) {
+        setUnitValue('greenFramePrice', (pSqm * sz).toFixed(2))
+      }
+    }
+
+    // Black Frame Price
+    if (watchedBlackFramePriceSqm !== undefined && watchedBlackFramePriceSqm !== '' && !isNaN(sz) && sz > 0) {
+      const pSqm = Number(watchedBlackFramePriceSqm)
+      if (!isNaN(pSqm)) {
+        setUnitValue('blackFramePrice', (pSqm * sz).toFixed(2))
+      }
+    }
+
+    // Renovation Price
+    if (watchedRenovationPriceSqm !== undefined && watchedRenovationPriceSqm !== '' && !isNaN(sz) && sz > 0) {
+      const pSqm = Number(watchedRenovationPriceSqm)
+      if (!isNaN(pSqm)) {
+        setUnitValue('renovationPrice', (pSqm * sz).toFixed(2))
+      }
+    }
+  }, [
+    watchedPriceSqm,
+    watchedSize,
+    watchedLivingAreaSize,
+    watchedTurnkeyCalcMethod,
+    watchedWhiteFramePriceSqm,
+    watchedGreenFramePriceSqm,
+    watchedBlackFramePriceSqm,
+    watchedRenovationPriceSqm,
+    setUnitValue
+  ])
 
   const createUnitMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -357,6 +411,14 @@ export default function ProjectDetailPage() {
         whiteFramePrice: data.whiteFramePrice ? Number(data.whiteFramePrice) : undefined,
         greenFramePrice: data.greenFramePrice ? Number(data.greenFramePrice) : undefined,
         turnkeyPrice: data.turnkeyPrice ? Number(data.turnkeyPrice) : undefined,
+        greenFramePriceSqm: data.greenFramePriceSqm ? Number(data.greenFramePriceSqm) : undefined,
+        whiteFramePriceSqm: data.whiteFramePriceSqm ? Number(data.whiteFramePriceSqm) : undefined,
+        blackFramePriceSqm: data.blackFramePriceSqm ? Number(data.blackFramePriceSqm) : undefined,
+        renovationPriceSqm: data.renovationPriceSqm ? Number(data.renovationPriceSqm) : undefined,
+        renovationPrice: data.renovationPrice ? Number(data.renovationPrice) : undefined,
+        handover: data.handover ? new Date(data.handover).toISOString() : undefined,
+        building: data.building || undefined,
+        turnkeyCalcMethod: data.turnkeyCalcMethod || 'TOTAL_AREA',
         status: data.status || 'AVAILABLE'
       }
       
@@ -412,7 +474,15 @@ export default function ProjectDetailPage() {
       blackFramePrice: unit.blackFramePrice || '',
       whiteFramePrice: unit.whiteFramePrice || '',
       greenFramePrice: unit.greenFramePrice || '',
-      turnkeyPrice: unit.turnkeyPrice || ''
+      turnkeyPrice: unit.turnkeyPrice || '',
+      greenFramePriceSqm: unit.greenFramePriceSqm || '',
+      whiteFramePriceSqm: unit.whiteFramePriceSqm || '',
+      blackFramePriceSqm: unit.blackFramePriceSqm || '',
+      renovationPriceSqm: unit.renovationPriceSqm || '',
+      renovationPrice: unit.renovationPrice || '',
+      handover: unit.handover ? new Date(unit.handover).toISOString().split('T')[0] : '',
+      building: unit.building || '',
+      turnkeyCalcMethod: unit.turnkeyCalcMethod || 'TOTAL_AREA'
     })
   }
 
@@ -738,9 +808,10 @@ export default function ProjectDetailPage() {
                 <CardHeader><CardTitle className="text-lg">New Unit</CardTitle></CardHeader>
                 <CardContent>
                   <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data))} className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
                       <div className="space-y-1"><Label>Unit Number</Label><Input placeholder="A-101" {...regUnit('unitNumber')} /></div>
                       <div className="space-y-1"><Label>Tower/Block</Label><Input placeholder="e.g. Tower A" {...regUnit('towerBlock')} /></div>
+                      <div className="space-y-1"><Label>Building</Label><Input placeholder="e.g. Building 1" {...regUnit('building')} /></div>
                       <div className="space-y-1"><Label>Type</Label>
                         <select {...regUnit('type')} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
                           <option value="">Select...</option>
@@ -757,13 +828,14 @@ export default function ProjectDetailPage() {
                         </select>
                       </div>
                       <div className="space-y-1"><Label>View</Label><Input placeholder="Sea View" {...regUnit('view')} /></div>
+                      <div className="space-y-1"><Label>Handover</Label><Input type="date" {...regUnit('handover')} /></div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                       <div className="space-y-1"><Label>Bedrooms</Label><Input type="number" min={0} {...regUnit('bedrooms')} /></div>
                       <div className="space-y-1"><Label>Bathrooms</Label><Input type="number" min={0} {...regUnit('bathrooms')} /></div>
                       <div className="space-y-1"><Label>Floor</Label><Input type="number" min={0} {...regUnit('floor')} /></div>
                       <div className="space-y-1"><Label>Size (m²)</Label><Input type="number" step="0.01" {...regUnit('size')} /></div>
-                      <div className="space-y-1"><Label>Price / m² (USD)</Label><Input type="number" step="0.01" placeholder="e.g. 1000" {...regUnit('priceSqm')} /></div>
+                      <div className="space-y-1"><Label>Turnkey Price / m² (USD)</Label><Input type="number" step="0.01" placeholder="e.g. 1000" {...regUnit('priceSqm')} /></div>
                       <div className="space-y-1"><Label>Total Price (USD)</Label><Input type="number" step="0.01" {...regUnit('price')} /></div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -776,7 +848,7 @@ export default function ProjectDetailPage() {
 
                     <div className="border border-neutral-100 p-3 rounded-lg bg-neutral-50/50 space-y-3">
                       <Label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Frames Options &amp; Pricing</Label>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <div className="flex items-center space-x-2">
                           <input type="checkbox" id="unit-blackFrame" {...regUnit('blackFrame')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
                           <label htmlFor="unit-blackFrame" className="text-sm font-medium text-neutral-700 select-none cursor-pointer">Black Frame</label>
@@ -795,22 +867,52 @@ export default function ProjectDetailPage() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-1">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-1">
                         <div className="space-y-1">
-                          <Label className="text-xs">Black Frame Price (USD)</Label>
-                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('blackFramePrice')} />
+                          <Label className="text-xs">Black Frame / sqm (USD)</Label>
+                          <Input type="number" step="0.01" placeholder="Price / sqm..." {...regUnit('blackFramePriceSqm')} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">White Frame Price (USD)</Label>
-                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('whiteFramePrice')} />
+                          <Label className="text-xs">White Frame / sqm (USD)</Label>
+                          <Input type="number" step="0.01" placeholder="Price / sqm..." {...regUnit('whiteFramePriceSqm')} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Green Frame Price (USD)</Label>
-                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('greenFramePrice')} />
+                          <Label className="text-xs">Green Frame / sqm (USD)</Label>
+                          <Input type="number" step="0.01" placeholder="Price / sqm..." {...regUnit('greenFramePriceSqm')} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Turnkey Price (USD) <span className="text-[10px] text-neutral-400 font-normal">(auto-calc: Price/m² × Size)</span></Label>
-                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('turnkeyPrice')} />
+                          <Label className="text-xs">Renovation / sqm (USD)</Label>
+                          <Input type="number" step="0.01" placeholder="Price / sqm..." {...regUnit('renovationPriceSqm')} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Turnkey Price Option</Label>
+                          <select {...regUnit('turnkeyCalcMethod')} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                            <option value="TOTAL_AREA">Total Area × Turnkey Price / sqm</option>
+                            <option value="LIVING_AREA">Living Area × Turnkey Price / sqm</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-1">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Black Frame Price Total</Label>
+                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('blackFramePrice')} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">White Frame Price Total</Label>
+                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('whiteFramePrice')} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Green Frame Price Total</Label>
+                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('greenFramePrice')} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Renovation Price Total</Label>
+                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('renovationPrice')} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Turnkey Price Total</Label>
+                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('turnkeyPrice')} />
                         </div>
                       </div>
                     </div>
@@ -1015,9 +1117,10 @@ export default function ProjectDetailPage() {
                                   </div>
 
                                   <form onSubmit={handleUnit((data) => createUnitMutation.mutate(data))} className="space-y-4">
-                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
                                       <div className="space-y-1"><Label>Unit Number</Label><Input placeholder="A-101" {...regUnit('unitNumber')} /></div>
                                       <div className="space-y-1"><Label>Tower/Block</Label><Input placeholder="e.g. Tower A" {...regUnit('towerBlock')} /></div>
+                                      <div className="space-y-1"><Label>Building</Label><Input placeholder="e.g. Building 1" {...regUnit('building')} /></div>
                                       <div className="space-y-1"><Label>Type</Label>
                                         <select {...regUnit('type')} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
                                           <option value="">Select...</option>
@@ -1034,13 +1137,14 @@ export default function ProjectDetailPage() {
                                         </select>
                                       </div>
                                       <div className="space-y-1"><Label>View</Label><Input placeholder="Sea View" {...regUnit('view')} /></div>
+                                      <div className="space-y-1"><Label>Handover</Label><Input type="date" {...regUnit('handover')} /></div>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                                       <div className="space-y-1"><Label>Bedrooms</Label><Input type="number" min={0} {...regUnit('bedrooms')} /></div>
                                       <div className="space-y-1"><Label>Bathrooms</Label><Input type="number" min={0} {...regUnit('bathrooms')} /></div>
                                       <div className="space-y-1"><Label>Floor</Label><Input type="number" min={0} {...regUnit('floor')} /></div>
                                       <div className="space-y-1"><Label>Size (m²)</Label><Input type="number" step="0.01" {...regUnit('size')} /></div>
-                                      <div className="space-y-1"><Label>Price / m² (USD)</Label><Input type="number" step="0.01" placeholder="e.g. 1000" {...regUnit('priceSqm')} /></div>
+                                      <div className="space-y-1"><Label>Turnkey Price / m² (USD)</Label><Input type="number" step="0.01" placeholder="e.g. 1000" {...regUnit('priceSqm')} /></div>
                                       <div className="space-y-1"><Label>Total Price (USD)</Label><Input type="number" step="0.01" {...regUnit('price')} /></div>
                                     </div>
                                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -1053,7 +1157,7 @@ export default function ProjectDetailPage() {
 
                                     <div className="border border-neutral-100 p-3 rounded-lg bg-neutral-50/50 space-y-3">
                                       <Label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Frames Options &amp; Pricing</Label>
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                         <div className="flex items-center space-x-2">
                                           <input type="checkbox" id={`unit-blackFrame-${unit.id}`} {...regUnit('blackFrame')} className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4" />
                                           <label htmlFor={`unit-blackFrame-${unit.id}`} className="text-sm font-medium text-neutral-700 select-none cursor-pointer">Black Frame</label>
@@ -1072,22 +1176,52 @@ export default function ProjectDetailPage() {
                                         </div>
                                       </div>
 
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-1">
+                                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-1">
                                         <div className="space-y-1">
-                                          <Label className="text-xs">Black Frame Price (USD)</Label>
-                                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('blackFramePrice')} />
+                                          <Label className="text-xs">Black Frame / sqm (USD)</Label>
+                                          <Input type="number" step="0.01" placeholder="Price / sqm..." {...regUnit('blackFramePriceSqm')} />
                                         </div>
                                         <div className="space-y-1">
-                                          <Label className="text-xs">White Frame Price (USD)</Label>
-                                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('whiteFramePrice')} />
+                                          <Label className="text-xs">White Frame / sqm (USD)</Label>
+                                          <Input type="number" step="0.01" placeholder="Price / sqm..." {...regUnit('whiteFramePriceSqm')} />
                                         </div>
                                         <div className="space-y-1">
-                                          <Label className="text-xs">Green Frame Price (USD)</Label>
-                                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('greenFramePrice')} />
+                                          <Label className="text-xs">Green Frame / sqm (USD)</Label>
+                                          <Input type="number" step="0.01" placeholder="Price / sqm..." {...regUnit('greenFramePriceSqm')} />
                                         </div>
                                         <div className="space-y-1">
-                                          <Label className="text-xs">Turnkey Price (USD) <span className="text-[10px] text-neutral-400 font-normal">(auto-calc: Price/m² × Size)</span></Label>
-                                          <Input type="number" step="0.01" placeholder="Price..." {...regUnit('turnkeyPrice')} />
+                                          <Label className="text-xs">Renovation / sqm (USD)</Label>
+                                          <Input type="number" step="0.01" placeholder="Price / sqm..." {...regUnit('renovationPriceSqm')} />
+                                        </div>
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">Turnkey Price Option</Label>
+                                          <select {...regUnit('turnkeyCalcMethod')} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
+                                            <option value="TOTAL_AREA">Total Area × Turnkey Price / sqm</option>
+                                            <option value="LIVING_AREA">Living Area × Turnkey Price / sqm</option>
+                                          </select>
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-1">
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">Black Frame Price Total</Label>
+                                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('blackFramePrice')} />
+                                        </div>
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">White Frame Price Total</Label>
+                                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('whiteFramePrice')} />
+                                        </div>
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">Green Frame Price Total</Label>
+                                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('greenFramePrice')} />
+                                        </div>
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">Renovation Price Total</Label>
+                                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('renovationPrice')} />
+                                        </div>
+                                        <div className="space-y-1">
+                                          <Label className="text-xs">Turnkey Price Total</Label>
+                                          <Input type="number" step="0.01" placeholder="Calculated..." {...regUnit('turnkeyPrice')} />
                                         </div>
                                       </div>
                                     </div>

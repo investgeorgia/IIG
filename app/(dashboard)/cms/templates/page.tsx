@@ -163,7 +163,7 @@ export default function TemplatesPage() {
               <div className="flex justify-between items-end">
                 <Label>HTML Content *</Label>
                 <div className="text-xs text-neutral-500">
-                  Supported Variables: {'{{customer_name}}, {{project_name}}, {{unit_number}}, {{unit_type}}, {{unit_price}}, {{final_price}}, {{images_gallery}}, {{customer_message}}'}
+                  Supported Variables: {'{{customer_name}}, {{project_name}}, {{unit_number}}, {{unit_type}}, {{unit_price}}, {{final_price}}, {{images_gallery}}, {{customer_message}}, {{building}}, {{renovation_price}}, {{renovation_html}}'}
                 </div>
               </div>
               <textarea 
