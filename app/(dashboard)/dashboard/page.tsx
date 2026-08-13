@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Users, LayoutDashboard, FileText, TrendingUp, TrendingDown, Clock, Minus } from 'lucide-react'
+import { Users, LayoutDashboard, FileText, TrendingUp, TrendingDown, Clock, Minus, Home } from 'lucide-react'
 import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 
@@ -56,7 +56,7 @@ export default function Dashboard() {
     <div className="space-y-8 animate-in fade-in duration-500">
 
       {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
 
         {/* Total Customers */}
         <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 flex flex-col justify-between min-h-[170px] sm:h-48 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all">
@@ -104,8 +104,25 @@ export default function Dashboard() {
             <p className="text-3xl sm:text-4xl font-extrabold text-neutral-900">{stats?.projects?.active ?? '—'}</p>
           </div>
           <div className="flex items-center justify-between text-xs font-semibold">
-            <span className="text-neutral-400">+{stats?.projects?.newLast30 ?? 0} added in last 30 days</span>
+            <span className="text-neutral-400">+{stats?.projects?.newLast30 ?? 0} in last 30 days</span>
             <TrendBadge pct={stats?.projects?.percentChange ?? 0} />
+          </div>
+        </div>
+
+        {/* Total Units */}
+        <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-neutral-100 flex flex-col justify-between min-h-[170px] sm:h-48 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+              <Home className="w-5 h-5" />
+            </div>
+            <p className="font-bold text-neutral-700 text-sm">Total Units</p>
+          </div>
+          <div>
+            <p className="text-3xl sm:text-4xl font-extrabold text-neutral-900">{stats?.units?.total ?? '—'}</p>
+          </div>
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span className="text-neutral-400">+{stats?.units?.newLast30 ?? 0} in last 30 days</span>
+            <TrendBadge pct={stats?.units?.percentChange ?? 0} />
           </div>
         </div>
 

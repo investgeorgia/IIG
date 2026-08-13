@@ -32,6 +32,10 @@ export async function GET() {
     const newProjectsLast30 = await prisma.project.count({ where: { createdAt: { gte: last30Start } } })
     const newProjectsPrev30 = await prisma.project.count({ where: { createdAt: { gte: prev30Start, lt: last30Start } } })
 
+    const totalUnits = await prisma.unit.count()
+    const newUnitsLast30 = await prisma.unit.count({ where: { createdAt: { gte: last30Start } } })
+    const newUnitsPrev30 = await prisma.unit.count({ where: { createdAt: { gte: prev30Start, lt: last30Start } } })
+
     const recentProposals = await prisma.proposal.findMany({
       where: proposalWhere,
       orderBy: { createdAt: 'desc' },
@@ -62,6 +66,11 @@ export async function GET() {
         active: activeProjects,
         newLast30: newProjectsLast30,
         percentChange: pctChange(newProjectsLast30, newProjectsPrev30),
+      },
+      units: {
+        total: totalUnits,
+        newLast30: newUnitsLast30,
+        percentChange: pctChange(newUnitsLast30, newUnitsPrev30),
       },
       recentProposals,
     })
