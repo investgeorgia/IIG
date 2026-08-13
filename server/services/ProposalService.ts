@@ -53,6 +53,44 @@ export class ProposalService {
 
     if (!unit) throw new Error('Unit not found')
 
+    // Save custom floor plan URL to unit if provided
+    if (data.customFloorPlanUrl) {
+      await prisma.unit.update({
+        where: { id: unit.id },
+        data: { floorPlanUrl: data.customFloorPlanUrl }
+      })
+      unit.floorPlanUrl = data.customFloorPlanUrl
+    }
+
+    // Save custom payment plan to unit if provided
+    if (data.paymentPlan && data.paymentPlan.length > 0) {
+      const planName = data.paymentPlanName || 'Custom Plan'
+      const existingPlan = await prisma.paymentPlan.findFirst({
+        where: {
+          unitId: unit.id,
+          name: planName
+        }
+      })
+
+      if (existingPlan) {
+        await prisma.paymentPlan.update({
+          where: { id: existingPlan.id },
+          data: {
+            schedule: data.paymentPlan as any
+          }
+        })
+      } else {
+        await prisma.paymentPlan.create({
+          data: {
+            projectId: unit.projectId,
+            unitId: unit.id,
+            name: planName,
+            schedule: data.paymentPlan as any
+          }
+        })
+      }
+    }
+
     // 2. Build immutable snapshot
     const snapshot = {
       unit: {
