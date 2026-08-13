@@ -1075,6 +1075,7 @@ export default function ProjectDetailPage() {
                                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 text-xs">
                                     <div><span className="text-neutral-400 block font-medium">Unit #</span><span className="font-semibold text-neutral-800">{unit.unitNumber || '—'}</span></div>
                                     <div><span className="text-neutral-400 block font-medium">Tower/Block</span><span className="font-semibold text-neutral-800">{unit.towerBlock || '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Building</span><span className="font-semibold text-neutral-800">{unit.building || '—'}</span></div>
                                     <div><span className="text-neutral-400 block font-medium">Type</span><span className="font-semibold text-neutral-800">{UNIT_TYPE_LABELS[unit.type] || unit.type || '—'}</span></div>
                                     <div><span className="text-neutral-400 block font-medium">Status</span><span className="font-semibold text-neutral-800">{unit.status}</span></div>
                                     <div><span className="text-neutral-400 block font-medium">Floor</span><span className="font-semibold text-neutral-800">{unit.floor ?? '—'}</span></div>
@@ -1085,6 +1086,10 @@ export default function ProjectDetailPage() {
                                     <div><span className="text-neutral-400 block font-medium">Price / m²</span><span className="font-semibold text-neutral-800">{unit.priceSqm ? `$${Number(unit.priceSqm).toLocaleString()}` : '—'}</span></div>
                                     <div><span className="text-neutral-400 block font-medium">Total Price</span><span className="font-semibold text-neutral-800">{unit.price ? `$${Number(unit.price).toLocaleString()}` : '—'}</span></div>
                                     <div><span className="text-neutral-400 block font-medium">Delivery Form</span><span className="font-semibold text-neutral-800">{unit.deliveryForm || '—'}</span></div>
+                                    <div><span className="text-neutral-400 block font-medium">Handover</span><span className="font-semibold text-neutral-800">{unit.handover ? new Date(unit.handover).toLocaleDateString() : '—'}</span></div>
+                                    {unit.floorPlanUrl && (
+                                      <div className="col-span-2 sm:col-span-4 md:col-span-6"><span className="text-neutral-400 block font-medium">Floor Plan URL</span><a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="text-red-600 hover:underline font-semibold">{unit.floorPlanUrl}</a></div>
+                                    )}
                                   </div>
                                   {(unit.livingAreaSize || unit.balconySize || unit.terraceSize || unit.greenyardSize) && (
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-neutral-100">
@@ -1094,12 +1099,43 @@ export default function ProjectDetailPage() {
                                       {unit.greenyardSize && <div><span className="text-neutral-400 block">Greenyard</span><span className="font-semibold">{unit.greenyardSize} m²</span></div>}
                                     </div>
                                   )}
-                                  {(unit.blackFramePrice || unit.whiteFramePrice || unit.greenFramePrice || unit.turnkeyPrice) && (
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-neutral-100">
-                                      {unit.blackFramePrice && <div><span className="text-neutral-400 block">Black Frame Price</span><span className="font-semibold">${Number(unit.blackFramePrice).toLocaleString()}</span></div>}
-                                      {unit.whiteFramePrice && <div><span className="text-neutral-400 block">White Frame Price</span><span className="font-semibold">${Number(unit.whiteFramePrice).toLocaleString()}</span></div>}
-                                      {unit.greenFramePrice && <div><span className="text-neutral-400 block">Green Frame Price</span><span className="font-semibold">${Number(unit.greenFramePrice).toLocaleString()}</span></div>}
-                                      {unit.turnkeyPrice && <div><span className="text-neutral-400 block">Turnkey Price</span><span className="font-semibold">${Number(unit.turnkeyPrice).toLocaleString()}</span></div>}
+                                  {(unit.blackFramePrice || unit.whiteFramePrice || unit.greenFramePrice || unit.turnkeyPrice || unit.renovationPrice) && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs pt-2 border-t border-neutral-100">
+                                      {unit.blackFramePrice && (
+                                        <div>
+                                          <span className="text-neutral-400 block">Black Frame Price</span>
+                                          <span className="font-semibold">${Number(unit.blackFramePrice).toLocaleString()}</span>
+                                          {unit.blackFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.blackFramePriceSqm).toLocaleString()} / m²)</span>}
+                                        </div>
+                                      )}
+                                      {unit.whiteFramePrice && (
+                                        <div>
+                                          <span className="text-neutral-400 block">White Frame Price</span>
+                                          <span className="font-semibold">${Number(unit.whiteFramePrice).toLocaleString()}</span>
+                                          {unit.whiteFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.whiteFramePriceSqm).toLocaleString()} / m²)</span>}
+                                        </div>
+                                      )}
+                                      {unit.greenFramePrice && (
+                                        <div>
+                                          <span className="text-neutral-400 block">Green Frame Price</span>
+                                          <span className="font-semibold">${Number(unit.greenFramePrice).toLocaleString()}</span>
+                                          {unit.greenFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.greenFramePriceSqm).toLocaleString()} / m²)</span>}
+                                        </div>
+                                      )}
+                                      {unit.turnkeyPrice && (
+                                        <div>
+                                          <span className="text-neutral-400 block">Turnkey Price</span>
+                                          <span className="font-semibold">${Number(unit.turnkeyPrice).toLocaleString()}</span>
+                                          {unit.turnkeyCalcMethod && <span className="text-[10px] text-neutral-500 block">({unit.turnkeyCalcMethod === 'LIVING_AREA' ? 'Living Area' : 'Total Area'})</span>}
+                                        </div>
+                                      )}
+                                      {unit.renovationPrice && (
+                                        <div>
+                                          <span className="text-neutral-400 block">Renovation Price</span>
+                                          <span className="font-semibold">${Number(unit.renovationPrice).toLocaleString()}</span>
+                                          {unit.renovationPriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.renovationPriceSqm).toLocaleString()} / m²)</span>}
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>
