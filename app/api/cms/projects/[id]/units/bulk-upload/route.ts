@@ -123,6 +123,42 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const floorPlanUrlHeader = mapping['floorPlanUrl']
       const floorPlanUrl = floorPlanUrlHeader ? String(row[floorPlanUrlHeader] || '').trim() : null
 
+      const buildingHeader = mapping['building']
+      const building = buildingHeader ? String(row[buildingHeader] || '').trim() : null
+
+      const towerBlockHeader = mapping['towerBlock']
+      const towerBlock = towerBlockHeader ? String(row[towerBlockHeader] || '').trim() : null
+
+      const priceSqmHeader = mapping['priceSqm']
+      const priceSqm = priceSqmHeader ? parseFloat(row[priceSqmHeader]) || null : null
+
+      const blackFramePriceSqmHeader = mapping['blackFramePriceSqm']
+      const blackFramePriceSqm = blackFramePriceSqmHeader ? parseFloat(row[blackFramePriceSqmHeader]) || null : null
+
+      const whiteFramePriceSqmHeader = mapping['whiteFramePriceSqm']
+      const whiteFramePriceSqm = whiteFramePriceSqmHeader ? parseFloat(row[whiteFramePriceSqmHeader]) || null : null
+
+      const greenFramePriceSqmHeader = mapping['greenFramePriceSqm']
+      const greenFramePriceSqm = greenFramePriceSqmHeader ? parseFloat(row[greenFramePriceSqmHeader]) || null : null
+
+      const renovationPriceHeader = mapping['renovationPrice']
+      const renovationPrice = renovationPriceHeader ? parseFloat(row[renovationPriceHeader]) || null : null
+
+      const renovationPriceSqmHeader = mapping['renovationPriceSqm']
+      const renovationPriceSqm = renovationPriceSqmHeader ? parseFloat(row[renovationPriceSqmHeader]) || null : null
+
+      const turnkeyCalcMethodHeader = mapping['turnkeyCalcMethod']
+      const turnkeyCalcMethod = turnkeyCalcMethodHeader ? String(row[turnkeyCalcMethodHeader] || '').trim() : null
+
+      let handover = null
+      const handoverHeader = mapping['handover']
+      if (handoverHeader && row[handoverHeader]) {
+        const parsedDate = Date.parse(row[handoverHeader])
+        if (!isNaN(parsedDate)) {
+          handover = new Date(parsedDate)
+        }
+      }
+
       // Check if unit exists in project
       const existing = await prisma.unit.findFirst({
         where: {
@@ -156,7 +192,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         whiteFramePrice,
         greenFramePrice,
         turnkeyPrice,
-        floorPlanUrl
+        floorPlanUrl,
+        building,
+        towerBlock,
+        priceSqm,
+        blackFramePriceSqm,
+        whiteFramePriceSqm,
+        greenFramePriceSqm,
+        renovationPrice,
+        renovationPriceSqm,
+        turnkeyCalcMethod,
+        handover
       }
 
       if (existing) {

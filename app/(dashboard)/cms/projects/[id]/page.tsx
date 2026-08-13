@@ -1982,7 +1982,17 @@ const UNIT_FIELDS = [
   { key: 'whiteFramePrice', label: 'White Frame Price' },
   { key: 'greenFramePrice', label: 'Green Frame Price' },
   { key: 'turnkeyPrice', label: 'Turnkey Price' },
-  { key: 'floorPlanUrl', label: 'Floor Plan URL' }
+  { key: 'floorPlanUrl', label: 'Floor Plan URL' },
+  { key: 'building', label: 'Building' },
+  { key: 'towerBlock', label: 'Tower/Block' },
+  { key: 'priceSqm', label: 'Price per sqm' },
+  { key: 'blackFramePriceSqm', label: 'Black Frame Price per sqm' },
+  { key: 'whiteFramePriceSqm', label: 'White Frame Price per sqm' },
+  { key: 'greenFramePriceSqm', label: 'Green Frame Price per sqm' },
+  { key: 'renovationPrice', label: 'Renovation Price' },
+  { key: 'renovationPriceSqm', label: 'Renovation Price per sqm' },
+  { key: 'handover', label: 'Handover Date' },
+  { key: 'turnkeyCalcMethod', label: 'Turnkey Calc Method' }
 ]
 
 function parseCSV(text: string): string[][] {
