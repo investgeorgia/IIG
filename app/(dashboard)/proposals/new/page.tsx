@@ -758,13 +758,43 @@ export default function CreateProposalPage() {
           <div className="space-y-6">
             {/* Summary Card */}
             <Card className="shadow-sm bg-neutral-50 border-neutral-200">
-              <CardContent className="p-5">
-                <p className="text-xs text-neutral-500 uppercase font-semibold tracking-wider mb-3">Proposal Summary</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div><p className="text-neutral-500 text-xs">Customer</p><p className="font-semibold text-neutral-900">{selectedCustomer?.name || newCustomerForm.name}</p></div>
-                  <div><p className="text-neutral-500 text-xs">Unit</p><p className="font-semibold text-neutral-900">{selectedUnit.unitNumber}</p></div>
-                  <div><p className="text-neutral-500 text-xs">Selected Price</p><p className="font-semibold text-neutral-900">{selectedPriceVal.toLocaleString()} {selectedUnit.currency}</p></div>
-                  <div><p className="text-neutral-500 text-xs">Size</p><p className="font-semibold text-neutral-900">{Number(selectedUnit.size).toLocaleString()} m²</p></div>
+              <CardContent className="p-5 space-y-4">
+                <div>
+                  <p className="text-xs text-neutral-500 uppercase font-semibold tracking-wider mb-2">Proposal Overview</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-white p-4 rounded-xl border border-neutral-100 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
+                    <div><p className="text-neutral-400 text-xs font-semibold">Customer</p><p className="font-semibold text-neutral-900 mt-0.5">{selectedCustomer?.name || newCustomerForm.name}</p></div>
+                    <div><p className="text-neutral-400 text-xs font-semibold">Selected Price</p><p className="font-bold text-neutral-900 mt-0.5">{selectedPriceVal.toLocaleString()} {selectedUnit.currency}</p></div>
+                    {customPrice && <div><p className="text-neutral-400 text-xs font-semibold">Custom Price</p><p className="font-bold text-green-600 mt-0.5">{Number(customPrice).toLocaleString()} {selectedUnit.currency} {discountPercent ? `(${discountPercent}% off)` : ''}</p></div>}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-neutral-500 uppercase font-semibold tracking-wider mb-2">Unit Details</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm bg-white p-4 rounded-xl border border-neutral-100 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
+                    {[
+                      { label: 'Unit Number', value: selectedUnit.unitNumber },
+                      { label: 'Type', value: selectedUnit.type },
+                      { label: 'Building', value: selectedUnit.building },
+                      { label: 'Tower/Block', value: towerBlock || selectedUnit.towerBlock },
+                      { label: 'Floor', value: selectedUnit.floor },
+                      { label: 'Bedrooms', value: selectedUnit.bedrooms },
+                      { label: 'Bathrooms', value: selectedUnit.bathrooms },
+                      { label: 'Total Size', value: selectedUnit.size ? `${selectedUnit.size} m²` : null },
+                      { label: 'Living Area', value: selectedUnit.livingAreaSize ? `${selectedUnit.livingAreaSize} m²` : null },
+                      { label: 'Balcony Size', value: selectedUnit.balconySize ? `${selectedUnit.balconySize} m²` : null },
+                      { label: 'Terrace Size', value: selectedUnit.terraceSize ? `${selectedUnit.terraceSize} m²` : null },
+                      { label: 'Greenyard Size', value: selectedUnit.greenyardSize ? `${selectedUnit.greenyardSize} m²` : null },
+                      { label: 'View', value: selectedUnit.view },
+                      { label: 'Delivery Form', value: unitCondition || selectedUnit.deliveryForm },
+                      { label: 'Handover', value: customHandover ? customHandover : (selectedUnit.handover ? new Date(selectedUnit.handover).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : null) },
+                    ].filter(item => item.value !== null && item.value !== undefined && item.value !== '' && item.value !== 0)
+                     .map((item, idx) => (
+                      <div key={idx}>
+                        <p className="text-neutral-400 text-xs font-semibold">{item.label}</p>
+                        <p className="font-semibold text-neutral-900 mt-0.5">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
