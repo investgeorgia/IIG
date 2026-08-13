@@ -67,6 +67,7 @@ export default function ProjectDetailPage() {
   const [bulkRows, setBulkRows] = useState<any[]>([])
   const [bulkMapping, setBulkMapping] = useState<Record<string, string>>({})
   const [bulkUploading, setBulkUploading] = useState(false)
+  const [bulkTurnkeyCalcMethod, setBulkTurnkeyCalcMethod] = useState('TOTAL_AREA')
 
   // Bulk floor plan states
   const [showBulkFloorPlan, setShowBulkFloorPlan] = useState(false)
@@ -1817,6 +1818,7 @@ export default function ProjectDetailPage() {
                 setBulkHeaders([])
                 setBulkRows([])
                 setBulkMapping({})
+                setBulkTurnkeyCalcMethod('TOTAL_AREA')
               }}>
                 <X className="w-5 h-5" />
               </Button>
@@ -1881,7 +1883,23 @@ export default function ProjectDetailPage() {
                       setBulkHeaders([])
                       setBulkRows([])
                       setBulkMapping({})
+                      setBulkTurnkeyCalcMethod('TOTAL_AREA')
                     }}>Change file</Button>
+                  </div>
+
+                  <div className="bg-neutral-50 border rounded-lg p-3 space-y-2">
+                    <div className="flex flex-col space-y-1">
+                      <Label className="font-semibold text-neutral-800 text-sm">Turnkey Price Option</Label>
+                      <span className="text-xs text-neutral-500 font-medium">Select method to automatically calculate Turnkey Price total during import (requires Turnkey Price / sqm to be mapped)</span>
+                    </div>
+                    <select
+                      value={bulkTurnkeyCalcMethod}
+                      onChange={e => setBulkTurnkeyCalcMethod(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                    >
+                      <option value="TOTAL_AREA">Total Area × Turnkey Price / sqm</option>
+                      <option value="LIVING_AREA">Living Area × Turnkey Price / sqm</option>
+                    </select>
                   </div>
 
                   <div className="space-y-3">
@@ -1918,6 +1936,7 @@ export default function ProjectDetailPage() {
                       setBulkHeaders([])
                       setBulkRows([])
                       setBulkMapping({})
+                      setBulkTurnkeyCalcMethod('TOTAL_AREA')
                     }}>Cancel</Button>
                     <Button
                       disabled={bulkUploading || !bulkMapping['unitNumber']}
@@ -1927,7 +1946,7 @@ export default function ProjectDetailPage() {
                           const res = await fetch(`/api/cms/projects/${id}/units/bulk-upload`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ rows: bulkRows, mapping: bulkMapping })
+                            body: JSON.stringify({ rows: bulkRows, mapping: bulkMapping, turnkeyCalcMethod: bulkTurnkeyCalcMethod })
                           })
                           const result = await res.json()
                           if (res.ok) {
@@ -1938,6 +1957,7 @@ export default function ProjectDetailPage() {
                             setBulkHeaders([])
                             setBulkRows([])
                             setBulkMapping({})
+                            setBulkTurnkeyCalcMethod('TOTAL_AREA')
                           } else {
                             throw new Error(result.error || 'Failed to upload')
                           }

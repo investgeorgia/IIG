@@ -44,11 +44,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   try {
     const projectId = Number((await params).id)
-    const { rows, mapping } = await request.json()
+    const { rows, mapping, turnkeyCalcMethod: requestTurnkeyCalcMethod } = await request.json()
 
     if (!Array.isArray(rows) || !mapping) {
       return NextResponse.json({ error: 'Invalid payload structure' }, { status: 400 })
     }
+
+    const turnkeyCalcMethod = requestTurnkeyCalcMethod || 'TOTAL_AREA'
 
     let createdCount = 0
     let updatedCount = 0
@@ -116,10 +118,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const greenFramePrice = greenFramePriceHeader ? parseFloat(row[greenFramePriceHeader]) || null : null
       const greenFrame = (greenFramePrice !== null && greenFramePrice > 0)
 
-      const turnkeyPriceHeader = mapping['turnkeyPrice']
-      const turnkeyPrice = turnkeyPriceHeader ? parseFloat(row[turnkeyPriceHeader]) || null : null
-      const turnkey = (turnkeyPrice !== null && turnkeyPrice > 0)
-
       const floorPlanUrlHeader = mapping['floorPlanUrl']
       const floorPlanUrl = floorPlanUrlHeader ? String(row[floorPlanUrlHeader] || '').trim() : null
 
@@ -147,8 +145,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const renovationPriceSqmHeader = mapping['renovationPriceSqm']
       const renovationPriceSqm = renovationPriceSqmHeader ? parseFloat(row[renovationPriceSqmHeader]) || null : null
 
-      const turnkeyCalcMethodHeader = mapping['turnkeyCalcMethod']
-      const turnkeyCalcMethod = turnkeyCalcMethodHeader ? String(row[turnkeyCalcMethodHeader] || '').trim() : null
+      let turnkeyPrice = null
+      let turnkey = false
+
+      if (priceSqm && priceSqm > 0) {
+        const area = (turnkeyCalcMethod === 'LIVING_AREA' && livingAreaSize) ? livingAreaSize : size
+        if (area && area > 0) {
+          turnkeyPrice = priceSqm * area
+          turnkey = true
+        }
+      }
+
+      if (!turnkeyPrice) {
+        const turnkeyPriceHeader = mapping['turnkeyPrice']
+        const mappedTurnkeyPrice = turnkeyPriceHeader ? parseFloat(row[turnkeyPriceHeader]) || null : null
+        if (mappedTurnkeyPrice !== null && mappedTurnkeyPrice > 0) {
+          turnkeyPrice = mappedTurnkeyPrice
+          turnkey = true
+        }
+      }
 
       let handover = null
       const handoverHeader = mapping['handover']
