@@ -167,7 +167,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       let turnkeyPrice = null
       let turnkey = false
 
-      if (priceSqm && priceSqm > 0) {
+      if (turnkeyCalcMethod !== 'NONE' && priceSqm && priceSqm > 0) {
         const area = (turnkeyCalcMethod === 'LIVING_AREA' && livingAreaSize) ? livingAreaSize : size
         if (area && area > 0) {
           turnkeyPrice = priceSqm * area

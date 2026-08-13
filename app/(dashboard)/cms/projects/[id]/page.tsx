@@ -2030,6 +2030,7 @@ export default function ProjectDetailPage() {
                     >
                       <option value="TOTAL_AREA">Total Area × Turnkey Price / sqm</option>
                       <option value="LIVING_AREA">Living Area × Turnkey Price / sqm</option>
+                      <option value="NONE">Leave empty</option>
                     </select>
                   </div>
 
