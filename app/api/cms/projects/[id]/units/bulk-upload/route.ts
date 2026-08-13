@@ -197,7 +197,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const existing = await prisma.unit.findFirst({
         where: {
           projectId,
-          unitNumber
+          unitNumber,
+          ...(building ? { building } : {
+            OR: [
+              { building: null },
+              { building: '' }
+            ]
+          })
         }
       })
 
