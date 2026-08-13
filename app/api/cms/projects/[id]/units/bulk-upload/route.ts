@@ -35,6 +35,22 @@ const UNIT_STATUS_MAP: Record<string, string> = {
   'SOLD': 'SOLD'
 }
 
+function cleanFloat(val: any): number | null {
+  if (val === undefined || val === null || val === '') return null
+  const str = String(val).trim()
+  const cleaned = str.replace(/[^0-9.-]/g, '')
+  const parsed = parseFloat(cleaned)
+  return isNaN(parsed) ? null : parsed
+}
+
+function cleanInt(val: any): number | null {
+  if (val === undefined || val === null || val === '') return null
+  const str = String(val).trim()
+  const cleaned = str.replace(/[^0-9-]/g, '')
+  const parsed = parseInt(cleaned, 10)
+  return isNaN(parsed) ? null : parsed
+}
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -68,16 +84,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const type = rawType || 'APARTMENT'
 
       const bedroomsHeader = mapping['bedrooms']
-      const bedrooms = bedroomsHeader ? Math.max(0, parseInt(row[bedroomsHeader], 10) || 0) : 0
+      const bedrooms = bedroomsHeader ? Math.max(0, cleanInt(row[bedroomsHeader]) || 0) : 0
 
       const bathroomsHeader = mapping['bathrooms']
-      const bathrooms = bathroomsHeader ? Math.max(0, parseInt(row[bathroomsHeader], 10) || 0) : 0
+      const bathrooms = bathroomsHeader ? Math.max(0, cleanInt(row[bathroomsHeader]) || 0) : 0
 
       const sizeHeader = mapping['size']
-      const size = sizeHeader ? Math.max(0, parseFloat(row[sizeHeader]) || 0) : 0
+      const size = sizeHeader ? Math.max(0, cleanFloat(row[sizeHeader]) || 0) : 0
 
       const priceHeader = mapping['price']
-      const price = priceHeader ? Math.max(0, parseFloat(row[priceHeader]) || 0) : 0
+      const price = priceHeader ? Math.max(0, cleanFloat(row[priceHeader]) || 0) : 0
 
       const currency = 'USD'
 
@@ -89,33 +105,33 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const view = viewHeader ? String(row[viewHeader] || '').trim() : null
 
       const floorHeader = mapping['floor']
-      const floor = floorHeader ? parseInt(row[floorHeader], 10) || null : null
+      const floor = floorHeader ? cleanInt(row[floorHeader]) : null
 
       const livingAreaSizeHeader = mapping['livingAreaSize']
-      const livingAreaSize = livingAreaSizeHeader ? parseFloat(row[livingAreaSizeHeader]) || null : null
+      const livingAreaSize = livingAreaSizeHeader ? cleanFloat(row[livingAreaSizeHeader]) : null
 
       const balconySizeHeader = mapping['balconySize']
-      const balconySize = balconySizeHeader ? parseFloat(row[balconySizeHeader]) || null : null
+      const balconySize = balconySizeHeader ? cleanFloat(row[balconySizeHeader]) : null
 
       const terraceSizeHeader = mapping['terraceSize']
-      const terraceSize = terraceSizeHeader ? parseFloat(row[terraceSizeHeader]) || null : null
+      const terraceSize = terraceSizeHeader ? cleanFloat(row[terraceSizeHeader]) : null
 
       const greenyardSizeHeader = mapping['greenyardSize']
-      const greenyardSize = greenyardSizeHeader ? parseFloat(row[greenyardSizeHeader]) || null : null
+      const greenyardSize = greenyardSizeHeader ? cleanFloat(row[greenyardSizeHeader]) : null
 
       const deliveryFormHeader = mapping['deliveryForm']
       const deliveryForm = deliveryFormHeader ? String(row[deliveryFormHeader] || '').trim() : null
 
       const blackFramePriceHeader = mapping['blackFramePrice']
-      const blackFramePrice = blackFramePriceHeader ? parseFloat(row[blackFramePriceHeader]) || null : null
+      const blackFramePrice = blackFramePriceHeader ? cleanFloat(row[blackFramePriceHeader]) : null
       const blackFrame = (blackFramePrice !== null && blackFramePrice > 0)
 
       const whiteFramePriceHeader = mapping['whiteFramePrice']
-      const whiteFramePrice = whiteFramePriceHeader ? parseFloat(row[whiteFramePriceHeader]) || null : null
+      const whiteFramePrice = whiteFramePriceHeader ? cleanFloat(row[whiteFramePriceHeader]) : null
       const whiteFrame = (whiteFramePrice !== null && whiteFramePrice > 0)
 
       const greenFramePriceHeader = mapping['greenFramePrice']
-      const greenFramePrice = greenFramePriceHeader ? parseFloat(row[greenFramePriceHeader]) || null : null
+      const greenFramePrice = greenFramePriceHeader ? cleanFloat(row[greenFramePriceHeader]) : null
       const greenFrame = (greenFramePrice !== null && greenFramePrice > 0)
 
       const floorPlanUrlHeader = mapping['floorPlanUrl']
@@ -128,22 +144,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const towerBlock = towerBlockHeader ? String(row[towerBlockHeader] || '').trim() : null
 
       const priceSqmHeader = mapping['priceSqm']
-      const priceSqm = priceSqmHeader ? parseFloat(row[priceSqmHeader]) || null : null
+      let priceSqm = priceSqmHeader ? cleanFloat(row[priceSqmHeader]) : null
+      if (priceSqm === null && price > 0 && size > 0) {
+        priceSqm = Number((price / size).toFixed(2))
+      }
 
       const blackFramePriceSqmHeader = mapping['blackFramePriceSqm']
-      const blackFramePriceSqm = blackFramePriceSqmHeader ? parseFloat(row[blackFramePriceSqmHeader]) || null : null
+      const blackFramePriceSqm = blackFramePriceSqmHeader ? cleanFloat(row[blackFramePriceSqmHeader]) : null
 
       const whiteFramePriceSqmHeader = mapping['whiteFramePriceSqm']
-      const whiteFramePriceSqm = whiteFramePriceSqmHeader ? parseFloat(row[whiteFramePriceSqmHeader]) || null : null
+      const whiteFramePriceSqm = whiteFramePriceSqmHeader ? cleanFloat(row[whiteFramePriceSqmHeader]) : null
 
       const greenFramePriceSqmHeader = mapping['greenFramePriceSqm']
-      const greenFramePriceSqm = greenFramePriceSqmHeader ? parseFloat(row[greenFramePriceSqmHeader]) || null : null
+      const greenFramePriceSqm = greenFramePriceSqmHeader ? cleanFloat(row[greenFramePriceSqmHeader]) : null
 
       const renovationPriceHeader = mapping['renovationPrice']
-      const renovationPrice = renovationPriceHeader ? parseFloat(row[renovationPriceHeader]) || null : null
+      const renovationPrice = renovationPriceHeader ? cleanFloat(row[renovationPriceHeader]) : null
 
       const renovationPriceSqmHeader = mapping['renovationPriceSqm']
-      const renovationPriceSqm = renovationPriceSqmHeader ? parseFloat(row[renovationPriceSqmHeader]) || null : null
+      const renovationPriceSqm = renovationPriceSqmHeader ? cleanFloat(row[renovationPriceSqmHeader]) : null
 
       let turnkeyPrice = null
       let turnkey = false
@@ -158,7 +177,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
       if (!turnkeyPrice) {
         const turnkeyPriceHeader = mapping['turnkeyPrice']
-        const mappedTurnkeyPrice = turnkeyPriceHeader ? parseFloat(row[turnkeyPriceHeader]) || null : null
+        const mappedTurnkeyPrice = turnkeyPriceHeader ? cleanFloat(row[turnkeyPriceHeader]) : null
         if (mappedTurnkeyPrice !== null && mappedTurnkeyPrice > 0) {
           turnkeyPrice = mappedTurnkeyPrice
           turnkey = true
