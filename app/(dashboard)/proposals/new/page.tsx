@@ -34,6 +34,9 @@ export default function CreateProposalPage() {
   const [unitMinPrice, setUnitMinPrice] = useState('')
   const [unitMaxPrice, setUnitMaxPrice] = useState('')
 
+  // Pagination State
+  const [unitPage, setUnitPage] = useState(1)
+
   // Customizations
   const [customPrice, setCustomPrice] = useState('')
   const [discountPercent, setDiscountPercent] = useState('')
@@ -59,6 +62,19 @@ export default function CreateProposalPage() {
       setCustomHandover(selectedUnit.handover ? new Date(selectedUnit.handover).toISOString().split('T')[0] : '')
     }
   }, [selectedUnit])
+
+  useEffect(() => {
+    setUnitPage(1)
+  }, [
+    unitSearch,
+    unitFilterType,
+    unitFilterBeds,
+    unitMinSize,
+    unitMaxSize,
+    unitMinPrice,
+    unitMaxPrice,
+    selectedProjectId
+  ])
 
   // Data queries
   const { data: searchResults = [], isFetching: isSearchingCustomers } = useQuery({
@@ -110,6 +126,10 @@ export default function CreateProposalPage() {
     if (unitMaxPrice && (Number(u.price) || 0) > Number(unitMaxPrice)) return false
     return true
   })
+
+  const UNITS_PER_PAGE = 12
+  const totalPages = Math.ceil(filteredUnits.length / UNITS_PER_PAGE)
+  const paginatedUnits = filteredUnits.slice((unitPage - 1) * UNITS_PER_PAGE, unitPage * UNITS_PER_PAGE)
 
   const { data: projectMedia = [] } = useQuery({
     queryKey: ['media', selectedProjectId],
@@ -584,58 +604,133 @@ export default function CreateProposalPage() {
                 <p className="text-neutral-400 text-xs">Try resetting or broadening your search filters above.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {filteredUnits.map((unit: any) => (
-                  <button key={unit.id} type="button" onClick={() => {
-                    setSelectedUnit(unit)
-                    setSelectedPriceVal(Number(unit.price))
-                    setSelectedPricingType('Base Price')
-                    setUnitCondition(unit.deliveryForm || '')
-                    setTowerBlock(unit.towerBlock || '')
-                    const plan = (unit.paymentPlans && unit.paymentPlans.length > 0) ? unit.paymentPlans[0] : (projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans?.[0])
-                    setSelectedPaymentPlanName(plan ? plan.name : 'Standard Plan')
-                    if (plan && plan.schedule) {
-                      try {
-                        let parsedSchedule = typeof plan.schedule === 'string' ? JSON.parse(plan.schedule) : plan.schedule;
-                        if (Array.isArray(parsedSchedule)) {
-                          setPaymentPlan(parsedSchedule.map((s: any, idx: number) => ({
-                            id: Date.now() + idx,
-                            milestone: s.milestone || s.label || s.name || '',
-                            percentage: Number(s.percentage) || 0,
-                            date: s.date || (s.dueDays ? `Due in ${s.dueDays} days` : ''),
-                            subMilestones: Array.isArray(s.subMilestones) ? s.subMilestones.map((sub: any, subIdx: number) => ({
-                              id: Date.now() + 1000 + idx * 10 + subIdx,
-                              milestone: sub.milestone || '',
-                              percentage: Number(sub.percentage) || 0,
-                              date: sub.date || ''
-                            })) : []
-                          })))
-                        } else {
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {paginatedUnits.map((unit: any) => (
+                    <button key={unit.id} type="button" onClick={() => {
+                      setSelectedUnit(unit)
+                      setSelectedPriceVal(Number(unit.price))
+                      setSelectedPricingType('Base Price')
+                      setUnitCondition(unit.deliveryForm || '')
+                      setTowerBlock(unit.towerBlock || '')
+                      const plan = (unit.paymentPlans && unit.paymentPlans.length > 0) ? unit.paymentPlans[0] : (projects.find((p: any) => p.id === selectedProjectId)?.paymentPlans?.[0])
+                      setSelectedPaymentPlanName(plan ? plan.name : 'Standard Plan')
+                      if (plan && plan.schedule) {
+                        try {
+                          let parsedSchedule = typeof plan.schedule === 'string' ? JSON.parse(plan.schedule) : plan.schedule;
+                          if (Array.isArray(parsedSchedule)) {
+                            setPaymentPlan(parsedSchedule.map((s: any, idx: number) => ({
+                              id: Date.now() + idx,
+                              milestone: s.milestone || s.label || s.name || '',
+                              percentage: Number(s.percentage) || 0,
+                              date: s.date || (s.dueDays ? `Due in ${s.dueDays} days` : ''),
+                              subMilestones: Array.isArray(s.subMilestones) ? s.subMilestones.map((sub: any, subIdx: number) => ({
+                                id: Date.now() + 1000 + idx * 10 + subIdx,
+                                milestone: sub.milestone || '',
+                                percentage: Number(sub.percentage) || 0,
+                                date: sub.date || ''
+                              })) : []
+                            })))
+                          } else {
+                            setPaymentPlan([])
+                          }
+                        } catch (e) {
+                          console.error('Failed to parse schedule', e)
                           setPaymentPlan([])
                         }
-                      } catch (e) {
-                        console.error('Failed to parse schedule', e)
+                      } else {
                         setPaymentPlan([])
                       }
-                    } else {
-                      setPaymentPlan([])
-                    }
-                  }}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${selectedUnit?.id === unit.id ? 'border-red-500 bg-red-50/50 shadow-sm' : 'border-neutral-200 hover:border-neutral-300 bg-white'}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-base text-neutral-900">Unit {unit.unitNumber}</span>
-                      {selectedUnit?.id === unit.id && <Check className="w-5 h-5 text-red-600" />}
-                    </div>
-                    {unit.floorPlanUrl && (
-                      <div className="mb-3 h-28 bg-neutral-100 rounded-lg overflow-hidden border border-neutral-200">
-                        <img src={unit.floorPlanUrl} alt="Floor plan" className="w-full h-full object-cover opacity-80" />
+                    }}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${selectedUnit?.id === unit.id ? 'border-red-500 bg-red-50/50 shadow-sm' : 'border-neutral-200 hover:border-neutral-300 bg-white'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-base text-neutral-900">Unit {unit.unitNumber}</span>
+                        {selectedUnit?.id === unit.id && <Check className="w-5 h-5 text-red-600" />}
                       </div>
-                    )}
-                    <p className="text-xs text-neutral-500 capitalize">{unit.type.toLowerCase()} · {unit.bedrooms} bed · {unit.bathrooms} bath</p>
-                    <p className="text-xs text-neutral-500">{Number(unit.size).toLocaleString()} m²{unit.floor ? ` · Floor ${unit.floor}` : ''}</p>
-                    <p className="text-base font-bold text-neutral-900 mt-2">{Number(unit.price).toLocaleString()} {unit.currency}</p>
-                  </button>
-                ))}
+                      {unit.floorPlanUrl && (
+                        <div className="mb-3 h-28 bg-neutral-100 rounded-lg overflow-hidden border border-neutral-200">
+                          <img src={unit.floorPlanUrl} alt="Floor plan" className="w-full h-full object-cover opacity-80" />
+                        </div>
+                      )}
+                      <p className="text-xs text-neutral-500 capitalize">{unit.type.toLowerCase()} · {unit.bedrooms} bed · {unit.bathrooms} bath</p>
+                      <p className="text-xs text-neutral-500">{Number(unit.size).toLocaleString()} m²{unit.floor ? ` · Floor ${unit.floor}` : ''}</p>
+                      <p className="text-base font-bold text-neutral-900 mt-2">{Number(unit.price).toLocaleString()} {unit.currency}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between border-t border-neutral-200 px-4 py-3 bg-white sm:px-6 rounded-b-xl mt-4">
+                    <div className="flex flex-1 justify-between sm:hidden">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={unitPage === 1}
+                        onClick={() => setUnitPage(prev => Math.max(prev - 1, 1))}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={unitPage === totalPages}
+                        onClick={() => setUnitPage(prev => Math.min(prev + 1, totalPages))}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-xs text-neutral-700">
+                          Showing <span className="font-semibold">{Math.min(filteredUnits.length, (unitPage - 1) * UNITS_PER_PAGE + 1)}</span> to{' '}
+                          <span className="font-semibold">{Math.min(filteredUnits.length, unitPage * UNITS_PER_PAGE)}</span> of{' '}
+                          <span className="font-semibold">{filteredUnits.length}</span> units
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={unitPage === 1}
+                          onClick={() => setUnitPage(1)}
+                          className="h-8 w-8 p-0 text-xs"
+                        >
+                          &laquo;
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={unitPage === 1}
+                          onClick={() => setUnitPage(prev => Math.max(prev - 1, 1))}
+                          className="h-8 w-8 p-0 text-xs"
+                        >
+                          &lsaquo;
+                        </Button>
+                        <span className="text-xs text-neutral-600 px-2 font-medium">
+                          Page {unitPage} of {totalPages}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={unitPage === totalPages}
+                          onClick={() => setUnitPage(prev => Math.min(prev + 1, totalPages))}
+                          className="h-8 w-8 p-0 text-xs"
+                        >
+                          &rsaquo;
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={unitPage === totalPages}
+                          onClick={() => setUnitPage(totalPages)}
+                          className="h-8 w-8 p-0 text-xs"
+                        >
+                          &raquo;
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

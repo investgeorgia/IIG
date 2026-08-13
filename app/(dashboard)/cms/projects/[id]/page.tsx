@@ -88,6 +88,9 @@ export default function ProjectDetailPage() {
   const [unitFilterMinPrice, setUnitFilterMinPrice] = useState('')
   const [unitFilterMaxPrice, setUnitFilterMaxPrice] = useState('')
 
+  // Pagination State
+  const [unitPage, setUnitPage] = useState(1)
+
   // -- Queries --
   const { data: project, isLoading } = useQuery({
     queryKey: ['project', id],
@@ -385,6 +388,20 @@ export default function ProjectDetailPage() {
     watchedBlackFramePriceSqm,
     watchedRenovationPriceSqm,
     setUnitValue
+  ])
+
+  useEffect(() => {
+    setUnitPage(1)
+  }, [
+    unitFilterSearch,
+    unitFilterType,
+    unitFilterFloor,
+    unitFilterBeds,
+    unitFilterBaths,
+    unitFilterMinSize,
+    unitFilterMaxSize,
+    unitFilterMinPrice,
+    unitFilterMaxPrice
   ])
 
   const createUnitMutation = useMutation({
@@ -698,6 +715,10 @@ export default function ProjectDetailPage() {
           return true
         })
 
+        const UNITS_PER_PAGE = 25
+        const totalPages = Math.ceil(filteredUnits.length / UNITS_PER_PAGE)
+        const paginatedUnits = filteredUnits.slice((unitPage - 1) * UNITS_PER_PAGE, unitPage * UNITS_PER_PAGE)
+
         return (
           <div className="space-y-4">
             {/* Filter Bar */}
@@ -964,13 +985,15 @@ export default function ProjectDetailPage() {
                           <th className="px-4 py-3 w-10">
                             <input
                               type="checkbox"
-                              checked={filteredUnits.length > 0 && filteredUnits.every((u: any) => selectedUnitIds.includes(u.id))}
+                              checked={paginatedUnits.length > 0 && paginatedUnits.every((u: any) => selectedUnitIds.includes(u.id))}
                               onChange={() => {
-                                const allSelected = filteredUnits.length > 0 && filteredUnits.every((u: any) => selectedUnitIds.includes(u.id))
+                                const allSelected = paginatedUnits.length > 0 && paginatedUnits.every((u: any) => selectedUnitIds.includes(u.id))
                                 if (allSelected) {
-                                  setSelectedUnitIds([])
+                                  const paginatedIds = paginatedUnits.map((u: any) => u.id)
+                                  setSelectedUnitIds(prev => prev.filter(id => !paginatedIds.includes(id)))
                                 } else {
-                                  setSelectedUnitIds(filteredUnits.map((u: any) => u.id))
+                                  const paginatedIds = paginatedUnits.map((u: any) => u.id)
+                                  setSelectedUnitIds(prev => Array.from(new Set([...prev, ...paginatedIds])))
                                 }
                               }}
                               className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
@@ -990,7 +1013,7 @@ export default function ProjectDetailPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredUnits.map((unit: any) => (
+                      {paginatedUnits.map((unit: any) => (
                         <Fragment key={unit.id}>
                           <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
                             {canEdit && (
@@ -1280,6 +1303,78 @@ export default function ProjectDetailPage() {
                   </table>
                 )}
               </CardContent>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-neutral-200 px-4 py-3 bg-white sm:px-6 rounded-b-xl">
+                  <div className="flex flex-1 justify-between sm:hidden">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={unitPage === 1}
+                      onClick={() => setUnitPage(prev => Math.max(prev - 1, 1))}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={unitPage === totalPages}
+                      onClick={() => setUnitPage(prev => Math.min(prev + 1, totalPages))}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                  <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs text-neutral-700">
+                        Showing <span className="font-semibold">{Math.min(filteredUnits.length, (unitPage - 1) * UNITS_PER_PAGE + 1)}</span> to{' '}
+                        <span className="font-semibold">{Math.min(filteredUnits.length, unitPage * UNITS_PER_PAGE)}</span> of{' '}
+                        <span className="font-semibold">{filteredUnits.length}</span> units
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={unitPage === 1}
+                        onClick={() => setUnitPage(1)}
+                        className="h-8 w-8 p-0 text-xs"
+                      >
+                        &laquo;
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={unitPage === 1}
+                        onClick={() => setUnitPage(prev => Math.max(prev - 1, 1))}
+                        className="h-8 w-8 p-0 text-xs"
+                      >
+                        &lsaquo;
+                      </Button>
+                      <span className="text-xs text-neutral-600 px-2 font-medium">
+                        Page {unitPage} of {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={unitPage === totalPages}
+                        onClick={() => setUnitPage(prev => Math.min(prev + 1, totalPages))}
+                        className="h-8 w-8 p-0 text-xs"
+                      >
+                        &rsaquo;
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={unitPage === totalPages}
+                        onClick={() => setUnitPage(totalPages)}
+                        className="h-8 w-8 p-0 text-xs"
+                      >
+                        &raquo;
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </Card>
           </div>
         )
