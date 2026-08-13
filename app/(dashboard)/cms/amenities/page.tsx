@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Loader2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,6 +25,8 @@ export default function AmenitiesPage() {
   const [icon, setIcon] = useState('')
   const [category, setCategory] = useState('OTHER')
   const [filterCat, setFilterCat] = useState('ALL')
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const [bulkUploading, setBulkUploading] = useState(false)
 
   const { data: amenities = [], isLoading } = useQuery({
     queryKey: ['amenities'],
@@ -61,9 +63,71 @@ export default function AmenitiesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['amenities'] })
+      setSelectedIds(prev => prev.filter(selectedId => selectedId !== selectedIds.find(id => id === selectedId)))
       toast.success('Amenity deleted')
     }
   })
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/cms/amenities/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds })
+      })
+      if (!res.ok) throw new Error('Failed to bulk delete')
+      return res.json()
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['amenities'] })
+      setSelectedIds([])
+      toast.success(`Successfully deleted ${data.count} amenities`)
+    },
+    onError: () => toast.error('Failed to bulk delete amenities')
+  })
+
+  const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setBulkUploading(true)
+    try {
+      const file = files[0]
+      const text = await file.text()
+      const res = await fetch('/api/cms/amenities/bulk-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      })
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.error || 'Bulk upload failed')
+      }
+      const data = await res.json()
+      toast.success(`Successfully imported ${data.count} amenities`)
+      queryClient.invalidateQueries({ queryKey: ['amenities'] })
+    } catch (err: any) {
+      toast.error(err.message || 'Bulk upload failed')
+    } finally {
+      setBulkUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const toggleSelectAll = (filteredAmenities: any[]) => {
+    const filteredIds = filteredAmenities.map(a => a.id)
+    const allSelected = filteredIds.every(id => selectedIds.includes(id))
+    if (allSelected) {
+      setSelectedIds(prev => prev.filter(id => !filteredIds.includes(id)))
+    } else {
+      setSelectedIds(prev => Array.from(new Set([...prev, ...filteredIds])))
+    }
+  }
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    )
+  }
 
   const grouped = (filterCat === 'ALL' ? amenities : amenities.filter((a: any) => a.category === filterCat))
 
@@ -81,15 +145,31 @@ export default function AmenitiesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Amenities</h1>
           <p className="text-sm text-neutral-500 mt-1">Manage the global amenity library. Link amenities to projects from the project detail page.</p>
         </div>
         {canEdit && (
-          <Button onClick={() => setIsAdding(!isAdding)} className="bg-red-600 hover:bg-red-700">
-            <Plus className="w-4 h-4 mr-2" /> Add Amenity
-          </Button>
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              id="bulk-amenity-upload"
+              className="hidden"
+              accept=".txt"
+              onChange={handleBulkUpload}
+              disabled={bulkUploading}
+            />
+            <label
+              htmlFor="bulk-amenity-upload"
+              className="inline-flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-700 shadow-sm hover:bg-neutral-50 cursor-pointer transition-colors"
+            >
+              {bulkUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />} Bulk Upload (.txt)
+            </label>
+            <Button onClick={() => setIsAdding(!isAdding)} className="bg-red-600 hover:bg-red-700">
+              <Plus className="w-4 h-4 mr-2" /> Add Amenity
+            </Button>
+          </div>
         )}
       </div>
 
@@ -124,6 +204,24 @@ export default function AmenitiesPage() {
         </Card>
       )}
 
+      {selectedIds.length > 0 && canEdit && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between animate-in slide-in-from-top-2">
+          <span className="text-sm text-red-800 font-semibold">{selectedIds.length} amenities selected</span>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              if (confirm(`Are you sure you want to delete these ${selectedIds.length} amenities?`)) {
+                bulkDeleteMutation.mutate()
+              }
+            }}
+            disabled={bulkDeleteMutation.isPending}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            {bulkDeleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />} Delete Selected
+          </Button>
+        </div>
+      )}
+
       {/* Category filter */}
       <div className="flex gap-2 flex-wrap">
         {['ALL', ...CATEGORIES].map(cat => (
@@ -144,6 +242,16 @@ export default function AmenitiesPage() {
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
                 <tr>
+                  {canEdit && (
+                    <th className="px-6 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={grouped.length > 0 && grouped.every((a: any) => selectedIds.includes(a.id))}
+                        onChange={() => toggleSelectAll(grouped)}
+                        className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4"
+                      />
+                    </th>
+                  )}
                   <th className="px-6 py-3">Icon</th>
                   <th className="px-6 py-3">Name</th>
                   <th className="px-6 py-3">Category</th>
@@ -153,6 +261,16 @@ export default function AmenitiesPage() {
               <tbody>
                 {grouped.map((amenity: any) => (
                   <tr key={amenity.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                    {canEdit && (
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(amenity.id)}
+                          onChange={() => toggleSelectOne(amenity.id)}
+                          className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4"
+                        />
+                      </td>
+                    )}
                     <td className="px-6 py-4 text-xl">{amenity.icon || CATEGORY_ICONS[amenity.category]}</td>
                     <td className="px-6 py-4 font-medium text-neutral-900">{amenity.name}</td>
                     <td className="px-6 py-4">
@@ -162,7 +280,11 @@ export default function AmenitiesPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       {canEdit ? (
-                        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => deleteMutation.mutate(amenity.id)}>
+                        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => {
+                          if (confirm('Are you sure you want to delete this amenity?')) {
+                            deleteMutation.mutate(amenity.id)
+                          }
+                        }}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       ) : (
