@@ -204,7 +204,11 @@ export default function ProjectDetailPage() {
   })
 
   const handleExportUnits = () => {
-    if (units.length === 0) {
+    const unitsToExport = selectedUnitIds.length > 0
+      ? units.filter((u: any) => selectedUnitIds.includes(u.id))
+      : units
+
+    if (unitsToExport.length === 0) {
       toast.error('No units to export')
       return
     }
@@ -243,7 +247,7 @@ export default function ProjectDetailPage() {
 
     const csvRows = [headers.join(',')]
 
-    for (const unit of units) {
+    for (const unit of unitsToExport) {
       const row = [
         unit.unitNumber || '',
         unit.towerBlock || '',
@@ -288,11 +292,12 @@ export default function ProjectDetailPage() {
     const link = document.createElement('a')
     link.setAttribute('href', csvContent)
     const projectNameClean = (project?.name || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '_')
-    link.setAttribute('download', `${projectNameClean}_units_export.csv`)
+    const fileSuffix = selectedUnitIds.length > 0 ? `selected_${selectedUnitIds.length}_units` : 'all_units'
+    link.setAttribute('download', `${projectNameClean}_${fileSuffix}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    toast.success('Units exported successfully')
+    toast.success(`${selectedUnitIds.length > 0 ? 'Selected' : 'All'} units exported successfully`)
   }
 
   const createPlanMutation = useMutation({
@@ -927,7 +932,7 @@ export default function ProjectDetailPage() {
               </div>
               <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                 <Button onClick={handleExportUnits} variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800">
-                  <Download className="w-4 h-4 mr-2" /> Export Units (CSV)
+                  <Download className="w-4 h-4 mr-2" /> {selectedUnitIds.length > 0 ? `Export Selected (${selectedUnitIds.length})` : 'Export All Units (CSV)'}
                 </Button>
                 {canEdit && (
                   <>
