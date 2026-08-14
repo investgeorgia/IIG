@@ -50,12 +50,15 @@ export default function CreateProposalPage() {
   const [unitCondition, setUnitCondition] = useState('')
   const [paymentPlan, setPaymentPlan] = useState<{ id: number, milestone: string, percentage: number, date: string, subMilestones?: { id: number, milestone: string, percentage: number, date: string }[] }[]>([])
   const [customFloorPlanUrl, setCustomFloorPlanUrl] = useState('')
+  const [customFloorPlanUrl2, setCustomFloorPlanUrl2] = useState('')
   const [floorPlanUploading, setFloorPlanUploading] = useState(false)
+  const [floorPlanUploading2, setFloorPlanUploading2] = useState(false)
+  const [divideInputs, setDivideInputs] = useState<Record<number, string>>({})
   const [selectedPriceVal, setSelectedPriceVal] = useState<number>(0)
   const [selectedPricingType, setSelectedPricingType] = useState<string>('Base Price')
   const [selectedPaymentPlanName, setSelectedPaymentPlanName] = useState<string>('Standard Plan')
   const [customHandover, setCustomHandover] = useState<string>('')
-  const [visibleFields, setVisibleFields] = useState<string[]>(['building', 'renovationPrice'])
+  const [visibleFields, setVisibleFields] = useState<string[]>(['building', 'renovationPrice', 'showClientName', 'showClientMessage', 'showConsultantFooter'])
 
   useEffect(() => {
     if (selectedUnit) {
@@ -192,6 +195,7 @@ export default function CreateProposalPage() {
           unitCondition,
           paymentPlan,
           customFloorPlanUrl: customFloorPlanUrl || undefined,
+          customFloorPlanUrl2: customFloorPlanUrl2 || undefined,
           pricingType: selectedPricingType,
           selectedPrice: selectedPriceVal,
           paymentPlanName: selectedPaymentPlanName,
@@ -213,6 +217,9 @@ export default function CreateProposalPage() {
   
   if (selectedUnit?.floorPlanUrl && !images.find((m: any) => m.url === selectedUnit.floorPlanUrl)) {
     images.push({ id: 'floorplan', url: selectedUnit.floorPlanUrl, type: 'IMAGE' })
+  }
+  if (selectedUnit?.floorPlanUrl2 && !images.find((m: any) => m.url === selectedUnit.floorPlanUrl2)) {
+    images.push({ id: 'floorplan2', url: selectedUnit.floorPlanUrl2, type: 'IMAGE' })
   }
 
   const toggleImage = (url: string) => {
@@ -246,6 +253,31 @@ export default function CreateProposalPage() {
       toast.error(err.message || 'Upload failed')
     } finally {
       setFloorPlanUploading(false)
+    }
+  }
+
+  const handleFloorPlanUpload2 = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setFloorPlanUploading2(true)
+    try {
+      const file = files[0]
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'FLOOR_PLAN')
+      
+      const res = await fetch('/api/uploads', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (res.ok) {
+        setCustomFloorPlanUrl2(data.url)
+        toast.success('Second custom floor plan uploaded')
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed')
+    } finally {
+      setFloorPlanUploading2(false)
     }
   }
 
@@ -876,7 +908,7 @@ export default function CreateProposalPage() {
 
                 <div className="space-y-2 pt-2 border-t border-neutral-100">
                   <Label className="font-semibold text-neutral-800">Display Fields in Proposal</Label>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-4">
                     <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                       <input
                         type="checkbox"
@@ -901,32 +933,92 @@ export default function CreateProposalPage() {
                       />
                       Show Renovation Price
                     </label>
+                    <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={visibleFields.includes('showClientName')}
+                        onChange={e => {
+                          if (e.target.checked) setVisibleFields([...visibleFields, 'showClientName'])
+                          else setVisibleFields(visibleFields.filter(f => f !== 'showClientName'))
+                        }}
+                        className="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500"
+                      />
+                      Show Client Name
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={visibleFields.includes('showClientMessage')}
+                        onChange={e => {
+                          if (e.target.checked) setVisibleFields([...visibleFields, 'showClientMessage'])
+                          else setVisibleFields(visibleFields.filter(f => f !== 'showClientMessage'))
+                        }}
+                        className="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500"
+                      />
+                      Show Client Message
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={visibleFields.includes('showConsultantFooter')}
+                        onChange={e => {
+                          if (e.target.checked) setVisibleFields([...visibleFields, 'showConsultantFooter'])
+                          else setVisibleFields(visibleFields.filter(f => f !== 'showConsultantFooter'))
+                        }}
+                        className="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500"
+                      />
+                      Show Sales Rep Footer
+                    </label>
                   </div>
                 </div>
               <div className="space-y-1"><Label>Message to Customer</Label><textarea value={customerMessage} onChange={e => setCustomerMessage(e.target.value)} rows={3} placeholder="Dear [customer name], it is our pleasure to present this exclusive offer..." className="flex w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500" /></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1"><Label>Internal Notes</Label><Input placeholder="Private notes (not shown in PDF)..." value={notes} onChange={e => setNotes(e.target.value)} /></div>
-                <div className="space-y-1">
-                  <Label>Floor Plan Image</Label>
-                  <div className="flex gap-2">
-                    <Input placeholder="URL or upload..." value={customFloorPlanUrl} onChange={e => setCustomFloorPlanUrl(e.target.value)} className="flex-1 text-xs" />
-                    <input type="file" id="custom-floor-upload" className="hidden" accept="image/*" onChange={handleFloorPlanUpload} />
-                    <label htmlFor="custom-floor-upload" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-xs">
-                      {floorPlanUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-1">
+                  <div className="space-y-1">
+                    <Label>Floor Plan Image 1</Label>
+                    <div className="flex gap-2">
+                      <Input placeholder="URL or upload..." value={customFloorPlanUrl} onChange={e => setCustomFloorPlanUrl(e.target.value)} className="flex-1 text-xs" />
+                      <input type="file" id="custom-floor-upload" className="hidden" accept="image/*" onChange={handleFloorPlanUpload} />
+                      <label htmlFor="custom-floor-upload" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-xs">
+                        {floorPlanUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      </label>
+                    </div>
+                    {projectFloorPlans.length > 0 && (
+                      <select
+                        value={customFloorPlanUrl}
+                        onChange={e => setCustomFloorPlanUrl(e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 mt-1.5"
+                      >
+                        <option value="">Or select project floor plan...</option>
+                        {projectFloorPlans.map((fp: any) => (
+                          <option key={fp.id} value={fp.url}>{fp.name || fp.url.split('/').pop()}</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
-                  {projectFloorPlans.length > 0 && (
-                    <select
-                      value={customFloorPlanUrl}
-                      onChange={e => setCustomFloorPlanUrl(e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 mt-1.5"
-                    >
-                      <option value="">Or select project floor plan...</option>
-                      {projectFloorPlans.map((fp: any) => (
-                        <option key={fp.id} value={fp.url}>{fp.name || fp.url.split('/').pop()}</option>
-                      ))}
-                    </select>
-                  )}
+                  <div className="space-y-1">
+                    <Label>Floor Plan Image 2</Label>
+                    <div className="flex gap-2">
+                      <Input placeholder="URL or upload..." value={customFloorPlanUrl2} onChange={e => setCustomFloorPlanUrl2(e.target.value)} className="flex-1 text-xs" />
+                      <input type="file" id="custom-floor-upload-2" className="hidden" accept="image/*" onChange={handleFloorPlanUpload2} />
+                      <label htmlFor="custom-floor-upload-2" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-xs">
+                        {floorPlanUploading2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      </label>
+                    </div>
+                    {projectFloorPlans.length > 0 && (
+                      <select
+                        value={customFloorPlanUrl2}
+                        onChange={e => setCustomFloorPlanUrl2(e.target.value)}
+                        className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 mt-1.5"
+                      >
+                        <option value="">Or select project floor plan...</option>
+                        {projectFloorPlans.map((fp: any) => (
+                          <option key={fp.id} value={fp.url}>{fp.name || fp.url.split('/').pop()}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -1023,18 +1115,67 @@ export default function CreateProposalPage() {
                                   onChange={e => { const n = [...paymentPlan]; n[idx].milestone = e.target.value; setPaymentPlan(n) }}
                                   className="w-full px-2 py-1 text-sm font-semibold rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400"
                                 />
-                                <button 
-                                  type="button" 
-                                  onClick={() => {
-                                    const n = [...paymentPlan]
-                                    if (!n[idx].subMilestones) n[idx].subMilestones = []
-                                    n[idx].subMilestones.push({ id: Date.now(), milestone: '', percentage: 0, date: '' })
-                                    setPaymentPlan(n)
-                                  }}
-                                  className="text-[10px] text-blue-600 self-start hover:underline px-2"
-                                >
-                                  + Add Sub-milestone
-                                </button>
+                                <div className="flex flex-col gap-1 px-2">
+                                  <button 
+                                    type="button" 
+                                    onClick={() => {
+                                      const n = [...paymentPlan]
+                                      if (!n[idx].subMilestones) n[idx].subMilestones = []
+                                      n[idx].subMilestones.push({ id: Date.now(), milestone: '', percentage: 0, date: '' })
+                                      setPaymentPlan(n)
+                                    }}
+                                    className="text-[10px] text-blue-600 text-left hover:underline"
+                                  >
+                                    + Add Sub-milestone
+                                  </button>
+                                  <div className="flex items-center gap-1 mt-0.5">
+                                    <span className="text-[10px] text-neutral-400">Divide into:</span>
+                                    <input
+                                      type="number"
+                                      min="2"
+                                      max="100"
+                                      placeholder="Qty"
+                                      value={divideInputs[p.id] || ''}
+                                      onChange={e => setDivideInputs({ ...divideInputs, [p.id]: e.target.value })}
+                                      className="w-10 px-1 py-0.5 text-[10px] rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const qtyStr = divideInputs[p.id]
+                                        const qty = parseInt(qtyStr, 10)
+                                        if (!qty || qty <= 1) {
+                                          toast.error("Please enter 2 or more installments")
+                                          return
+                                        }
+                                        const distributePercentage = (n: number): number[] => {
+                                          const pct = Number((100 / n).toFixed(2))
+                                          const list = Array(n).fill(pct)
+                                          const sum = Number(list.reduce((a, b) => a + b, 0).toFixed(2))
+                                          if (sum !== 100) {
+                                            const diff = Number((100 - sum).toFixed(2))
+                                            list[list.length - 1] = Number((list[list.length - 1] + diff).toFixed(2))
+                                          }
+                                          return list
+                                        }
+                                        const pcts = distributePercentage(qty)
+                                        const n = [...paymentPlan]
+                                        const milestoneName = n[idx].milestone || `Milestone ${idx + 1}`
+                                        n[idx].subMilestones = pcts.map((pct, subIdx) => ({
+                                          id: Date.now() + subIdx,
+                                          milestone: `${milestoneName} - Installment ${subIdx + 1}`,
+                                          percentage: pct,
+                                          date: ''
+                                        }))
+                                        setPaymentPlan(n)
+                                        setDivideInputs({ ...divideInputs, [p.id]: '' })
+                                      }}
+                                      className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 hover:bg-red-100 font-semibold"
+                                    >
+                                      Divide
+                                    </button>
+                                  </div>
+                                </div>
                               </td>
                               <td className="px-2 py-1.5">
                                 <input
@@ -1056,8 +1197,23 @@ export default function CreateProposalPage() {
                                   className="w-full px-2 py-1 text-sm rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400 text-center font-semibold"
                                 />
                               </td>
-                              <td className="px-3 py-2 text-right text-sm font-semibold text-neutral-800">
-                                {amtUSD > 0 ? amtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
+                              <td className="px-2 py-1.5">
+                                <input
+                                  type="number"
+                                  placeholder="Amount"
+                                  value={amtUSD > 0 ? Math.round(amtUSD) : ''}
+                                  onChange={e => {
+                                    const amt = Number(e.target.value)
+                                    const n = [...paymentPlan]
+                                    if (baseForCalc > 0) {
+                                      n[idx].percentage = Number(((amt / baseForCalc) * 100).toFixed(2))
+                                    } else {
+                                      n[idx].percentage = 0
+                                    }
+                                    setPaymentPlan(n)
+                                  }}
+                                  className="w-full px-2 py-1 text-sm rounded border border-transparent hover:border-neutral-200 focus:border-red-400 focus:outline-none focus:ring-1 focus:ring-red-400 text-right font-semibold"
+                                />
                               </td>
                               <td className="px-3 py-2 text-right text-sm text-neutral-700 font-semibold">
                                 {amtAED > 0 ? amtAED.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
@@ -1113,8 +1269,23 @@ export default function CreateProposalPage() {
                                       className="w-full px-2 py-1 text-xs rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-center bg-white"
                                     />
                                   </td>
-                                  <td className="px-3 py-2 text-right text-xs text-neutral-600">
-                                    {subAmtUSD > 0 ? subAmtUSD.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
+                                  <td className="px-2 py-1.5">
+                                    <input
+                                      type="number"
+                                      placeholder="Amount"
+                                      value={subAmtUSD > 0 ? Math.round(subAmtUSD) : ''}
+                                      onChange={e => {
+                                        const amt = Number(e.target.value)
+                                        const n = [...paymentPlan]
+                                        if (amtUSD > 0) {
+                                          n[idx].subMilestones![subIdx].percentage = Number(((amt / amtUSD) * 100).toFixed(2))
+                                        } else {
+                                          n[idx].subMilestones![subIdx].percentage = 0
+                                        }
+                                        setPaymentPlan(n)
+                                      }}
+                                      className="w-full px-2 py-1 text-xs rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-400 text-right bg-white font-semibold text-neutral-800"
+                                    />
                                   </td>
                                   <td className="px-3 py-2 text-right text-xs text-neutral-500">
                                     {subAmtAED > 0 ? subAmtAED.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}

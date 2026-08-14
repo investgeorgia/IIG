@@ -52,6 +52,7 @@ export default function ProjectDetailPage() {
   const [mediaType, setMediaType] = useState('IMAGE')
   const [uploading, setUploading] = useState(false)
   const [unitFloorPlanUploading, setUnitFloorPlanUploading] = useState(false)
+  const [unitFloorPlanUploading2, setUnitFloorPlanUploading2] = useState(false)
   const [planName, setPlanName] = useState('')
   const [planDesc, setPlanDesc] = useState('')
   const [planUnitId, setPlanUnitId] = useState<number | null>(null)
@@ -480,6 +481,7 @@ export default function ProjectDetailPage() {
       priceSqm: unit.priceSqm ?? '',
       price: unit.price ?? '',
       floorPlanUrl: unit.floorPlanUrl || '',
+      floorPlanUrl2: unit.floorPlanUrl2 || '',
       livingAreaSize: unit.livingAreaSize || '',
       balconySize: unit.balconySize || '',
       terraceSize: unit.terraceSize || '',
@@ -523,6 +525,29 @@ export default function ProjectDetailPage() {
       toast.error('Failed to upload floor plan')
     } finally {
       setUnitFloorPlanUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const handleUnitFloorPlanUpload2 = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setUnitFloorPlanUploading2(true)
+    try {
+      const file = files[0]
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'FLOOR_PLAN')
+      formData.append('projectId', id)
+      const uploadRes = await fetch('/api/uploads', { method: 'POST', body: formData })
+      if (!uploadRes.ok) throw new Error('Upload failed')
+      const { url } = await uploadRes.json()
+      setUnitValue('floorPlanUrl2', url)
+      toast.success('Second floor plan uploaded')
+    } catch (err: any) {
+      toast.error('Failed to upload second floor plan')
+    } finally {
+      setUnitFloorPlanUploading2(false)
       e.target.value = ''
     }
   }
@@ -939,9 +964,9 @@ export default function ProjectDetailPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label>Floor Plan URL</Label>
+                        <Label>Floor Plan URL 1</Label>
                         <div className="flex gap-2">
                           <Input placeholder="https://..." {...regUnit('floorPlanUrl')} className="flex-1 text-xs" />
                           <input type="file" id="unit-floor-upload" className="hidden" accept="image/*" onChange={handleUnitFloorPlanUpload} />
@@ -952,6 +977,27 @@ export default function ProjectDetailPage() {
                         {projectFloorPlans.length > 0 && (
                           <select
                             onChange={e => setUnitValue('floorPlanUrl', e.target.value)}
+                            className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 mt-1.5"
+                          >
+                            <option value="">Or select project floor plan...</option>
+                            {projectFloorPlans.map((fp: any) => (
+                              <option key={fp.id} value={fp.url}>{fp.name || fp.url.split('/').pop()}</option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Floor Plan URL 2</Label>
+                        <div className="flex gap-2">
+                          <Input placeholder="https://..." {...regUnit('floorPlanUrl2')} className="flex-1 text-xs" />
+                          <input type="file" id="unit-floor-upload-2" className="hidden" accept="image/*" onChange={handleUnitFloorPlanUpload2} />
+                          <label htmlFor="unit-floor-upload-2" className="flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-neutral-50 px-3 cursor-pointer hover:bg-neutral-100 shadow-sm text-neutral-600 text-xs">
+                            {unitFloorPlanUploading2 ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                          </label>
+                        </div>
+                        {projectFloorPlans.length > 0 && (
+                          <select
+                            onChange={e => setUnitValue('floorPlanUrl2', e.target.value)}
                             className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 mt-1.5"
                           >
                             <option value="">Or select project floor plan...</option>
@@ -1224,7 +1270,10 @@ export default function ProjectDetailPage() {
                                         <div><span className="text-neutral-400 block font-medium">Delivery Form</span><span className="font-semibold text-neutral-800">{unit.deliveryForm || '—'}</span></div>
                                         <div><span className="text-neutral-400 block font-medium">Handover</span><span className="font-semibold text-neutral-800">{unit.handover ? new Date(unit.handover).toLocaleDateString() : '—'}</span></div>
                                         {unit.floorPlanUrl && (
-                                          <div className="col-span-2 sm:col-span-4 md:col-span-6"><span className="text-neutral-400 block font-medium">Floor Plan URL</span><a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="text-red-600 hover:underline font-semibold">{unit.floorPlanUrl}</a></div>
+                                          <div className="col-span-2 sm:col-span-3"><span className="text-neutral-400 block font-medium">Floor Plan URL 1</span><a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="text-red-600 hover:underline font-semibold">{unit.floorPlanUrl}</a></div>
+                                        )}
+                                        {unit.floorPlanUrl2 && (
+                                          <div className="col-span-2 sm:col-span-3"><span className="text-neutral-400 block font-medium">Floor Plan URL 2</span><a href={unit.floorPlanUrl2} target="_blank" rel="noreferrer" className="text-red-600 hover:underline font-semibold">{unit.floorPlanUrl2}</a></div>
                                         )}
                                       </div>
                                       {(unit.livingAreaSize || unit.balconySize || unit.terraceSize || unit.greenyardSize) && (

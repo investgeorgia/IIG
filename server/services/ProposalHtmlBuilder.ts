@@ -142,19 +142,38 @@ function buildPaymentPlanPages(
   return { page1RowsHtml, overflowPagesHtml }
 }
 
-function buildFloorPlanHtml(floorPlanUrl: string | undefined): string {
-  if (floorPlanUrl) {
+function buildFloorPlanHtml(floorPlanUrl1: string | undefined, floorPlanUrl2: string | undefined): string {
+  if (floorPlanUrl1 && floorPlanUrl2) {
+    return `<div style="margin-bottom: 32px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #0F172A; margin-bottom: 12px;">Floor Plans &amp; Layouts</div>
+      <div style="display: flex; gap: 16px;">
+        <div style="flex: 1; height:380px; border:1px solid #E2E8F0; border-radius:12px; overflow:hidden; background:#F8FAFC;">
+          <img src="${floorPlanUrl1}" style="width:100%;height:100%;object-fit:contain;" />
+        </div>
+        <div style="flex: 1; height:380px; border:1px solid #E2E8F0; border-radius:12px; overflow:hidden; background:#F8FAFC;">
+          <img src="${floorPlanUrl2}" style="width:100%;height:100%;object-fit:contain;" />
+        </div>
+      </div>
+    </div>`
+  } else if (floorPlanUrl1) {
     return `<div style="margin-bottom: 32px;">
       <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #0F172A; margin-bottom: 12px;">Floor Plan &amp; Layout</div>
       <div style="width:100%;height:380px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;background:#F8FAFC;">
-        <img src="${floorPlanUrl}" style="width:100%;height:100%;object-fit:contain;" />
+        <img src="${floorPlanUrl1}" style="width:100%;height:100%;object-fit:contain;" />
+      </div>
+    </div>`
+  } else if (floorPlanUrl2) {
+    return `<div style="margin-bottom: 32px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #0F172A; margin-bottom: 12px;">Floor Plan &amp; Layout</div>
+      <div style="width:100%;height:380px;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;background:#F8FAFC;">
+        <img src="${floorPlanUrl2}" style="width:100%;height:100%;object-fit:contain;" />
       </div>
     </div>`
   }
   return ''
 }
 
-function buildAmenitiesHtml(amenities: string[]): string {
+function buildAmenitiesHtml(amenities: string[], pushToNextPage: boolean, logoImgTag: string, projectLocation: string, projectName: string): string {
   if (!amenities || amenities.length === 0) return ''
 
   const displayAmenities = amenities.slice(0, 12)
@@ -163,18 +182,56 @@ function buildAmenitiesHtml(amenities: string[]): string {
     const isLast = r === Math.ceil(displayAmenities.length / 3) - 1
     rows += `<tr style="border-bottom:${isLast ? 'none' : '1px solid #F1F5F9'};">`
     for (let c = 0; c < 3; c++) {
-      const a = displayAmenities[r * 3 + c] || ''
-      rows += `<td style="padding:10px 14px;font-size:13px;width:33%;">${a}</td>`
+      const idx = r * 3 + c
+      if (idx < displayAmenities.length) {
+        rows += `<td style="padding: 10px 12px; font-size: 11px; color: #334155; font-weight: 500;">• ${displayAmenities[idx]}</td>`
+      } else {
+        rows += `<td></td>`
+      }
     }
     rows += '</tr>'
   }
 
-  return `<div style="margin-bottom:24px;">
-    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#0F172A;margin-bottom:12px;">Amenities</div>
-    <table style="width:100%;border-collapse:separate;border-spacing:0;border:1px solid #E2E8F0;border-radius:8px;overflow:hidden;">
-      <tbody>${rows}</tbody>
+  const amenitiesTable = `<div style="margin-top: 14px;">
+    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #C0392B; margin-bottom: 8px;">04 / Project Amenities</div>
+    <table class="table-custom">
+      <tbody>
+        ${rows}
+      </tbody>
     </table>
   </div>`
+
+  if (pushToNextPage) {
+    return `</div>
+  </div> <!-- End of Page 2 -->
+
+  <!-- ================= PAGE 3 (Amenities) ================= -->
+  <div class="page">
+    <div>
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 2px solid #F1F5F9; margin-bottom: 24px;">
+        <div>
+          <div style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #0F172A;">SALES OFFER</div>
+          <div style="font-size: 12px; color: #64748B; margin-top: 4px; font-weight: 500;">Project Amenities</div>
+        </div>
+        
+        <!-- Brand Logo -->
+        <div style="display: flex; align-items: center; gap: 12px;">
+          ${logoImgTag}
+        </div>
+      </div>
+
+      <!-- Project Title Header -->
+      <div style="margin-bottom: 24px;">
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #C0392B; margin-bottom: 4px;">Featured Project</div>
+        <h2 style="font-size: 26px; font-weight: 800; color: #0F172A; letter-spacing: -0.02em; margin: 0;">${projectName}</h2>
+        <div style="font-size: 13px; font-weight: 500; color: #64748B; margin-top: 4px;">📍 ${projectLocation}</div>
+      </div>
+
+      ${amenitiesTable}`
+  }
+
+  return amenitiesTable
 }
 
 function buildGalleryPageHtml(selectedImages: string[], logoImgTag: string): string {
@@ -295,24 +352,32 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
 
   const projectLocation = [snap?.project?.address, snap?.project?.city, snap?.project?.country].filter(Boolean).join(', ') || '—'
 
-  // --- Dynamic Customer Message Banner ---
-  let customerMessageBanner = ''
-  if (proposal.customerMessage && proposal.customerMessage.trim() !== '') {
-    customerMessageBanner = `
-    <div style="background: #F8FAFC; border-left: 4px solid #C0392B; padding: 12px 18px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
-      <div style="font-size: 16px; font-weight: 700; color: #0F172A;">Dear ${proposal.customer?.name || ''},</div>
-      <p style="font-size: 13px; color: #475569; margin-top: 6px; line-height: 1.6;">
-        ${proposal.customerMessage}
-      </p>
-    </div>`
-  }
-
   // Parse visibleFields
-  let visibleFields: string[] = ['building', 'renovationPrice']
+  let visibleFields: string[] = ['building', 'renovationPrice', 'showClientName', 'showClientMessage', 'showConsultantFooter']
   if (proposal.visibleFields) {
     try {
       visibleFields = typeof proposal.visibleFields === 'string' ? JSON.parse(proposal.visibleFields) : proposal.visibleFields
     } catch {}
+  }
+
+  const showClientName = visibleFields.includes('showClientName')
+  const showClientMessage = visibleFields.includes('showClientMessage')
+  const showConsultantFooter = visibleFields.includes('showConsultantFooter')
+
+  // --- Dynamic Customer Message Banner ---
+  let customerMessageBanner = ''
+  const greetingName = showClientName ? (proposal.customer?.name || '') : ''
+  const greetingText = greetingName ? `Dear ${greetingName},` : ''
+
+  if (greetingText || (showClientMessage && proposal.customerMessage && proposal.customerMessage.trim() !== '')) {
+    customerMessageBanner = `
+    <div style="background: #F8FAFC; border-left: 4px solid #C0392B; padding: 12px 18px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+      ${greetingText ? `<div style="font-size: 16px; font-weight: 700; color: #0F172A;">${greetingText}</div>` : ''}
+      ${(showClientMessage && proposal.customerMessage) ? `
+      <p style="font-size: 13px; color: #475569; margin-top: 6px; line-height: 1.6;">
+        ${proposal.customerMessage}
+      </p>` : ''}
+    </div>`
   }
 
   // --- Dynamic Unit Specs Table (Hides Bed/Bath if empty) ---
@@ -430,15 +495,52 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const logoImgTag = buildLogoImgTag(baseUrl)
   const paymentPlanName = proposal.paymentPlanName || 'Standard Plan'
   const { page1RowsHtml, overflowPagesHtml } = buildPaymentPlanPages(customPaymentPlan, finalPriceUSD, logoImgTag, paymentPlanName)
-  const chosenFloorPlanUrl = proposal.customFloorPlanUrl || snap?.unit?.floorPlanUrl
-  const floorPlanHtml = buildFloorPlanHtml(chosenFloorPlanUrl)
-  const amenitiesHtml = buildAmenitiesHtml(amenities)
+  const chosenFloorPlanUrl1 = snap?.unit?.floorPlanUrl
+  const chosenFloorPlanUrl2 = snap?.unit?.floorPlanUrl2
+  const floorPlanHtml = buildFloorPlanHtml(chosenFloorPlanUrl1, chosenFloorPlanUrl2)
+  const hasTwoFloorPlans = !!(chosenFloorPlanUrl1 && chosenFloorPlanUrl2)
+  const amenitiesHtml = buildAmenitiesHtml(amenities, hasTwoFloorPlans, logoImgTag, projectLocation, snap?.project?.name || '')
   const galleryPageHtml = buildGalleryPageHtml(selectedImages, logoImgTag)
+
+  let consultantFooterHtml = ''
+  if (showConsultantFooter) {
+    consultantFooterHtml = `
+  <div style="background: #0F172A; border-radius: 12px; padding: 24px 28px; color: #FFFFFF;">
+    <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94A3B8; margin-bottom: 14px;">Your Sales Representative</div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+      <div>
+        <div style="font-size: 17px; font-weight: 700; color: #FFFFFF; margin-bottom: 12px;">${consultantName}</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <!-- Phone icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.22 2.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+            <a href="tel:${consultantPhone}" style="font-size: 13px; color: #E2E8F0; text-decoration: none; font-weight: 500;">${consultantPhone}</a>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <!-- Email icon -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <a href="mailto:${consultantEmail}" style="font-size: 13px; color: #E2E8F0; text-decoration: none; font-weight: 500;">${consultantEmail}</a>
+          </div>
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 13px; font-weight: 600; color: #E2E8F0; background: rgba(255, 255, 255, 0.1); padding: 8px 16px; border-radius: 6px;">
+          www.investinggeorgia.ae
+        </div>
+      </div>
+    </div>
+  </div>`
+  }
 
   // --- Substitute all placeholders ---
   let html = proposal.template.content
     // Core data
-    .replace(/{{customerName}}/g, proposal.customer?.name || '')
+    .replace(/{{customerName}}/g, showClientName ? (proposal.customer?.name || '') : '')
     .replace(/{{customerMessage}}/g, proposal.customerMessage || '')
     .replace(/{{customerMessageBanner}}/g, customerMessageBanner)
     .replace(/{{unitNumber}}/g, snap?.unit?.unitNumber || '—')
@@ -481,6 +583,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{amenitiesHtml}}/g, amenitiesHtml)
     .replace(/{{galleryPage}}/g, galleryPageHtml)
     .replace(/{{unitExtraSizesHtml}}/g, unitExtraSizesHtml)
+    .replace(/{{consultantFooterHtml}}/g, consultantFooterHtml)
     // Logo: replace any <img> referencing logo-black.svg with inlined base64
     .replace(
       /<img([^>]*?)src=["'][^"']*logo-black\.svg["']([^>]*?)\/?>/gi,

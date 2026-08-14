@@ -30,6 +30,7 @@ export class ProposalService {
     unitCondition?: string
     paymentPlan?: { id: number, milestone: string, percentage: number, date: string, subMilestones?: any[] }[]
     customFloorPlanUrl?: string
+    customFloorPlanUrl2?: string
     pricingType?: string
     selectedPrice?: number
     paymentPlanName?: string
@@ -60,6 +61,15 @@ export class ProposalService {
         data: { floorPlanUrl: data.customFloorPlanUrl }
       })
       unit.floorPlanUrl = data.customFloorPlanUrl
+    }
+
+    if (data.customFloorPlanUrl2) {
+      await prisma.unit.update({
+        where: { id: unit.id },
+        data: { floorPlanUrl2: data.customFloorPlanUrl2 }
+      })
+      // @ts-ignore
+      unit.floorPlanUrl2 = data.customFloorPlanUrl2
     }
 
     // Save custom payment plan to unit if provided
@@ -127,6 +137,8 @@ export class ProposalService {
         turnkeyCalcMethod: unit.turnkeyCalcMethod || "TOTAL_AREA",
         status: unit.status,
         floorPlanUrl: data.customFloorPlanUrl || unit.floorPlanUrl,
+        // @ts-ignore
+        floorPlanUrl2: data.customFloorPlanUrl2 || unit.floorPlanUrl2,
         towerBlock: data.towerBlock,
         condition: data.unitCondition,
       },

@@ -131,6 +131,7 @@ model Unit {
   towerBlock     String?
   priceSqm       Decimal?   @db.Decimal(15, 2)
   floorPlanUrl   String?
+  floorPlanUrl2  String?
   view           String?
   floor          Int?
   livingAreaSize Float?

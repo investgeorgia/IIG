@@ -66,6 +66,8 @@ export async function POST(request: Request) {
     else delete body.turnkeyCalcMethod
     if (body.turnkeyPrice !== undefined && body.turnkeyPrice !== null && body.turnkeyPrice !== '') body.turnkeyPrice = Number(body.turnkeyPrice)
     else delete body.turnkeyPrice
+    if (body.floorPlanUrl2 !== undefined && body.floorPlanUrl2 !== null) body.floorPlanUrl2 = String(body.floorPlanUrl2).trim()
+    else delete body.floorPlanUrl2
     
     const unit = await UnitService.createUnit(body)
     return NextResponse.json(unit, { status: 201 })

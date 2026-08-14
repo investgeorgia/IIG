@@ -83,6 +83,7 @@ export async function GET(request: Request) {
     { table: 'Unit', col: 'turnkeyCalcMethod',  sql: 'ADD COLUMN IF NOT EXISTS `turnkeyCalcMethod`  varchar(191) DEFAULT \'TOTAL_AREA\'' },
     { table: 'Unit', col: 'towerBlock',      sql: 'ADD COLUMN IF NOT EXISTS `towerBlock`      varchar(191) DEFAULT NULL' },
     { table: 'Unit', col: 'priceSqm',        sql: 'ADD COLUMN IF NOT EXISTS `priceSqm`        decimal(15,2) DEFAULT NULL' },
+    { table: 'Unit', col: 'floorPlanUrl2',    sql: 'ADD COLUMN IF NOT EXISTS `floorPlanUrl2`    varchar(191) DEFAULT NULL' },
     // Proposal new columns
     { table: 'Proposal', col: 'pricingType',     sql: 'ADD COLUMN IF NOT EXISTS `pricingType`     varchar(191) DEFAULT NULL' },
     { table: 'Proposal', col: 'selectedPrice',   sql: 'ADD COLUMN IF NOT EXISTS `selectedPrice`   decimal(15,2) DEFAULT NULL' },
