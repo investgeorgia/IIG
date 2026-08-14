@@ -36,7 +36,8 @@ function buildPaymentPlanPages(
   customPaymentPlan: { milestone: string; percentage: number; date: string, subMilestones?: any[] }[],
   finalPriceUSD: number,
   logoImgTag: string,
-  paymentPlanName: string
+  paymentPlanName: string,
+  page1Limit: number
 ): { page1RowsHtml: string; overflowPagesHtml: string } {
   if (!customPaymentPlan || customPaymentPlan.length === 0) {
     return {
@@ -78,8 +79,8 @@ function buildPaymentPlanPages(
     }
   })
 
-  // Page 1 can fit up to 4 rows comfortably without overflowing A4.
-  const PAGE_1_LIMIT = 4
+  // Dynamic limit based on header details visibility
+  const PAGE_1_LIMIT = page1Limit
   // Overflow pages can fit up to 16 rows.
   const OVERFLOW_LIMIT = 16
 
@@ -494,7 +495,12 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   // --- Build HTML fragments ---
   const logoImgTag = buildLogoImgTag(baseUrl)
   const paymentPlanName = proposal.paymentPlanName || 'Standard Plan'
-  const { page1RowsHtml, overflowPagesHtml } = buildPaymentPlanPages(customPaymentPlan, finalPriceUSD, logoImgTag, paymentPlanName)
+
+  const hasGreeting = showClientName && (proposal.customer?.name || '')
+  const hasMessage = showClientMessage && (proposal.customerMessage && proposal.customerMessage.trim() !== '')
+  const page1Limit = (!hasGreeting && !hasMessage) ? 8 : 6
+
+  const { page1RowsHtml, overflowPagesHtml } = buildPaymentPlanPages(customPaymentPlan, finalPriceUSD, logoImgTag, paymentPlanName, page1Limit)
   const chosenFloorPlanUrl1 = snap?.unit?.floorPlanUrl
   const chosenFloorPlanUrl2 = snap?.unit?.floorPlanUrl2
   const floorPlanHtml = buildFloorPlanHtml(chosenFloorPlanUrl1, chosenFloorPlanUrl2)
