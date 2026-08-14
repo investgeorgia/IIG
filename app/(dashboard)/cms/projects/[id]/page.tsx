@@ -978,92 +978,69 @@ export default function ProjectDetailPage() {
                 {filteredUnits.length === 0 ? (
                   <div className="p-8 text-center text-neutral-500">No units match these filters.</div>
                 ) : (
-                  <table className="w-full text-sm text-left whitespace-nowrap">
-                    <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
-                      <tr>
-                        {canEdit && (
-                          <th className="px-4 py-3 w-10">
-                            <input
-                              type="checkbox"
-                              checked={paginatedUnits.length > 0 && paginatedUnits.every((u: any) => selectedUnitIds.includes(u.id))}
-                              onChange={() => {
-                                const allSelected = paginatedUnits.length > 0 && paginatedUnits.every((u: any) => selectedUnitIds.includes(u.id))
-                                if (allSelected) {
-                                  const paginatedIds = paginatedUnits.map((u: any) => u.id)
-                                  setSelectedUnitIds(prev => prev.filter(id => !paginatedIds.includes(id)))
-                                } else {
-                                  const paginatedIds = paginatedUnits.map((u: any) => u.id)
-                                  setSelectedUnitIds(prev => Array.from(new Set([...prev, ...paginatedIds])))
-                                }
-                              }}
-                              className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
-                            />
-                          </th>
-                        )}
-                        <th className="px-6 py-3">Unit #</th>
-                        <th className="px-6 py-3">Tower/Block</th>
-                        <th className="px-6 py-3">Type</th>
-                        <th className="px-6 py-3">Floor</th>
-                        <th className="px-6 py-3">Beds/Baths</th>
-                        <th className="px-6 py-3">Size (m²)</th>
-                        <th className="px-6 py-3">Price/m²</th>
-                        <th className="px-6 py-3">Total Price</th>
-                        <th className="px-6 py-3">Status</th>
-                        <th className="px-6 py-3 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                  <div className="w-full">
+                    {/* Mobile Card Layout */}
+                    <div className="md:hidden space-y-3 p-3 bg-neutral-50/50">
                       {paginatedUnits.map((unit: any) => (
-                        <Fragment key={unit.id}>
-                          <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
-                            {canEdit && (
-                              <td className="px-4 py-4 w-10">
+                        <Card key={unit.id} className="border border-neutral-100 shadow-sm rounded-xl overflow-hidden bg-white">
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className="font-bold text-neutral-900 text-sm">Unit #{unit.unitNumber || '—'}</span>
+                                {unit.towerBlock && <span className="text-[10px] text-neutral-400 ml-1.5">({unit.towerBlock})</span>}
+                              </div>
+                              <span className={`px-2 py-0.5 text-[10px] rounded-full font-medium ${UNIT_STATUS_COLORS[unit.status]}`}>{unit.status}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-[11px]">
+                              <div><span className="text-neutral-400 font-medium">Type:</span> <span className="text-neutral-700 font-semibold">{UNIT_TYPE_LABELS[unit.type] || unit.type?.toLowerCase()}</span></div>
+                              <div><span className="text-neutral-400 font-medium">Floor:</span> <span className="text-neutral-700 font-semibold">{unit.floor ?? '—'}</span></div>
+                              <div><span className="text-neutral-400 font-medium">Beds/Baths:</span> <span className="text-neutral-700 font-semibold">{unit.bedrooms ?? '—'} / {unit.bathrooms ?? '—'}</span></div>
+                              <div><span className="text-neutral-400 font-medium">Size:</span> <span className="text-neutral-700 font-semibold">{unit.size ? `${Number(unit.size).toLocaleString()} m²` : '—'}</span></div>
+                              <div><span className="text-neutral-400 font-medium">Price/m²:</span> <span className="text-neutral-700 font-semibold">{unit.priceSqm ? `$${Number(unit.priceSqm).toLocaleString()}` : '—'}</span></div>
+                              <div><span className="text-neutral-400 font-medium">Total Price:</span> <span className="text-neutral-900 font-bold">{unit.price ? `$${Number(unit.price).toLocaleString()}` : '—'}</span></div>
+                            </div>
+                            {unit.floorPlanUrl && (
+                              <div className="pt-0.5">
+                                <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="text-[11px] text-blue-600 hover:underline">
+                                  View Floor Plan →
+                                </a>
+                              </div>
+                            )}
+                          </CardContent>
+                          <div className="bg-neutral-50 px-4 py-2 border-t border-neutral-100 flex justify-between items-center gap-2">
+                            <div className="flex gap-2">
+                              {canEdit && (
                                 <input
                                   type="checkbox"
                                   checked={selectedUnitIds.includes(unit.id)}
                                   onChange={() => {
                                     setSelectedUnitIds(prev => prev.includes(unit.id) ? prev.filter(i => i !== unit.id) : [...prev, unit.id])
                                   }}
-                                  className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
+                                  className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 my-auto cursor-pointer"
                                 />
-                              </td>
-                            )}
-                            <td className="px-6 py-4 font-medium">
-                              {unit.unitNumber || '—'}
-                              {unit.floorPlanUrl && <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-blue-600 hover:underline mt-1">View Plan</a>}
-                            </td>
-                            <td className="px-6 py-4 text-neutral-600">{unit.towerBlock || '—'}</td>
-                            <td className="px-6 py-4 text-neutral-600">{UNIT_TYPE_LABELS[unit.type] || unit.type?.toLowerCase() || '—'}</td>
-                            <td className="px-6 py-4 text-neutral-600">{unit.floor ?? '—'}</td>
-                            <td className="px-6 py-4 text-neutral-600">
-                              {unit.bedrooms !== undefined && unit.bedrooms !== null ? unit.bedrooms : '—'} / {unit.bathrooms !== undefined && unit.bathrooms !== null ? unit.bathrooms : '—'}
-                            </td>
-                            <td className="px-6 py-4 text-neutral-600">{unit.size ? Number(unit.size).toLocaleString() : '—'}</td>
-                            <td className="px-6 py-4 text-neutral-600">{unit.priceSqm ? `$${Number(unit.priceSqm).toLocaleString()}` : '—'}</td>
-                            <td className="px-6 py-4 font-medium">{unit.price ? `$${Number(unit.price).toLocaleString()}` : '—'}</td>
-                            <td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full font-medium ${UNIT_STATUS_COLORS[unit.status]}`}>{unit.status}</span></td>
-                            <td className="px-6 py-4 text-right flex justify-end gap-1">
+                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-neutral-500 hover:text-blue-600 h-8 px-2"
+                                className="h-7 text-xs px-2 text-neutral-500 hover:text-blue-600"
                                 onClick={() => {
-                                  if (expandedViewUnitId === unit.id) {
-                                    setExpandedViewUnitId(null)
-                                  } else {
+                                  if (expandedViewUnitId === unit.id) setExpandedViewUnitId(null)
+                                  else {
                                     setExpandedViewUnitId(unit.id)
                                     setExpandedEditUnitId(null)
                                   }
                                 }}
                               >
-                                <Eye className="w-3.5 h-3.5 mr-1" /> View
+                                <Eye className="w-3.5 h-3.5 mr-1" /> View Details
                               </Button>
+                            </div>
+                            <div className="flex gap-1">
                               {canEdit ? (
                                 <>
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-neutral-500 hover:text-blue-600 h-8 px-2"
+                                    className="h-7 text-xs px-2 text-neutral-500 hover:text-blue-600"
                                     onClick={() => {
                                       if (expandedEditUnitId === unit.id) {
                                         setExpandedEditUnitId(null)
@@ -1076,97 +1053,231 @@ export default function ProjectDetailPage() {
                                   >
                                     Edit
                                   </Button>
-                                  <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-600 h-8 px-2" onClick={() => deleteUnitMutation.mutate(unit.id)}>
-                                    <Trash2 className="w-4 h-4" />
+                                  <Button variant="ghost" size="sm" className="h-7 text-xs px-1 text-neutral-400 hover:text-red-600" onClick={() => deleteUnitMutation.mutate(unit.id)}>
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
                                 </>
                               ) : (
                                 <span className="text-neutral-400 text-xs">Read-only</span>
                               )}
-                            </td>
-                          </tr>
-
-                          {/* Inline View Panel */}
+                            </div>
+                          </div>
+                          
+                          {/* Expanded Mobile Details Panel */}
                           {expandedViewUnitId === unit.id && (
-                            <tr key={`view-${unit.id}`} className="bg-neutral-50/80 border-b">
-                              <td colSpan={canEdit ? 11 : 10} className="p-4 whitespace-normal">
-                                <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-3">
-                                  <div className="flex justify-between items-center border-b pb-2">
-                                    <h4 className="font-bold text-neutral-800">Unit Details — {unit.unitNumber || 'Unnamed Unit'}</h4>
-                                    <Button variant="ghost" size="sm" onClick={() => setExpandedViewUnitId(null)}>Close</Button>
-                                  </div>
-                                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 text-xs">
-                                    <div><span className="text-neutral-400 block font-medium">Unit #</span><span className="font-semibold text-neutral-800">{unit.unitNumber || '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Tower/Block</span><span className="font-semibold text-neutral-800">{unit.towerBlock || '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Building</span><span className="font-semibold text-neutral-800">{unit.building || '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Type</span><span className="font-semibold text-neutral-800">{UNIT_TYPE_LABELS[unit.type] || unit.type || '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Status</span><span className="font-semibold text-neutral-800">{unit.status}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Floor</span><span className="font-semibold text-neutral-800">{unit.floor ?? '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">View</span><span className="font-semibold text-neutral-800">{unit.view || '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Bedrooms</span><span className="font-semibold text-neutral-800">{unit.bedrooms ?? '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Bathrooms</span><span className="font-semibold text-neutral-800">{unit.bathrooms ?? '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Total Size</span><span className="font-semibold text-neutral-800">{unit.size ? `${unit.size} m²` : '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Price / m²</span><span className="font-semibold text-neutral-800">{unit.priceSqm ? `$${Number(unit.priceSqm).toLocaleString()}` : '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Total Price</span><span className="font-semibold text-neutral-800">{unit.price ? `$${Number(unit.price).toLocaleString()}` : '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Delivery Form</span><span className="font-semibold text-neutral-800">{unit.deliveryForm || '—'}</span></div>
-                                    <div><span className="text-neutral-400 block font-medium">Handover</span><span className="font-semibold text-neutral-800">{unit.handover ? new Date(unit.handover).toLocaleDateString() : '—'}</span></div>
-                                    {unit.floorPlanUrl && (
-                                      <div className="col-span-2 sm:col-span-4 md:col-span-6"><span className="text-neutral-400 block font-medium">Floor Plan URL</span><a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="text-red-600 hover:underline font-semibold">{unit.floorPlanUrl}</a></div>
-                                    )}
-                                  </div>
-                                  {(unit.livingAreaSize || unit.balconySize || unit.terraceSize || unit.greenyardSize) && (
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-neutral-100">
-                                      {unit.livingAreaSize && <div><span className="text-neutral-400 block">Living Area</span><span className="font-semibold">{unit.livingAreaSize} m²</span></div>}
-                                      {unit.balconySize && <div><span className="text-neutral-400 block">Balcony</span><span className="font-semibold">{unit.balconySize} m²</span></div>}
-                                      {unit.terraceSize && <div><span className="text-neutral-400 block">Terrace</span><span className="font-semibold">{unit.terraceSize} m²</span></div>}
-                                      {unit.greenyardSize && <div><span className="text-neutral-400 block">Greenyard</span><span className="font-semibold">{unit.greenyardSize} m²</span></div>}
-                                    </div>
-                                  )}
-                                  {(unit.blackFramePrice || unit.whiteFramePrice || unit.greenFramePrice || unit.turnkeyPrice || unit.renovationPrice) && (
-                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs pt-2 border-t border-neutral-100">
-                                      {unit.blackFramePrice && (
-                                        <div>
-                                          <span className="text-neutral-400 block">Black Frame Price</span>
-                                          <span className="font-semibold">${Number(unit.blackFramePrice).toLocaleString()}</span>
-                                          {unit.blackFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.blackFramePriceSqm).toLocaleString()} / m²)</span>}
-                                        </div>
-                                      )}
-                                      {unit.whiteFramePrice && (
-                                        <div>
-                                          <span className="text-neutral-400 block">White Frame Price</span>
-                                          <span className="font-semibold">${Number(unit.whiteFramePrice).toLocaleString()}</span>
-                                          {unit.whiteFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.whiteFramePriceSqm).toLocaleString()} / m²)</span>}
-                                        </div>
-                                      )}
-                                      {unit.greenFramePrice && (
-                                        <div>
-                                          <span className="text-neutral-400 block">Green Frame Price</span>
-                                          <span className="font-semibold">${Number(unit.greenFramePrice).toLocaleString()}</span>
-                                          {unit.greenFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.greenFramePriceSqm).toLocaleString()} / m²)</span>}
-                                        </div>
-                                      )}
-                                      {unit.turnkeyPrice && (
-                                        <div>
-                                          <span className="text-neutral-400 block">Turnkey Price</span>
-                                          <span className="font-semibold">${Number(unit.turnkeyPrice).toLocaleString()}</span>
-                                          {unit.turnkeyCalcMethod && <span className="text-[10px] text-neutral-500 block">({unit.turnkeyCalcMethod === 'LIVING_AREA' ? 'Living Area' : 'Total Area'})</span>}
-                                        </div>
-                                      )}
-                                      {unit.renovationPrice && (
-                                        <div>
-                                          <span className="text-neutral-400 block">Renovation Price</span>
-                                          <span className="font-semibold">${Number(unit.renovationPrice).toLocaleString()}</span>
-                                          {unit.renovationPriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.renovationPriceSqm).toLocaleString()} / m²)</span>}
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
+                            <div className="bg-neutral-50 p-4 border-t border-neutral-100 text-xs space-y-3">
+                              <h4 className="font-bold text-neutral-800 border-b pb-1">Detailed Info</h4>
+                              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                                <div><span className="text-neutral-400">Building:</span> <span className="font-semibold text-neutral-800">{unit.building || '—'}</span></div>
+                                <div><span className="text-neutral-400">View:</span> <span className="font-semibold text-neutral-800">{unit.view || '—'}</span></div>
+                                <div><span className="text-neutral-400">Delivery Form:</span> <span className="font-semibold text-neutral-800">{unit.deliveryForm || '—'}</span></div>
+                                <div><span className="text-neutral-400">Handover:</span> <span className="font-semibold text-neutral-800">{unit.handover ? new Date(unit.handover).toLocaleDateString() : '—'}</span></div>
+                              </div>
+                              <div className="border-t border-neutral-200/60 pt-2 space-y-2">
+                                <p className="font-semibold text-neutral-700 text-[11px]">Detailed Pricing</p>
+                                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                                  <div><span className="text-neutral-400">Black Frame:</span> <span className="font-semibold">${Number(unit.blackFramePrice || 0).toLocaleString()}</span></div>
+                                  <div><span className="text-neutral-400">White Frame:</span> <span className="font-semibold">${Number(unit.whiteFramePrice || 0).toLocaleString()}</span></div>
+                                  <div><span className="text-neutral-400">Green Frame:</span> <span className="font-semibold">${Number(unit.greenFramePrice || 0).toLocaleString()}</span></div>
+                                  <div><span className="text-neutral-400">Renovation:</span> <span className="font-semibold">${Number(unit.renovationPrice || 0).toLocaleString()}</span></div>
+                                  <div className="col-span-2 bg-red-50 p-1.5 rounded border border-red-100"><span className="text-neutral-500 font-medium">Turnkey Price:</span> <span className="font-bold text-red-600 ml-1">${Number(unit.turnkeyPrice || 0).toLocaleString()}</span></div>
                                 </div>
-                              </td>
-                            </tr>
+                              </div>
+                            </div>
                           )}
+                        </Card>
+                      ))}
+                    </div>
 
-                          {/* Inline Edit Form Panel */}
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block">
+                      <table className="w-full text-sm text-left whitespace-nowrap">
+                        <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
+                          <tr>
+                            {canEdit && (
+                              <th className="px-4 py-3 w-10">
+                                <input
+                                  type="checkbox"
+                                  checked={paginatedUnits.length > 0 && paginatedUnits.every((u: any) => selectedUnitIds.includes(u.id))}
+                                  onChange={() => {
+                                    const allSelected = paginatedUnits.length > 0 && paginatedUnits.every((u: any) => selectedUnitIds.includes(u.id))
+                                    if (allSelected) {
+                                      const paginatedIds = paginatedUnits.map((u: any) => u.id)
+                                      setSelectedUnitIds(prev => prev.filter(id => !paginatedIds.includes(id)))
+                                    } else {
+                                      const paginatedIds = paginatedUnits.map((u: any) => u.id)
+                                      setSelectedUnitIds(prev => Array.from(new Set([...prev, ...paginatedIds])))
+                                    }
+                                  }}
+                                  className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
+                                />
+                              </th>
+                            )}
+                            <th className="px-6 py-3">Unit #</th>
+                            <th className="px-6 py-3">Tower/Block</th>
+                            <th className="px-6 py-3">Type</th>
+                            <th className="px-6 py-3">Floor</th>
+                            <th className="px-6 py-3">Beds/Baths</th>
+                            <th className="px-6 py-3">Size (m²)</th>
+                            <th className="px-6 py-3">Price/m²</th>
+                            <th className="px-6 py-3">Total Price</th>
+                            <th className="px-6 py-3">Status</th>
+                            <th className="px-6 py-3 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paginatedUnits.map((unit: any) => (
+                            <Fragment key={unit.id}>
+                              <tr key={unit.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                                {canEdit && (
+                                  <td className="px-4 py-4 w-10">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedUnitIds.includes(unit.id)}
+                                      onChange={() => {
+                                        setSelectedUnitIds(prev => prev.includes(unit.id) ? prev.filter(i => i !== unit.id) : [...prev, unit.id])
+                                      }}
+                                      className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 cursor-pointer"
+                                    />
+                                  </td>
+                                )}
+                                <td className="px-6 py-4 font-medium">
+                                  {unit.unitNumber || '—'}
+                                  {unit.floorPlanUrl && <a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="block text-[10px] text-blue-600 hover:underline mt-1">View Plan</a>}
+                                </td>
+                                <td className="px-6 py-4 text-neutral-600">{unit.towerBlock || '—'}</td>
+                                <td className="px-6 py-4 text-neutral-600">{UNIT_TYPE_LABELS[unit.type] || unit.type?.toLowerCase() || '—'}</td>
+                                <td className="px-6 py-4 text-neutral-600">{unit.floor ?? '—'}</td>
+                                <td className="px-6 py-4 text-neutral-600">
+                                  {unit.bedrooms !== undefined && unit.bedrooms !== null ? unit.bedrooms : '—'} / {unit.bathrooms !== undefined && unit.bathrooms !== null ? unit.bathrooms : '—'}
+                                </td>
+                                <td className="px-6 py-4 text-neutral-600">{unit.size ? Number(unit.size).toLocaleString() : '—'}</td>
+                                <td className="px-6 py-4 text-neutral-600">{unit.priceSqm ? `$${Number(unit.priceSqm).toLocaleString()}` : '—'}</td>
+                                <td className="px-6 py-4 font-medium">{unit.price ? `$${Number(unit.price).toLocaleString()}` : '—'}</td>
+                                <td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full font-medium ${UNIT_STATUS_COLORS[unit.status]}`}>{unit.status}</span></td>
+                                <td className="px-6 py-4 text-right flex justify-end gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-neutral-500 hover:text-blue-600 h-8 px-2"
+                                    onClick={() => {
+                                      if (expandedViewUnitId === unit.id) {
+                                        setExpandedViewUnitId(null)
+                                      } else {
+                                        setExpandedViewUnitId(unit.id)
+                                        setExpandedEditUnitId(null)
+                                      }
+                                    }}
+                                  >
+                                    <Eye className="w-3.5 h-3.5 mr-1" /> View
+                                  </Button>
+                                  {canEdit ? (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-neutral-500 hover:text-blue-600 h-8 px-2"
+                                        onClick={() => {
+                                          if (expandedEditUnitId === unit.id) {
+                                            setExpandedEditUnitId(null)
+                                            setEditingUnit(null)
+                                            resetUnit()
+                                          } else {
+                                            openEditUnit(unit)
+                                          }
+                                        }}
+                                      >
+                                        Edit
+                                      </Button>
+                                      <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-600 h-8 px-2" onClick={() => deleteUnitMutation.mutate(unit.id)}>
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <span className="text-neutral-400 text-xs">Read-only</span>
+                                  )}
+                                </td>
+                              </tr>
+
+                              {/* Inline View Panel */}
+                              {expandedViewUnitId === unit.id && (
+                                <tr key={`view-${unit.id}`} className="bg-neutral-50/80 border-b">
+                                  <td colSpan={canEdit ? 11 : 10} className="p-4 whitespace-normal">
+                                    <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-3">
+                                      <div className="flex justify-between items-center border-b pb-2">
+                                        <h4 className="font-bold text-neutral-800">Unit Details — {unit.unitNumber || 'Unnamed Unit'}</h4>
+                                        <Button variant="ghost" size="sm" onClick={() => setExpandedViewUnitId(null)}>Close</Button>
+                                      </div>
+                                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 text-xs">
+                                        <div><span className="text-neutral-400 block font-medium">Unit #</span><span className="font-semibold text-neutral-800">{unit.unitNumber || '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Tower/Block</span><span className="font-semibold text-neutral-800">{unit.towerBlock || '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Building</span><span className="font-semibold text-neutral-800">{unit.building || '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Type</span><span className="font-semibold text-neutral-800">{UNIT_TYPE_LABELS[unit.type] || unit.type || '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Status</span><span className="font-semibold text-neutral-800">{unit.status}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Floor</span><span className="font-semibold text-neutral-800">{unit.floor ?? '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">View</span><span className="font-semibold text-neutral-800">{unit.view || '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Bedrooms</span><span className="font-semibold text-neutral-800">{unit.bedrooms ?? '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Bathrooms</span><span className="font-semibold text-neutral-800">{unit.bathrooms ?? '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Total Size</span><span className="font-semibold text-neutral-800">{unit.size ? `${unit.size} m²` : '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Price / m²</span><span className="font-semibold text-neutral-800">{unit.priceSqm ? `$${Number(unit.priceSqm).toLocaleString()}` : '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Total Price</span><span className="font-semibold text-neutral-800">{unit.price ? `$${Number(unit.price).toLocaleString()}` : '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Delivery Form</span><span className="font-semibold text-neutral-800">{unit.deliveryForm || '—'}</span></div>
+                                        <div><span className="text-neutral-400 block font-medium">Handover</span><span className="font-semibold text-neutral-800">{unit.handover ? new Date(unit.handover).toLocaleDateString() : '—'}</span></div>
+                                        {unit.floorPlanUrl && (
+                                          <div className="col-span-2 sm:col-span-4 md:col-span-6"><span className="text-neutral-400 block font-medium">Floor Plan URL</span><a href={unit.floorPlanUrl} target="_blank" rel="noreferrer" className="text-red-600 hover:underline font-semibold">{unit.floorPlanUrl}</a></div>
+                                        )}
+                                      </div>
+                                      {(unit.livingAreaSize || unit.balconySize || unit.terraceSize || unit.greenyardSize) && (
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-neutral-100">
+                                          {unit.livingAreaSize && <div><span className="text-neutral-400 block">Living Area</span><span className="font-semibold">{unit.livingAreaSize} m²</span></div>}
+                                          {unit.balconySize && <div><span className="text-neutral-400 block">Balcony</span><span className="font-semibold">{unit.balconySize} m²</span></div>}
+                                          {unit.terraceSize && <div><span className="text-neutral-400 block">Terrace</span><span className="font-semibold">{unit.terraceSize} m²</span></div>}
+                                          {unit.greenyardSize && <div><span className="text-neutral-400 block">Greenyard</span><span className="font-semibold">{unit.greenyardSize} m²</span></div>}
+                                        </div>
+                                      )}
+                                      {(unit.blackFramePrice || unit.whiteFramePrice || unit.greenFramePrice || unit.turnkeyPrice || unit.renovationPrice) && (
+                                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs pt-2 border-t border-neutral-100">
+                                          {unit.blackFramePrice && (
+                                            <div>
+                                              <span className="text-neutral-400 block">Black Frame Price</span>
+                                              <span className="font-semibold">${Number(unit.blackFramePrice).toLocaleString()}</span>
+                                              {unit.blackFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.blackFramePriceSqm).toLocaleString()} / m²)</span>}
+                                            </div>
+                                          )}
+                                          {unit.whiteFramePrice && (
+                                            <div>
+                                              <span className="text-neutral-400 block">White Frame Price</span>
+                                              <span className="font-semibold">${Number(unit.whiteFramePrice).toLocaleString()}</span>
+                                              {unit.whiteFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.whiteFramePriceSqm).toLocaleString()} / m²)</span>}
+                                            </div>
+                                          )}
+                                          {unit.greenFramePrice && (
+                                            <div>
+                                              <span className="text-neutral-400 block">Green Frame Price</span>
+                                              <span className="font-semibold">${Number(unit.greenFramePrice).toLocaleString()}</span>
+                                              {unit.greenFramePriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.greenFramePriceSqm).toLocaleString()} / m²)</span>}
+                                            </div>
+                                          )}
+                                          {unit.turnkeyPrice && (
+                                            <div>
+                                              <span className="text-neutral-400 block">Turnkey Price</span>
+                                              <span className="font-semibold">${Number(unit.turnkeyPrice).toLocaleString()}</span>
+                                              {unit.turnkeyCalcMethod && <span className="text-[10px] text-neutral-500 block">({unit.turnkeyCalcMethod === 'LIVING_AREA' ? 'Living Area' : 'Total Area'})</span>}
+                                            </div>
+                                          )}
+                                          {unit.renovationPrice && (
+                                            <div>
+                                              <span className="text-neutral-400 block">Renovation Price</span>
+                                              <span className="font-semibold">${Number(unit.renovationPrice).toLocaleString()}</span>
+                                              {unit.renovationPriceSqm && <span className="text-[10px] text-neutral-500 block">(${Number(unit.renovationPriceSqm).toLocaleString()} / m²)</span>}
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
                           {expandedEditUnitId === unit.id && canEdit && (
                             <tr key={`edit-${unit.id}`} className="bg-red-50/20 border-b">
                               <td colSpan={canEdit ? 11 : 10} className="p-4 whitespace-normal">
@@ -1301,7 +1412,9 @@ export default function ProjectDetailPage() {
                       ))}
                     </tbody>
                   </table>
-                )}
+                </div>
+              </div>
+            )}
               </CardContent>
               {totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-neutral-200 px-4 py-3 bg-white sm:px-6 rounded-b-xl">

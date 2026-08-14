@@ -244,67 +244,57 @@ function ProjectsList() {
           ) : searchedProjects?.length === 0 ? (
             <div className="p-8 text-center text-neutral-500">No projects found.</div>
           ) : (
-            <table className="w-full text-sm text-left whitespace-nowrap">
-              <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
-                <tr>
-                  {canEdit && (
-                    <th className="px-6 py-3 w-12 font-medium">
-                      <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                        checked={searchedProjects?.length > 0 && selectedIds.length === searchedProjects.length} 
-                        onChange={toggleSelectAll} 
-                      />
-                    </th>
-                  )}
-                  <th className="px-6 py-3 font-medium w-16">Thumbnail</th>
-                  <th className="px-6 py-3 font-medium">Name</th>
-                  <th className="px-6 py-3 font-medium">Developer</th>
-                  <th className="px-6 py-3 font-medium">City</th>
-                  <th className="px-6 py-3 font-medium">Status</th>
-                  <th className="px-6 py-3 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div className="w-full">
+              {/* Mobile Card Layout */}
+              <div className="md:hidden space-y-3 p-3 bg-neutral-50/50">
                 {searchedProjects?.map((project: any) => {
                   const firstImage = project.media?.find((m: any) => m.type === 'IMAGE' || m.type === 'MASTER_PLAN' || m.type === 'FLOOR_PLAN')?.url || project.coverImageUrl
                   return (
-                    <tr key={project.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
-                      {canEdit && (
-                        <td className="px-6 py-4">
-                          <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                            checked={selectedIds.includes(project.id)} 
-                            onChange={() => toggleSelect(project.id)} 
-                          />
-                        </td>
-                      )}
-                      <td className="px-6 py-4">
-                        {firstImage ? (
-                          <img src={firstImage} alt={project.name} className="w-10 h-10 object-cover border border-neutral-100 rounded" />
-                        ) : (
-                          <div className="w-10 h-10 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[9px] text-neutral-400 font-medium">
-                            No Img
+                    <Card key={project.id} className="border border-neutral-100 shadow-sm rounded-xl overflow-hidden bg-white">
+                      <CardContent className="p-4 flex gap-3">
+                        <div className="w-14 h-14 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0 border border-neutral-200/50 flex">
+                          {firstImage ? (
+                            <img src={firstImage} alt={project.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[9px] text-neutral-400 font-medium m-auto">No Img</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <Link href={`/cms/projects/${project.id}`} className="font-bold text-neutral-900 hover:underline truncate block text-sm">
+                            {project.name}
+                          </Link>
+                          <p className="text-xs text-neutral-500 font-medium">{project.developer?.name || 'Unknown Developer'}</p>
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] rounded-full font-medium">
+                              {project.status.replace('_', ' ')}
+                            </span>
+                            <span className="text-xs text-neutral-500">{project.city}</span>
                           </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-neutral-900">
-                        <Link href={`/cms/projects/${project.id}`} className="text-red-600 hover:underline">
-                          {project.name}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 text-neutral-500">{project.developer?.name}</td>
-                      <td className="px-6 py-4 text-neutral-500">{project.city}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium">
-                          {project.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-1">
+                        </div>
+                      </CardContent>
+                      <div className="bg-neutral-50 px-4 py-2.5 border-t border-neutral-100 flex justify-between items-center gap-2 text-xs">
+                        <div className="flex gap-2">
+                          {canEdit && (
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(project.id)}
+                              onChange={() => toggleSelect(project.id)}
+                              className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 my-auto cursor-pointer"
+                            />
+                          )}
+                          <Link href={`/cms/projects/${project.id}`}>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs px-2 text-neutral-500 hover:text-red-600">
+                              <Eye className="w-3.5 h-3.5 mr-1" /> View
+                            </Button>
+                          </Link>
+                        </div>
+                        <div className="flex gap-1.5">
                           {canEdit && (
                             <>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-neutral-500 hover:text-green-600 h-8 px-2"
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs px-2 text-neutral-500 hover:text-green-600"
                                 onClick={() => {
                                   if (confirm(`Duplicate project "${project.name}"?`)) {
                                     duplicateMutation.mutate(project.id)
@@ -312,25 +302,111 @@ function ProjectsList() {
                                 }}
                                 disabled={duplicateMutation.isPending}
                               >
-                                <Copy className="w-4 h-4 mr-1" /> Duplicate
+                                <Copy className="w-3.5 h-3.5 mr-1" /> Duplicate
                               </Button>
-                              <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEdit(project)}>
+                              <Button variant="ghost" size="sm" className="h-7 text-xs px-2 text-neutral-500 hover:text-blue-600" onClick={() => openEdit(project)}>
                                 Edit
                               </Button>
                             </>
                           )}
-                          <Link href={`/cms/projects/${project.id}`}>
-                            <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-red-600 h-8 px-2">
-                              <Eye className="w-4 h-4 mr-1" /> View
-                            </Button>
-                          </Link>
                         </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </Card>
                   )
                 })}
-              </tbody>
-            </table>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block">
+                <table className="w-full text-sm text-left whitespace-nowrap">
+                  <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
+                    <tr>
+                      {canEdit && (
+                        <th className="px-6 py-3 w-12 font-medium">
+                          <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                            checked={searchedProjects?.length > 0 && selectedIds.length === searchedProjects.length} 
+                            onChange={toggleSelectAll} 
+                          />
+                        </th>
+                      )}
+                      <th className="px-6 py-3 font-medium w-16">Thumbnail</th>
+                      <th className="px-6 py-3 font-medium">Name</th>
+                      <th className="px-6 py-3 font-medium">Developer</th>
+                      <th className="px-6 py-3 font-medium">City</th>
+                      <th className="px-6 py-3 font-medium">Status</th>
+                      <th className="px-6 py-3 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {searchedProjects?.map((project: any) => {
+                      const firstImage = project.media?.find((m: any) => m.type === 'IMAGE' || m.type === 'MASTER_PLAN' || m.type === 'FLOOR_PLAN')?.url || project.coverImageUrl
+                      return (
+                        <tr key={project.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                          {canEdit && (
+                            <td className="px-6 py-4">
+                              <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                                checked={selectedIds.includes(project.id)} 
+                                onChange={() => toggleSelect(project.id)} 
+                              />
+                            </td>
+                          )}
+                          <td className="px-6 py-4">
+                            {firstImage ? (
+                              <img src={firstImage} alt={project.name} className="w-10 h-10 object-cover border border-neutral-100 rounded" />
+                            ) : (
+                              <div className="w-10 h-10 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[9px] text-neutral-400 font-medium">
+                                No Img
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-neutral-900">
+                            <Link href={`/cms/projects/${project.id}`} className="text-red-600 hover:underline">
+                              {project.name}
+                            </Link>
+                          </td>
+                          <td className="px-6 py-4 text-neutral-500">{project.developer?.name}</td>
+                          <td className="px-6 py-4 text-neutral-500">{project.city}</td>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium">
+                              {project.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-1">
+                              {canEdit && (
+                                <>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="text-neutral-500 hover:text-green-600 h-8 px-2"
+                                    onClick={() => {
+                                      if (confirm(`Duplicate project "${project.name}"?`)) {
+                                        duplicateMutation.mutate(project.id)
+                                      }
+                                    }}
+                                    disabled={duplicateMutation.isPending}
+                                  >
+                                    <Copy className="w-4 h-4 mr-1" /> Duplicate
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-blue-600 h-8 px-2" onClick={() => openEdit(project)}>
+                                    Edit
+                                  </Button>
+                                </>
+                              )}
+                              <Link href={`/cms/projects/${project.id}`}>
+                                <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-red-600 h-8 px-2">
+                                  <Eye className="w-4 h-4 mr-1" /> View
+                                </Button>
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
