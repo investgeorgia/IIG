@@ -157,12 +157,13 @@ function buildFloorPlanHtml(floorPlanUrl: string | undefined): string {
 function buildAmenitiesHtml(amenities: string[]): string {
   if (!amenities || amenities.length === 0) return ''
 
+  const displayAmenities = amenities.slice(0, 12)
   let rows = ''
-  for (let r = 0; r < Math.ceil(amenities.length / 3); r++) {
-    const isLast = r === Math.ceil(amenities.length / 3) - 1
+  for (let r = 0; r < Math.ceil(displayAmenities.length / 3); r++) {
+    const isLast = r === Math.ceil(displayAmenities.length / 3) - 1
     rows += `<tr style="border-bottom:${isLast ? 'none' : '1px solid #F1F5F9'};">`
     for (let c = 0; c < 3; c++) {
-      const a = amenities[r * 3 + c] || ''
+      const a = displayAmenities[r * 3 + c] || ''
       rows += `<td style="padding:10px 14px;font-size:13px;width:33%;">${a}</td>`
     }
     rows += '</tr>'

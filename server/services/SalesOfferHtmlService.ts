@@ -32,7 +32,7 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
   const customPaymentPlan: { milestone: string, percentage: number, date: string }[] =
     (snap.customPaymentPlan && Array.isArray(snap.customPaymentPlan)) ? snap.customPaymentPlan : []
 
-  const amenities: string[] = snap.amenities || []
+  const amenities: string[] = (snap.amenities || []).slice(0, 12)
   const consultantName = proposal.createdBy?.name || ''
   const consultantPhone = proposal.createdBy?.phone || ''
   const customHandoverVal = proposal.handover || snap.unit?.handover
