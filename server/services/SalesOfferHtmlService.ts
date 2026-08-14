@@ -99,21 +99,29 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
        </div>`
     : `<div style="width:100%;height:200px;border:1px solid #ddd;border-radius:6px;display:flex;align-items:center;justify-content:center;background:#f0f0ef;margin-bottom:36px;color:#aaa;font-size:13px;font-style:italic;">No floor plan image available</div>`
 
-  // Gallery page
-  const galleryImages = selectedImages.map(url =>
-    `<div style="aspect-ratio:16/9;overflow:hidden;border-radius:6px;border:1px solid #ddd;background:#f0f0ef;">
-       <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-     </div>`
-  ).join('')
+  // Gallery page(s)
+  const CHUNK_SIZE = 8
+  const chunks: string[][] = []
+  for (let i = 0; i < selectedImages.length; i += CHUNK_SIZE) {
+    chunks.push(selectedImages.slice(i, i + CHUNK_SIZE))
+  }
 
-  const galleryPage = selectedImages.length > 0 ? `
-    <div style="width:794px;min-height:1123px;background:#FAFAF8;padding:60px 64px;font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;box-sizing:border-box;page-break-before:always;">
-      ${headerHtml}
-      <h2 style="font-size:16px;font-weight:700;margin-bottom:20px;border-bottom:1.5px solid #1a1a1a;padding-bottom:10px;">Property Gallery</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        ${galleryImages}
-      </div>
-    </div>` : ''
+  const galleryPage = chunks.map((chunk, index) => {
+    const galleryImages = chunk.map(url =>
+      `<div style="aspect-ratio:16/9;overflow:hidden;border-radius:6px;border:1px solid #ddd;background:#f0f0ef;">
+         <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
+        </div>`
+    ).join('')
+
+    return `
+      <div style="width:794px;min-height:1123px;background:#FAFAF8;padding:60px 64px;font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;box-sizing:border-box;page-break-before:always;">
+        ${headerHtml}
+        <h2 style="font-size:16px;font-weight:700;margin-bottom:20px;border-bottom:1.5px solid #1a1a1a;padding-bottom:10px;">Property Gallery${chunks.length > 1 ? ` — Page ${index + 1}` : ''}</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          ${galleryImages}
+        </div>
+      </div>`
+  }).join('\n')
 
   return `<!DOCTYPE html>
 <html>

@@ -180,21 +180,28 @@ function buildAmenitiesHtml(amenities: string[]): string {
 function buildGalleryPageHtml(selectedImages: string[], logoImgTag: string): string {
   if (!selectedImages || selectedImages.length === 0) return ''
 
-  const galleryItems = selectedImages
-    .map(
-      (url) => `<div class="gallery-item">
-        <img src="${url}" />
-      </div>`
-    )
-    .join('')
+  const CHUNK_SIZE = 8
+  const chunks: string[][] = []
+  for (let i = 0; i < selectedImages.length; i += CHUNK_SIZE) {
+    chunks.push(selectedImages.slice(i, i + CHUNK_SIZE))
+  }
 
-  return `<div class="page">
+  return chunks.map((chunk, index) => {
+    const galleryItems = chunk
+      .map(
+        (url) => `<div class="gallery-item">
+          <img src="${url}" />
+        </div>`
+      )
+      .join('')
+
+    return `<div class="page">
   <div>
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; border-bottom: 2px solid #F1F5F9; margin-bottom: 32px;">
       <div>
         <div style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #0F172A;">SALES OFFER</div>
-        <div style="font-size: 12px; color: #64748B; margin-top: 4px; font-weight: 500;">Property Gallery</div>
+        <div style="font-size: 12px; color: #64748B; margin-top: 4px; font-weight: 500;">Property Gallery${chunks.length > 1 ? ` — Page ${index + 1}` : ''}</div>
       </div>
       <div style="display: flex; align-items: center; gap: 12px;">${logoImgTag}</div>
     </div>
@@ -205,6 +212,7 @@ function buildGalleryPageHtml(selectedImages: string[], logoImgTag: string): str
     </div>
   </div>
 </div>`
+  }).join('\n')
 }
 
 export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
