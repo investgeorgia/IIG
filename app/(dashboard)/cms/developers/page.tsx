@@ -266,114 +266,218 @@ export default function DevelopersPage() {
           ) : searchedDevelopers?.length === 0 ? (
             <div className="p-8 text-center text-neutral-500">No developers found.</div>
           ) : (
-             <table className="w-full text-sm text-left whitespace-nowrap">
-              <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
-                <tr>
-                  {canEdit && (
-                    <th className="px-6 py-3 w-12 font-medium">
-                      <input 
-                        type="checkbox" 
-                        className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                        checked={searchedDevelopers?.length > 0 && selectedIds.length === searchedDevelopers.length} 
-                        onChange={toggleSelectAll} 
-                      />
-                    </th>
-                  )}
-                  <th className="px-6 py-3 font-medium w-24">Logo</th>
-                  <th className="px-6 py-3 font-medium">Name</th>
-                  <th className="px-6 py-3 font-medium">Added On</th>
-                  <th className="px-6 py-3 font-medium text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div className="w-full">
+              {/* Mobile Card Layout */}
+              <div className="md:hidden space-y-3 p-3 bg-neutral-50/50">
                 {searchedDevelopers?.map((dev: any) => (
-                  <tr key={dev.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
-                    {canEdit && (
-                      <td className="px-6 py-4">
-                        <input 
-                          type="checkbox" 
-                          className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                          checked={selectedIds.includes(dev.id)} 
-                          onChange={() => toggleSelect(dev.id)} 
-                        />
-                      </td>
-                    )}
-                    <td className="px-6 py-4">
-                      {editingId === dev.id ? (
-                        <div className="flex items-center gap-2">
-                          {editLogoUrl && (
-                            <img src={editLogoUrl} alt="Logo" className="w-12 h-12 object-contain border border-neutral-200 rounded p-0.5" />
-                          )}
-                          <input type="file" id={`edit-logo-upload-${dev.id}`} className="hidden" accept="image/*" onChange={e => e.target.files?.[0] && uploadLogo(e.target.files[0], true)} />
-                          <Label htmlFor={`edit-logo-upload-${dev.id}`} className="p-1.5 border border-neutral-200 rounded bg-neutral-50 cursor-pointer hover:bg-neutral-100">
-                            <Upload className="w-4 h-4 text-neutral-500" />
-                          </Label>
-                        </div>
-                      ) : (
-                        dev.logoUrl ? (
-                          <img src={dev.logoUrl} alt={dev.name} className="w-12 h-12 object-contain border border-neutral-100 rounded p-0.5" />
-                        ) : (
-                          <div className="w-12 h-12 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase">
-                            No Lg
-                          </div>
-                        )
-                      )}
-                    </td>
-                    <td className="px-6 py-4 font-medium text-neutral-900">
-                      {editingId === dev.id ? (
-                        <Input 
-                          value={editName} 
-                          onChange={(e) => setEditName(e.target.value)} 
-                          className="max-w-[200px] h-8"
-                          autoFocus
-                        />
-                      ) : (
-                        <Link
-                          href={`/cms/projects?developer=${dev.id}`}
-                          className="text-red-600 hover:underline font-semibold"
-                        >
-                          {dev.name}
-                        </Link>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-neutral-500">{new Date(dev.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 text-right">
-                      {editingId === dev.id ? (
-                        <div className="flex justify-end gap-2">
-                          <Button size="sm" onClick={() => updateMutation.mutate({ id: dev.id, name: editName, logoUrl: editLogoUrl || undefined })}>Save</Button>
-                          <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
-                        </div>
-                      ) : (
-                        <div className="flex justify-end gap-2">
-                          {canEdit ? (
-                            <>
-                              <Button variant="ghost" size="sm" onClick={() => startEditing(dev)} className="text-blue-600 hover:text-blue-700">
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="text-neutral-400 hover:text-red-600"
-                                onClick={() => {
-                                  if (confirm(`Are you sure you want to delete developer "${dev.name}"?`)) {
-                                    deleteMutation.mutate(dev.id)
-                                  }
-                                }}
-                                disabled={deleteMutation.isPending}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </>
+                  <Card key={dev.id} className={`border border-neutral-100 shadow-sm rounded-xl overflow-hidden bg-white ${selectedIds.includes(dev.id) ? 'border-red-200 bg-red-50/10' : ''}`}>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 flex-shrink-0">
+                          {editingId === dev.id ? (
+                            <div className="flex items-center gap-1.5">
+                              {editLogoUrl && (
+                                <img src={editLogoUrl} alt="Logo" className="w-12 h-12 object-contain border border-neutral-200 rounded p-0.5" />
+                              )}
+                              <input type="file" id={`edit-logo-upload-mobile-${dev.id}`} className="hidden" accept="image/*" onChange={e => e.target.files?.[0] && uploadLogo(e.target.files[0], true)} />
+                              <Label htmlFor={`edit-logo-upload-mobile-${dev.id}`} className="p-1 border border-neutral-200 rounded bg-neutral-50 cursor-pointer hover:bg-neutral-100">
+                                <Upload className="w-3.5 h-3.5 text-neutral-500" />
+                              </Label>
+                            </div>
                           ) : (
-                            <span className="text-neutral-400 text-xs">Read-only</span>
+                            dev.logoUrl ? (
+                              <img src={dev.logoUrl} alt={dev.name} className="w-12 h-12 object-contain border border-neutral-100 rounded p-0.5" />
+                            ) : (
+                              <div className="w-12 h-12 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase">
+                                No Lg
+                              </div>
+                            )
                           )}
                         </div>
-                      )}
-                    </td>
-                  </tr>
+
+                        <div className="flex-1 min-w-0">
+                          {editingId === dev.id ? (
+                            <Input 
+                              value={editName} 
+                              onChange={(e) => setEditName(e.target.value)} 
+                              className="h-8 text-sm"
+                              autoFocus
+                            />
+                          ) : (
+                            <Link
+                              href={`/cms/projects?developer=${dev.id}`}
+                              className="text-red-600 hover:underline font-semibold text-sm truncate block"
+                            >
+                              {dev.name}
+                            </Link>
+                          )}
+                          <span className="text-[10px] text-neutral-400 block mt-0.5">
+                            Added: {new Date(dev.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <div className="bg-neutral-50 px-4 py-2 border-t border-neutral-100 flex justify-between items-center gap-2">
+                      <div className="flex gap-2">
+                        {canEdit && (
+                          <input 
+                            type="checkbox" 
+                            className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 my-auto cursor-pointer" 
+                            checked={selectedIds.includes(dev.id)} 
+                            onChange={() => toggleSelect(dev.id)} 
+                          />
+                        )}
+                      </div>
+                      <div className="flex gap-1.5">
+                        {editingId === dev.id ? (
+                          <>
+                            <Button size="sm" className="h-7 text-xs px-2" onClick={() => updateMutation.mutate({ id: dev.id, name: editName, logoUrl: editLogoUrl || undefined })}>Save</Button>
+                            <Button size="sm" variant="outline" className="h-7 text-xs px-2" onClick={() => setEditingId(null)}>Cancel</Button>
+                          </>
+                        ) : (
+                          <>
+                            {canEdit ? (
+                              <>
+                                <Button variant="ghost" size="sm" onClick={() => startEditing(dev)} className="h-7 text-xs px-2 text-blue-600 hover:text-blue-700">
+                                  Edit
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-7 text-xs px-2 text-neutral-400 hover:text-red-600"
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete developer "${dev.name}"?`)) {
+                                      deleteMutation.mutate(dev.id)
+                                    }
+                                  }}
+                                  disabled={deleteMutation.isPending}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="text-neutral-400 text-xs">Read-only</span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block">
+                <table className="w-full text-sm text-left whitespace-nowrap">
+                  <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
+                    <tr>
+                      {canEdit && (
+                        <th className="px-6 py-3 w-12 font-medium">
+                          <input 
+                            type="checkbox" 
+                            className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                            checked={searchedDevelopers?.length > 0 && selectedIds.length === searchedDevelopers.length} 
+                            onChange={toggleSelectAll} 
+                          />
+                        </th>
+                      )}
+                      <th className="px-6 py-3 font-medium w-24">Logo</th>
+                      <th className="px-6 py-3 font-medium">Name</th>
+                      <th className="px-6 py-3 font-medium">Added On</th>
+                      <th className="px-6 py-3 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {searchedDevelopers?.map((dev: any) => (
+                      <tr key={dev.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                        {canEdit && (
+                          <td className="px-6 py-4">
+                            <input 
+                              type="checkbox" 
+                              className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                              checked={selectedIds.includes(dev.id)} 
+                              onChange={() => toggleSelect(dev.id)} 
+                            />
+                          </td>
+                        )}
+                        <td className="px-6 py-4">
+                          {editingId === dev.id ? (
+                            <div className="flex items-center gap-2">
+                              {editLogoUrl && (
+                                <img src={editLogoUrl} alt="Logo" className="w-12 h-12 object-contain border border-neutral-200 rounded p-0.5" />
+                              )}
+                              <input type="file" id={`edit-logo-upload-${dev.id}`} className="hidden" accept="image/*" onChange={e => e.target.files?.[0] && uploadLogo(e.target.files[0], true)} />
+                              <Label htmlFor={`edit-logo-upload-${dev.id}`} className="p-1.5 border border-neutral-200 rounded bg-neutral-50 cursor-pointer hover:bg-neutral-100">
+                                <Upload className="w-4 h-4 text-neutral-500" />
+                              </Label>
+                            </div>
+                          ) : (
+                            dev.logoUrl ? (
+                              <img src={dev.logoUrl} alt={dev.name} className="w-12 h-12 object-contain border border-neutral-100 rounded p-0.5" />
+                            ) : (
+                              <div className="w-12 h-12 bg-neutral-100 border border-neutral-200 rounded flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase">
+                                No Lg
+                              </div>
+                            )
+                          )}
+                        </td>
+                        <td className="px-6 py-4 font-medium text-neutral-900">
+                          {editingId === dev.id ? (
+                            <Input 
+                              value={editName} 
+                              onChange={(e) => setEditName(e.target.value)} 
+                              className="max-w-[200px] h-8"
+                              autoFocus
+                            />
+                          ) : (
+                            <Link
+                              href={`/cms/projects?developer=${dev.id}`}
+                              className="text-red-600 hover:underline font-semibold"
+                            >
+                              {dev.name}
+                            </Link>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-neutral-500">{new Date(dev.createdAt).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 text-right">
+                          {editingId === dev.id ? (
+                            <div className="flex justify-end gap-2">
+                              <Button size="sm" onClick={() => updateMutation.mutate({ id: dev.id, name: editName, logoUrl: editLogoUrl || undefined })}>Save</Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-end gap-2">
+                              {canEdit ? (
+                                <>
+                                  <Button variant="ghost" size="sm" onClick={() => startEditing(dev)} className="text-blue-600 hover:text-blue-700">
+                                    Edit
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-neutral-400 hover:text-red-600"
+                                    onClick={() => {
+                                      if (confirm(`Are you sure you want to delete developer "${dev.name}"?`)) {
+                                        deleteMutation.mutate(dev.id)
+                                      }
+                                    }}
+                                    disabled={deleteMutation.isPending}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <span className="text-neutral-400 text-xs">Read-only</span>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

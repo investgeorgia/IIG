@@ -238,80 +238,151 @@ export default function CustomersPage() {
           ) : searchedCustomers.length === 0 ? (
             <div className="p-8 text-center text-neutral-500">No customers found.</div>
           ) : (
-            <table className="w-full text-sm text-left whitespace-nowrap">
-              <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
-                <tr>
-                  {canEdit && (
-                    <th className="px-6 py-3 w-12">
-                      <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                        checked={searchedCustomers.length > 0 && selectedIds.length === searchedCustomers.length} 
-                        onChange={toggleSelectAll} 
-                      />
-                    </th>
-                  )}
-                  <th className="px-6 py-3">Name</th>
-                  <th className="px-6 py-3">Contact</th>
-                  <th className="px-6 py-3">Nationality</th>
-                  <th className="px-6 py-3">Source</th>
-                  {hasPermission('Users', 'VIEW') && <th className="px-6 py-3">Assigned To</th>}
-                  <th className="px-6 py-3">Proposals</th>
-                  <th className="px-6 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div className="w-full">
+              {/* Mobile Card Layout */}
+              <div className="md:hidden space-y-3 p-3 bg-neutral-50/50">
                 {searchedCustomers.map((c: any) => (
-                  <tr key={c.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
-                    {canEdit && (
-                      <td className="px-6 py-4">
-                        <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
-                          checked={selectedIds.includes(c.id)} 
-                          onChange={() => toggleSelect(c.id)} 
-                        />
-                      </td>
-                    )}
-                    <td className="px-6 py-4 font-medium text-neutral-900">{c.name}</td>
-                    <td className="px-6 py-4 text-neutral-600">
-                      <div className="space-y-0.5">
-                        {c.email && <div className="flex items-center gap-1 text-xs"><Mail className="w-3 h-3" />{c.email}</div>}
-                        {c.phone && <div className="flex items-center gap-1 text-xs"><Phone className="w-3 h-3" />{c.phone}</div>}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-neutral-600">{c.nationality || '—'}</td>
-                    <td className="px-6 py-4">
-                      {c.source ? <span className="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded-full">{c.source}</span> : '—'}
-                    </td>
-                    {hasPermission('Users', 'VIEW') && (
-                      <td className="px-6 py-4">
-                        <select
-                          value={c.assignedToId || ''}
-                          onChange={(e) => assignMutation.mutate({ id: c.id, assignedToId: e.target.value ? Number(e.target.value) : null })}
-                          disabled={assignMutation.isPending}
-                          className="text-xs font-semibold rounded border px-2 py-1 outline-none appearance-none cursor-pointer"
-                        >
-                          <option value="">Unassigned</option>
-                          {users.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
-                        </select>
-                      </td>
-                    )}
-                    <td className="px-6 py-4 text-neutral-600 font-medium">{c._count?.proposals || 0}</td>
-                    <td className="px-6 py-4 text-right">
-                      {canEdit ? (
-                        <div className="flex justify-end items-center gap-2">
-                          <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 h-8 px-2" onClick={() => handleEditClick(c)}>
-                            Edit
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600 h-8 w-8" onClick={() => deleteMutation.mutate(c.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                  <Card key={c.id} className="border border-neutral-100 shadow-sm rounded-xl overflow-hidden bg-white">
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="font-bold text-neutral-900 text-sm">{c.name}</span>
+                          {c.nationality && <span className="text-[10px] text-neutral-400 ml-1.5">({c.nationality})</span>}
                         </div>
-                      ) : (
-                        <span className="text-neutral-400 text-xs">Read-only</span>
-                      )}
-                    </td>
-                  </tr>
+                        {c.source && (
+                          <span className="px-2 py-0.5 bg-neutral-100 text-neutral-600 text-[10px] rounded-full font-medium">
+                            {c.source}
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-1 text-xs text-neutral-600 pt-1">
+                        {c.email && <div className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5" />{c.email}</div>}
+                        {c.phone && <div className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5" />{c.phone}</div>}
+                      </div>
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-100">
+                        <span className="text-neutral-500 font-medium">Proposals: <strong className="text-neutral-800">{c._count?.proposals || 0}</strong></span>
+                        {hasPermission('Users', 'VIEW') && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] text-neutral-400">Owner:</span>
+                            <select
+                              value={c.assignedToId || ''}
+                              onChange={(e) => assignMutation.mutate({ id: c.id, assignedToId: e.target.value ? Number(e.target.value) : null })}
+                              disabled={assignMutation.isPending}
+                              className="text-[11px] font-semibold rounded border border-neutral-200 bg-white px-1.5 py-0.5 outline-none cursor-pointer"
+                            >
+                              <option value="">Unassigned</option>
+                              {users.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                    <div className="bg-neutral-50 px-4 py-2 border-t border-neutral-100 flex justify-between items-center gap-2 text-xs">
+                      <div className="flex gap-2">
+                        {canEdit && (
+                          <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 my-auto cursor-pointer" 
+                            checked={selectedIds.includes(c.id)} 
+                            onChange={() => toggleSelect(c.id)} 
+                          />
+                        )}
+                      </div>
+                      <div className="flex gap-1.5">
+                        {canEdit ? (
+                          <>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs px-2 text-blue-600 hover:text-blue-700" onClick={() => handleEditClick(c)}>
+                              Edit
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs px-2 text-neutral-400 hover:text-red-600" onClick={() => deleteMutation.mutate(c.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </>
+                        ) : (
+                          <span className="text-neutral-400 text-xs">Read-only</span>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden md:block">
+                <table className="w-full text-sm text-left whitespace-nowrap">
+                  <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
+                    <tr>
+                      {canEdit && (
+                        <th className="px-6 py-3 w-12">
+                          <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                            checked={searchedCustomers.length > 0 && selectedIds.length === searchedCustomers.length} 
+                            onChange={toggleSelectAll} 
+                          />
+                        </th>
+                      )}
+                      <th className="px-6 py-3">Name</th>
+                      <th className="px-6 py-3">Contact</th>
+                      <th className="px-6 py-3">Nationality</th>
+                      <th className="px-6 py-3">Source</th>
+                      {hasPermission('Users', 'VIEW') && <th className="px-6 py-3">Assigned To</th>}
+                      <th className="px-6 py-3">Proposals</th>
+                      <th className="px-6 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {searchedCustomers.map((c: any) => (
+                      <tr key={c.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                        {canEdit && (
+                          <td className="px-6 py-4">
+                            <input type="checkbox" className="rounded border-neutral-300 text-red-600 focus:ring-red-500" 
+                              checked={selectedIds.includes(c.id)} 
+                              onChange={() => toggleSelect(c.id)} 
+                            />
+                          </td>
+                        )}
+                        <td className="px-6 py-4 font-medium text-neutral-900">{c.name}</td>
+                        <td className="px-6 py-4 text-neutral-600">
+                          <div className="space-y-0.5">
+                            {c.email && <div className="flex items-center gap-1 text-xs"><Mail className="w-3 h-3" />{c.email}</div>}
+                            {c.phone && <div className="flex items-center gap-1 text-xs"><Phone className="w-3 h-3" />{c.phone}</div>}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-neutral-600">{c.nationality || '—'}</td>
+                        <td className="px-6 py-4">
+                          {c.source ? <span className="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded-full">{c.source}</span> : '—'}
+                        </td>
+                        {hasPermission('Users', 'VIEW') && (
+                          <td className="px-6 py-4">
+                            <select
+                              value={c.assignedToId || ''}
+                              onChange={(e) => assignMutation.mutate({ id: c.id, assignedToId: e.target.value ? Number(e.target.value) : null })}
+                              disabled={assignMutation.isPending}
+                              className="text-xs font-semibold rounded border px-2 py-1 outline-none appearance-none cursor-pointer"
+                            >
+                              <option value="">Unassigned</option>
+                              {users.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                            </select>
+                          </td>
+                        )}
+                        <td className="px-6 py-4 text-neutral-600 font-medium">{c._count?.proposals || 0}</td>
+                        <td className="px-6 py-4 text-right">
+                          {canEdit ? (
+                            <div className="flex justify-end items-center gap-2">
+                              <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 h-8 px-2" onClick={() => handleEditClick(c)}>
+                                Edit
+                              </Button>
+                              <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600 h-8 w-8" onClick={() => deleteMutation.mutate(c.id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-neutral-400 text-xs">Read-only</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -335,77 +335,131 @@ export default function UsersPage() {
           {isLoading ? (
             <div className="p-8 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-neutral-400" /></div>
           ) : (
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
-                <tr>
-                  <th className="px-6 py-3">Name</th>
-                  <th className="px-6 py-3">Email</th>
-                  <th className="px-6 py-3">Phone</th>
-                  <th className="px-6 py-3">Role</th>
-                  <th className="px-6 py-3">Status</th>
-                  <th className="px-6 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user: any) => (
-                  <tr key={user.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-neutral-900">{user.name}</td>
-                    <td className="px-6 py-4 text-neutral-600">{user.email}</td>
-                    <td className="px-6 py-4 text-neutral-500">{user.phone || '-'}</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-neutral-100 text-neutral-700 text-xs rounded-full font-medium">{user.role?.name}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs rounded-full font-medium ${user.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          <div className="w-full">
+            {/* Mobile Card Layout */}
+            <div className="md:hidden space-y-3 p-3 bg-neutral-50/50">
+              {users.map((user: any) => (
+                <Card key={user.id} className="border border-neutral-100 shadow-sm rounded-xl overflow-hidden bg-white">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-neutral-900 text-sm">{user.name}</span>
+                        <span className="text-[10px] text-neutral-400 block">{user.email}</span>
+                      </div>
+                      <span className={`px-2 py-0.5 text-[10px] rounded-full font-medium ${user.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                         {user.isActive ? 'Active' : 'Disabled'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-right flex justify-end gap-1">
-                      {canEdit ? (
-                        <>
-                          <Button variant="ghost" size="icon"
-                            className="text-neutral-400 hover:text-blue-600"
-                            title="Edit User Details"
-                            onClick={() => openEdit(user)}>
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon"
-                            className="text-neutral-400 hover:text-amber-600"
-                            title="Change Password"
-                            onClick={() => setPasswordUser(user)}>
-                            <Key className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon"
-                            className="text-neutral-400 hover:text-blue-600"
-                            title="Manage Access"
-                            onClick={() => setSelectedUser(user)}>
-                            <Shield className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon"
-                            className={`${user.isActive ? 'text-neutral-400 hover:text-red-600' : 'text-neutral-400 hover:text-green-600'}`}
-                            title={user.isActive ? 'Disable User' : 'Enable User'}
-                            onClick={() => toggleMutation.mutate({ id: user.id, isActive: !user.isActive })}>
-                            {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
-                          </Button>
-                          <Button variant="ghost" size="icon"
-                            className="text-neutral-400 hover:text-red-600"
-                            title="Delete User"
-                            onClick={() => {
-                              if (confirm('Are you sure you want to permanently delete this user?')) {
-                                deleteMutation.mutate(user.id)
-                              }
-                            }}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </>
-                      ) : (
-                        <span className="text-neutral-400 text-xs">Read-only</span>
-                      )}
-                    </td>
+                    </div>
+
+                    <div className="flex justify-between text-xs pt-2 border-t border-neutral-100 text-neutral-600">
+                      <span>Phone: <strong className="text-neutral-800">{user.phone || '—'}</strong></span>
+                      <span className="px-2 py-0.5 bg-neutral-100 text-neutral-700 text-[10px] rounded-full font-medium">
+                        {user.role?.name}
+                      </span>
+                    </div>
+                  </CardContent>
+                  <div className="bg-neutral-50 px-4 py-2 border-t border-neutral-100 flex justify-end items-center gap-1">
+                    {canEdit ? (
+                      <>
+                        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-blue-600 h-8 w-8" onClick={() => openEdit(user)}>
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-amber-600 h-8 w-8" onClick={() => setPasswordUser(user)}>
+                          <Key className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-blue-600 h-8 w-8" onClick={() => setSelectedUser(user)}>
+                          <Shield className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className={`h-8 w-8 ${user.isActive ? 'text-neutral-400 hover:text-red-600' : 'text-neutral-400 hover:text-green-600'}`} onClick={() => toggleMutation.mutate({ id: user.id, isActive: !user.isActive })}>
+                          {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600 h-8 w-8" onClick={() => { if (confirm('Are you sure you want to permanently delete this user?')) deleteMutation.mutate(user.id) }}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-neutral-400 text-xs">Read-only</span>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-neutral-500 bg-neutral-50 border-b uppercase">
+                  <tr>
+                    <th className="px-6 py-3">Name</th>
+                    <th className="px-6 py-3">Email</th>
+                    <th className="px-6 py-3">Phone</th>
+                    <th className="px-6 py-3">Role</th>
+                    <th className="px-6 py-3">Status</th>
+                    <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {users.map((user: any) => (
+                    <tr key={user.id} className="bg-white border-b hover:bg-neutral-50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-neutral-900">{user.name}</td>
+                      <td className="px-6 py-4 text-neutral-600">{user.email}</td>
+                      <td className="px-6 py-4 text-neutral-500">{user.phone || '-'}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 bg-neutral-100 text-neutral-700 text-xs rounded-full font-medium">{user.role?.name}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 text-xs rounded-full font-medium ${user.isActive ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                          {user.isActive ? 'Active' : 'Disabled'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right flex justify-end gap-1">
+                        {canEdit ? (
+                          <>
+                            <Button variant="ghost" size="icon"
+                              className="text-neutral-400 hover:text-blue-600"
+                              title="Edit User Details"
+                              onClick={() => openEdit(user)}>
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon"
+                              className="text-neutral-400 hover:text-amber-600"
+                              title="Change Password"
+                              onClick={() => setPasswordUser(user)}>
+                              <Key className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon"
+                              className="text-neutral-400 hover:text-blue-600"
+                              title="Manage Access"
+                              onClick={() => setSelectedUser(user)}>
+                              <Shield className="w-4 h-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon"
+                              className={`${user.isActive ? 'text-neutral-400 hover:text-red-600' : 'text-neutral-400 hover:text-green-600'}`}
+                              title={user.isActive ? 'Disable User' : 'Enable User'}
+                              onClick={() => toggleMutation.mutate({ id: user.id, isActive: !user.isActive })}>
+                              {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                            </Button>
+                            <Button variant="ghost" size="icon"
+                              className="text-neutral-400 hover:text-red-600"
+                              title="Delete User"
+                              onClick={() => {
+                                if (confirm('Are you sure you want to permanently delete this user?')) {
+                                  deleteMutation.mutate(user.id)
+                                }
+                              }}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <span className="text-neutral-400 text-xs">Read-only</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
           )}
         </CardContent>
       </Card>

@@ -386,54 +386,102 @@ export default function AnalyticsPage() {
                 {filtered.length} result{filtered.length !== 1 ? 's' : ''}
               </span>
             </div>
-            <div style={{ overflowX: 'auto' as const }}>
-              <table className="an-table">
-                <thead>
-                  <tr>
-                    <th>Salesperson</th>
-                    <SortTh label="Visits"     col="totalVisits"    current={sortCol} dir={sortDir} onToggle={toggleSort} />
-                    <SortTh label="Unique"     col="uniqueVisitors" current={sortCol} dir={sortDir} onToggle={toggleSort} />
-                    <SortTh label="WA Clicks"  col="whatsappClicks" current={sortCol} dir={sortDir} onToggle={toggleSort} />
-                    <SortTh label="Conv. %"    col="conversionRate" current={sortCol} dir={sortDir} onToggle={toggleSort} />
-                    <th>Share</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length === 0 ? (
-                    <tr><td colSpan={7} className="an-empty" style={{ padding: '2rem', textAlign: 'center' as const }}>No data in this period.</td></tr>
-                  ) : filtered.map(sp => {
-                    const share = Math.round((sp.totalVisits / totalVisitsAll) * 100)
-                    return (
-                      <tr key={sp.id} className="an-tr">
-                        <td>
-                          <div className="an-sp-name">{sp.name}</div>
-                          <div className="an-sp-slug">/ref/{sp.slug}</div>
-                        </td>
-                        <td className="an-num">{sp.totalVisits.toLocaleString()}</td>
-                        <td className="an-num">{sp.uniqueVisitors.toLocaleString()}</td>
-                        <td className="an-num">{sp.whatsappClicks.toLocaleString()}</td>
-                        <td className="an-num">
-                          <span className={`an-badge ${sp.conversionRate >= 20 ? 'good' : sp.conversionRate >= 10 ? 'mid' : 'low'}`}>
-                            {sp.conversionRate}%
-                          </span>
-                        </td>
-                        <td>
-                          <div className="an-share-wrap">
-                            <div className="an-share-bar" style={{ width: `${share}%` }}/>
-                            <span className="an-share-pct">{share}%</span>
-                          </div>
-                        </td>
-                        <td>
-                          <button className="an-view-btn" onClick={() => openDetail(sp.id)}>
-                            {detailLoading ? '…' : 'View'}
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+            <div className="w-full">
+              {/* Mobile Card Layout */}
+              <div className="an-table-mobile space-y-3">
+                {filtered.length === 0 ? (
+                  <div className="an-empty" style={{ padding: '2rem', textAlign: 'center' }}>No data in this period.</div>
+                ) : filtered.map(sp => {
+                  const share = Math.round((sp.totalVisits / totalVisitsAll) * 100)
+                  return (
+                    <div key={sp.id} className="p-4 border border-neutral-100 rounded-xl space-y-3 bg-neutral-50/30">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-bold text-neutral-900 text-sm">{sp.name}</div>
+                          <div className="text-[10px] text-neutral-400">/ref/{sp.slug}</div>
+                        </div>
+                        <span className={`an-badge ${sp.conversionRate >= 20 ? 'good' : sp.conversionRate >= 10 ? 'mid' : 'low'}`}>
+                          {sp.conversionRate}% Conv
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-center text-xs border-t border-b border-neutral-100 py-2 bg-white rounded-lg">
+                        <div>
+                          <div className="text-neutral-400 text-[10px] uppercase font-medium">Visits</div>
+                          <div className="font-semibold text-neutral-800">{sp.totalVisits.toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-neutral-400 text-[10px] uppercase font-medium">Unique</div>
+                          <div className="font-semibold text-neutral-800">{sp.uniqueVisitors.toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-neutral-400 text-[10px] uppercase font-medium">WA Clicks</div>
+                          <div className="font-semibold text-neutral-800">{sp.whatsappClicks.toLocaleString()}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-xs pt-1">
+                        <div className="an-share-wrap flex-1 max-w-[150px]">
+                          <div className="an-share-bar" style={{ width: `${share}%` }}/>
+                          <span className="an-share-pct">{share}% share</span>
+                        </div>
+                        <button className="an-view-btn" onClick={() => openDetail(sp.id)}>
+                          {detailLoading ? '…' : 'View Details'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="an-table-desktop">
+                <table className="an-table">
+                  <thead>
+                    <tr>
+                      <th>Salesperson</th>
+                      <SortTh label="Visits"     col="totalVisits"    current={sortCol} dir={sortDir} onToggle={toggleSort} />
+                      <SortTh label="Unique"     col="uniqueVisitors" current={sortCol} dir={sortDir} onToggle={toggleSort} />
+                      <SortTh label="WA Clicks"  col="whatsappClicks" current={sortCol} dir={sortDir} onToggle={toggleSort} />
+                      <SortTh label="Conv. %"    col="conversionRate" current={sortCol} dir={sortDir} onToggle={toggleSort} />
+                      <th>Share</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.length === 0 ? (
+                      <tr><td colSpan={7} className="an-empty" style={{ padding: '2rem', textAlign: 'center' as const }}>No data in this period.</td></tr>
+                    ) : filtered.map(sp => {
+                      const share = Math.round((sp.totalVisits / totalVisitsAll) * 100)
+                      return (
+                        <tr key={sp.id} className="an-tr">
+                          <td>
+                            <div className="an-sp-name">{sp.name}</div>
+                            <div className="an-sp-slug">/ref/{sp.slug}</div>
+                          </td>
+                          <td className="an-num">{sp.totalVisits.toLocaleString()}</td>
+                          <td className="an-num">{sp.uniqueVisitors.toLocaleString()}</td>
+                          <td className="an-num">{sp.whatsappClicks.toLocaleString()}</td>
+                          <td className="an-num">
+                            <span className={`an-badge ${sp.conversionRate >= 20 ? 'good' : sp.conversionRate >= 10 ? 'mid' : 'low'}`}>
+                              {sp.conversionRate}%
+                            </span>
+                          </td>
+                          <td>
+                            <div className="an-share-wrap">
+                              <div className="an-share-bar" style={{ width: `${share}%` }}/>
+                              <span className="an-share-pct">{share}%</span>
+                            </div>
+                          </td>
+                          <td>
+                            <button className="an-view-btn" onClick={() => openDetail(sp.id)}>
+                              {detailLoading ? '…' : 'View'}
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </>

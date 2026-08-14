@@ -224,95 +224,167 @@ export default function ProposalsPage() {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left min-w-[640px]">
-                <thead className="text-xs text-neutral-400 bg-neutral-50 border-b border-neutral-100 uppercase font-semibold">
-                  <tr>
-                    <th className="px-5 py-3.5 w-10">
-                      <input
-                        type="checkbox"
-                        className="rounded border-neutral-300 text-red-600 focus:ring-red-500"
-                        checked={filtered.length > 0 && selectedIds.length === filtered.length}
-                        onChange={toggleSelectAll}
-                      />
-                    </th>
-                    <th className="px-5 py-3.5">ID</th>
-                    <th className="px-5 py-3.5">Customer</th>
-                    <th className="px-5 py-3.5">Agent</th>
-                    <th className="px-5 py-3.5">Status</th>
-                    <th className="px-5 py-3.5">Date</th>
-                    <th className="px-5 py-3.5 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-50">
-                  {filtered.map((p: any) => (
-                    <tr key={p.id} className={`transition-colors ${selectedIds.includes(p.id) ? 'bg-red-50/40' : 'hover:bg-neutral-50/70'}`}>
-                      <td className="px-5 py-4">
-                        <input
-                          type="checkbox"
-                          className="rounded border-neutral-300 text-red-600 focus:ring-red-500"
-                          checked={selectedIds.includes(p.id)}
-                          onChange={() => toggleSelect(p.id)}
-                        />
-                      </td>
-                      <td className="px-5 py-4">
-                        <Link href={`/proposals/${p.id}`} className="font-mono text-xs text-neutral-500 hover:text-blue-600 transition-colors">
-                          #{String(p.id).padStart(4, '0')}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="font-semibold text-neutral-900 leading-tight">{p.customer?.name}</p>
-                        {p.customer?.email && (
-                          <p className="text-xs text-neutral-400 mt-0.5">{p.customer.email}</p>
-                        )}
-                      </td>
-                      <td className="px-5 py-4 text-neutral-600 text-sm">{p.createdBy?.name ?? '—'}</td>
-                      <td className="px-5 py-4">
+            <div className="w-full">
+              {/* Mobile Card Layout */}
+              <div className="md:hidden space-y-3 p-3 bg-neutral-50/50">
+                {filtered.map((p: any) => (
+                  <Card key={p.id} className={`border border-neutral-100 shadow-sm rounded-xl overflow-hidden bg-white ${selectedIds.includes(p.id) ? 'border-red-200 bg-red-50/10' : ''}`}>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-0.5">
+                          <Link href={`/proposals/${p.id}`} className="font-mono text-xs text-neutral-400 hover:text-blue-600 block">
+                            #{String(p.id).padStart(4, '0')}
+                          </Link>
+                          <span className="font-bold text-neutral-900 text-sm">{p.customer?.name}</span>
+                          {p.customer?.email && <span className="text-[10px] text-neutral-400 block">{p.customer.email}</span>}
+                        </div>
                         <select
                           value={p.status}
                           onChange={(e) => updateStatusMutation.mutate({ id: p.id, status: e.target.value })}
                           disabled={updateStatusMutation.isPending}
-                          className={`text-xs font-semibold rounded-full border px-2 py-1 appearance-none cursor-pointer outline-none ${STATUS_COLORS[p.status] ?? ''}`}
+                          className={`text-[10px] font-bold rounded-full border px-2 py-0.5 appearance-none cursor-pointer outline-none ${STATUS_COLORS[p.status] ?? ''}`}
                         >
                           {ALL_STATUSES.slice(1).map(s => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </select>
-                      </td>
-                      <td className="px-5 py-4 text-neutral-400 text-xs whitespace-nowrap">
-                        {new Date(p.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <Link href={`/proposals/${p.id}`}>
-                            <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-red-600 h-8 px-2">
-                              <FileText className="w-4 h-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost" size="sm"
-                            className="text-neutral-500 hover:text-red-600 h-8 px-2"
-                            onClick={() => generatePdfMutation.mutate(p.id)}
-                            disabled={generatePdfMutation.isPending}
-                            title="Generate PDF"
-                          >
-                            <Download className="w-4 h-4" />
+                      </div>
+
+                      <div className="flex justify-between text-xs pt-2 border-t border-neutral-100 text-neutral-600">
+                        <span>Agent: <strong className="text-neutral-800">{p.createdBy?.name ?? '—'}</strong></span>
+                        <span className="text-[10px] text-neutral-400">
+                          {new Date(p.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                    </CardContent>
+                    <div className="bg-neutral-50 px-4 py-2 border-t border-neutral-100 flex justify-between items-center gap-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="checkbox"
+                          className="rounded border-neutral-300 text-red-600 focus:ring-red-500 h-4 w-4 my-auto cursor-pointer"
+                          checked={selectedIds.includes(p.id)}
+                          onChange={() => toggleSelect(p.id)}
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <Link href={`/proposals/${p.id}`}>
+                          <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-red-600 h-7 px-2 text-xs">
+                            <FileText className="w-3.5 h-3.5 mr-1" /> View
                           </Button>
-                          <Button
-                            variant="ghost" size="sm"
-                            className="text-neutral-300 hover:text-red-600 h-8 px-2"
-                            onClick={() => { if (confirm('Delete this proposal?')) deleteMutation.mutate(p.id) }}
-                            disabled={deleteMutation.isPending}
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
+                        </Link>
+                        <Button
+                          variant="ghost" size="sm"
+                          className="text-neutral-500 hover:text-red-600 h-7 px-2 text-xs"
+                          onClick={() => generatePdfMutation.mutate(p.id)}
+                          disabled={generatePdfMutation.isPending}
+                        >
+                          <Download className="w-3.5 h-3.5 mr-1" /> PDF
+                        </Button>
+                        <Button
+                          variant="ghost" size="sm"
+                          className="text-neutral-300 hover:text-red-600 h-7 px-1 text-xs"
+                          onClick={() => { if (confirm('Delete this proposal?')) deleteMutation.mutate(p.id) }}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm text-left min-w-[640px]">
+                  <thead className="text-xs text-neutral-400 bg-neutral-50 border-b border-neutral-100 uppercase font-semibold">
+                    <tr>
+                      <th className="px-5 py-3.5 w-10">
+                        <input
+                          type="checkbox"
+                          className="rounded border-neutral-300 text-red-600 focus:ring-red-500"
+                          checked={filtered.length > 0 && selectedIds.length === filtered.length}
+                          onChange={toggleSelectAll}
+                        />
+                      </th>
+                      <th className="px-5 py-3.5">ID</th>
+                      <th className="px-5 py-3.5">Customer</th>
+                      <th className="px-5 py-3.5">Agent</th>
+                      <th className="px-5 py-3.5">Status</th>
+                      <th className="px-5 py-3.5">Date</th>
+                      <th className="px-5 py-3.5 text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-50">
+                    {filtered.map((p: any) => (
+                      <tr key={p.id} className={`transition-colors ${selectedIds.includes(p.id) ? 'bg-red-50/40' : 'hover:bg-neutral-50/70'}`}>
+                        <td className="px-5 py-4">
+                          <input
+                            type="checkbox"
+                            className="rounded border-neutral-300 text-red-600 focus:ring-red-500"
+                            checked={selectedIds.includes(p.id)}
+                            onChange={() => toggleSelect(p.id)}
+                          />
+                        </td>
+                        <td className="px-5 py-4">
+                          <Link href={`/proposals/${p.id}`} className="font-mono text-xs text-neutral-500 hover:text-blue-600 transition-colors">
+                            #{String(p.id).padStart(4, '0')}
+                          </Link>
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="font-semibold text-neutral-900 leading-tight">{p.customer?.name}</p>
+                          {p.customer?.email && (
+                            <p className="text-xs text-neutral-400 mt-0.5">{p.customer.email}</p>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-neutral-600 text-sm">{p.createdBy?.name ?? '—'}</td>
+                        <td className="px-5 py-4">
+                          <select
+                            value={p.status}
+                            onChange={(e) => updateStatusMutation.mutate({ id: p.id, status: e.target.value })}
+                            disabled={updateStatusMutation.isPending}
+                            className={`text-xs font-semibold rounded-full border px-2 py-1 appearance-none cursor-pointer outline-none ${STATUS_COLORS[p.status] ?? ''}`}
+                          >
+                            {ALL_STATUSES.slice(1).map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-5 py-4 text-neutral-400 text-xs whitespace-nowrap">
+                          {new Date(p.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center justify-end gap-1">
+                            <Link href={`/proposals/${p.id}`}>
+                              <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-red-600 h-8 px-2">
+                                <FileText className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                            <Button
+                              variant="ghost" size="sm"
+                              className="text-neutral-500 hover:text-red-600 h-8 px-2"
+                              onClick={() => generatePdfMutation.mutate(p.id)}
+                              disabled={generatePdfMutation.isPending}
+                              title="Generate PDF"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost" size="sm"
+                              className="text-neutral-300 hover:text-red-600 h-8 px-2"
+                              onClick={() => { if (confirm('Delete this proposal?')) deleteMutation.mutate(p.id) }}
+                              disabled={deleteMutation.isPending}
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </CardContent>

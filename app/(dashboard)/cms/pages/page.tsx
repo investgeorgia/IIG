@@ -110,53 +110,93 @@ export default function PagesCmsPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-neutral-100 bg-neutral-50/50">
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Page Name</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Slug</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Date Created</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Visibility</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100">
-                {staticPagesList.map((page) => (
-                  <tr key={page.slug} className="hover:bg-neutral-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-neutral-900 text-sm">{page.name}</div>
-                      <div className="text-xs text-neutral-500 mt-0.5">{page.description}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-mono text-neutral-600">
-                      {page.slug}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-500">
-                      {page.createdAt}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          <div className="w-full">
+            {/* Mobile Card Layout */}
+            <div className="md:hidden space-y-3 p-3 bg-neutral-50/50">
+              {staticPagesList.map((page) => (
+                <Card key={page.slug} className="border border-neutral-100 shadow-sm rounded-xl overflow-hidden bg-white">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-neutral-900 text-sm">{page.name}</span>
+                        <code className="text-[10px] font-mono text-neutral-500 block mt-0.5">{page.slug}</code>
+                      </div>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                         page.type === 'Public' 
                           ? 'bg-green-50 text-green-700 border border-green-200/50' 
                           : 'bg-blue-50 text-blue-700 border border-blue-200/50'
                       }`}>
                         {page.type}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
+                    </div>
+
+                    <p className="text-xs text-neutral-500 leading-relaxed">{page.description}</p>
+
+                    <div className="flex justify-between items-center text-[10px] text-neutral-400 pt-2 border-t border-neutral-100">
+                      <span>Created: {page.createdAt}</span>
                       <a 
                         href={page.slug} 
                         target="_blank" 
                         rel="noopener noreferrer" 
                         className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
                       >
-                        View <ExternalLink className="w-3.5 h-3.5" />
+                        View <ExternalLink className="w-3 h-3" />
                       </a>
-                    </td>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-neutral-100 bg-neutral-50/50">
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Page Name</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Slug</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Date Created</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500">Visibility</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-neutral-500 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {staticPagesList.map((page) => (
+                    <tr key={page.slug} className="hover:bg-neutral-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-neutral-900 text-sm">{page.name}</div>
+                        <div className="text-xs text-neutral-500 mt-0.5">{page.description}</div>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-mono text-neutral-600">
+                        {page.slug}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-neutral-500">
+                        {page.createdAt}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          page.type === 'Public' 
+                            ? 'bg-green-50 text-green-700 border border-green-200/50' 
+                            : 'bg-blue-50 text-blue-700 border border-blue-200/50'
+                        }`}>
+                          {page.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <a 
+                          href={page.slug} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                        >
+                          View <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>
