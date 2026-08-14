@@ -203,6 +203,98 @@ export default function ProjectDetailPage() {
     }
   })
 
+  const handleExportUnits = () => {
+    if (units.length === 0) {
+      toast.error('No units to export')
+      return
+    }
+
+    const headers = [
+      'Unit Number',
+      'Tower Block',
+      'Building',
+      'Type',
+      'Status',
+      'View',
+      'Handover',
+      'Bedrooms',
+      'Bathrooms',
+      'Floor',
+      'Size (sqm)',
+      'Price Per Sqm (USD)',
+      'Total Price (USD)',
+      'Living Area (sqm)',
+      'Balcony (sqm)',
+      'Terrace (sqm)',
+      'Greenyard (sqm)',
+      'Delivery Form',
+      'Black Frame',
+      'Black Frame Price',
+      'White Frame',
+      'White Frame Price',
+      'Green Frame',
+      'Green Frame Price',
+      'Renovation Option',
+      'Renovation Price',
+      'Renovation Price Per Sqm',
+      'Floor Plan URL 1',
+      'Floor Plan URL 2'
+    ]
+
+    const csvRows = [headers.join(',')]
+
+    for (const unit of units) {
+      const row = [
+        unit.unitNumber || '',
+        unit.towerBlock || '',
+        unit.building || '',
+        unit.type || '',
+        unit.status || '',
+        unit.view || '',
+        unit.handover ? new Date(unit.handover).toISOString().split('T')[0] : '',
+        unit.bedrooms ?? '',
+        unit.bathrooms ?? '',
+        unit.floor ?? '',
+        unit.size ?? '',
+        unit.priceSqm ?? '',
+        unit.price ?? '',
+        unit.livingAreaSize ?? '',
+        unit.balconySize ?? '',
+        unit.terraceSize ?? '',
+        unit.greenyardSize ?? '',
+        unit.deliveryForm || '',
+        unit.blackFrame ? 'Yes' : 'No',
+        unit.blackFramePrice ?? '',
+        unit.whiteFrame ? 'Yes' : 'No',
+        unit.whiteFramePrice ?? '',
+        unit.greenFrame ? 'Yes' : 'No',
+        unit.greenFramePrice ?? '',
+        unit.renovationOption ? 'Yes' : 'No',
+        unit.renovationPrice ?? '',
+        unit.renovationPriceSqm ?? '',
+        unit.floorPlanUrl || '',
+        unit.floorPlanUrl2 || ''
+      ]
+
+      const escapedRow = row.map(val => {
+        const str = String(val).replace(/"/g, '""')
+        return `"${str}"`
+      })
+
+      csvRows.push(escapedRow.join(','))
+    }
+
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csvRows.join('\n'))
+    const link = document.createElement('a')
+    link.setAttribute('href', csvContent)
+    const projectNameClean = (project?.name || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '_')
+    link.setAttribute('download', `${projectNameClean}_units_export.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success('Units exported successfully')
+  }
+
   const createPlanMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/cms/projects/${id}/payment-plans`, {
@@ -834,6 +926,9 @@ export default function ProjectDetailPage() {
                 )}
               </div>
               <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <Button onClick={handleExportUnits} variant="outline" className="border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800">
+                  <Download className="w-4 h-4 mr-2" /> Export Units (CSV)
+                </Button>
                 {canEdit && (
                   <>
                     <Button onClick={() => setShowBulkFloorPlan(true)} variant="outline">
