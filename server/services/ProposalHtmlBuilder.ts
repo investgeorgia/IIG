@@ -145,13 +145,13 @@ function buildPaymentPlanPages(
 
 function buildFloorPlanHtml(floorPlanUrl1: string | undefined, floorPlanUrl2: string | undefined): string {
   if (floorPlanUrl1 && floorPlanUrl2) {
-    return `<div style="margin-bottom: 32px;">
-      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #0F172A; margin-bottom: 12px;">Floor Plans &amp; Layouts</div>
-      <div style="display: flex; gap: 16px;">
-        <div style="flex: 1; height:380px; border:1px solid #E2E8F0; border-radius:12px; overflow:hidden; background:#F8FAFC;">
+    return `<div style="margin-bottom: 20px;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #0F172A; margin-bottom: 10px;">Floor Plans &amp; Layouts</div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="width: 100%; height:240px; border:1px solid #E2E8F0; border-radius:12px; overflow:hidden; background:#F8FAFC;">
           <img src="${floorPlanUrl1}" style="width:100%;height:100%;object-fit:contain;" />
         </div>
-        <div style="flex: 1; height:380px; border:1px solid #E2E8F0; border-radius:12px; overflow:hidden; background:#F8FAFC;">
+        <div style="width: 100%; height:240px; border:1px solid #E2E8F0; border-radius:12px; overflow:hidden; background:#F8FAFC;">
           <img src="${floorPlanUrl2}" style="width:100%;height:100%;object-fit:contain;" />
         </div>
       </div>
