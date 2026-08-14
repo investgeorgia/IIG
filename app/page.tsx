@@ -16,13 +16,13 @@ export default function HomePage() {
         loop
         muted
         playsInline
-        className="absolute inset-0 h-full w-full object-cover opacity-85"
+        className="absolute inset-0 h-full w-full object-cover opacity-85 z-0"
       >
         <source src="/video_background.mp4" type="video/mp4" />
       </video>
 
       {/* Dark Overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 z-0" />
 
       {/* Main Content Layout */}
       <div className="relative z-10 flex min-h-screen flex-col justify-between px-6 py-12 md:px-16 md:py-16">

@@ -53,7 +53,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row">
 
       {/* ── Left Panel: Georgia Image ── */}
       <div className="hidden lg:flex lg:w-[58%] relative overflow-hidden">
