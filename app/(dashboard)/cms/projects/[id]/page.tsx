@@ -1199,7 +1199,11 @@ export default function ProjectDetailPage() {
                                   >
                                     Edit
                                   </Button>
-                                  <Button variant="ghost" size="sm" className="h-7 text-xs px-1 text-neutral-400 hover:text-red-600" onClick={() => deleteUnitMutation.mutate(unit.id)}>
+                                  <Button variant="ghost" size="sm" className="h-7 text-xs px-1 text-neutral-400 hover:text-red-600" onClick={() => {
+                                     if (confirm(`Are you sure you want to delete unit ${unit.unitNumber || 'this unit'}?`)) {
+                                       deleteUnitMutation.mutate(unit.id)
+                                     }
+                                   }}>
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
                                 </>
@@ -1335,7 +1339,11 @@ export default function ProjectDetailPage() {
                                       >
                                         Edit
                                       </Button>
-                                      <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-600 h-8 px-2" onClick={() => deleteUnitMutation.mutate(unit.id)}>
+                                      <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-red-600 h-8 px-2" onClick={() => {
+                                         if (confirm(`Are you sure you want to delete unit ${unit.unitNumber || 'this unit'}?`)) {
+                                           deleteUnitMutation.mutate(unit.id)
+                                         }
+                                       }}>
                                         <Trash2 className="w-4 h-4" />
                                       </Button>
                                     </>
@@ -1787,7 +1795,11 @@ export default function ProjectDetailPage() {
                           }}>
                             Edit
                           </Button>
-                          <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => deletePlanMutation.mutate(plan.id)}>
+                          <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => {
+                             if (confirm(`Are you sure you want to delete payment plan "${plan.name}"?`)) {
+                               deletePlanMutation.mutate(plan.id)
+                             }
+                           }}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>

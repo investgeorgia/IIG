@@ -165,7 +165,11 @@ export default function CustomersPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           {canEdit && selectedIds.length > 0 && (
-            <Button variant="destructive" onClick={() => bulkDeleteMutation.mutate(selectedIds)} disabled={bulkDeleteMutation.isPending}>
+            <Button variant="destructive" onClick={() => {
+              if (confirm(`Are you sure you want to delete the ${selectedIds.length} selected leads?`)) {
+                bulkDeleteMutation.mutate(selectedIds)
+              }
+            }} disabled={bulkDeleteMutation.isPending}>
               {bulkDeleteMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
               Delete Selected ({selectedIds.length})
             </Button>
@@ -292,7 +296,11 @@ export default function CustomersPage() {
                             <Button variant="ghost" size="sm" className="h-7 text-xs px-2 text-blue-600 hover:text-blue-700" onClick={() => handleEditClick(c)}>
                               Edit
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-7 text-xs px-2 text-neutral-400 hover:text-red-600" onClick={() => deleteMutation.mutate(c.id)}>
+                            <Button variant="ghost" size="sm" className="h-7 text-xs px-2 text-neutral-400 hover:text-red-600" onClick={() => {
+                              if (confirm(`Are you sure you want to delete customer "${c.name}"?`)) {
+                                deleteMutation.mutate(c.id)
+                              }
+                            }}>
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>
                           </>
@@ -369,7 +377,11 @@ export default function CustomersPage() {
                               <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 h-8 px-2" onClick={() => handleEditClick(c)}>
                                 Edit
                               </Button>
-                              <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600 h-8 w-8" onClick={() => deleteMutation.mutate(c.id)}>
+                              <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600 h-8 w-8" onClick={() => {
+                                if (confirm(`Are you sure you want to delete customer "${c.name}"?`)) {
+                                  deleteMutation.mutate(c.id)
+                                }
+                              }}>
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>

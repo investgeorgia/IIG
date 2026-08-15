@@ -308,7 +308,11 @@ export default function SalespersonsPage() {
                               <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-blue-600" onClick={() => handleEdit(sp)}>
                                 <Edit2 className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => deleteMutation.mutate(sp.id)}>
+                              <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-red-600" onClick={() => {
+                                if (confirm(`Are you sure you want to delete salesperson "${sp.name}"?`)) {
+                                  deleteMutation.mutate(sp.id)
+                                }
+                              }}>
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </>

@@ -168,7 +168,11 @@ function ProjectsList() {
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Projects</h1>
         <div className="flex flex-wrap gap-2">
           {canEdit && selectedIds.length > 0 && (
-            <Button variant="destructive" onClick={() => bulkDeleteMutation.mutate(selectedIds)} disabled={bulkDeleteMutation.isPending}>
+            <Button variant="destructive" onClick={() => {
+              if (confirm(`Are you sure you want to delete the ${selectedIds.length} selected projects?`)) {
+                bulkDeleteMutation.mutate(selectedIds)
+              }
+            }} disabled={bulkDeleteMutation.isPending}>
               {bulkDeleteMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Delete Selected ({selectedIds.length})
             </Button>
