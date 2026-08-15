@@ -205,7 +205,15 @@ export class ProposalService {
     selectedImages?: string[]
     towerBlock?: string
     unitCondition?: string
-    paymentPlan?: { id: number, milestone: string, percentage: number, date: string }[]
+    paymentPlan?: { id: number, milestone: string, percentage: number, date: string, subMilestones?: any[] }[]
+    customFloorPlanUrl?: string | null
+    customFloorPlanUrl2?: string | null
+    pricingType?: string | null
+    selectedPrice?: number | null
+    paymentPlanName?: string | null
+    visibleFields?: string[] | null
+    handover?: string | Date | null
+    templateId?: number | null
   }) {
     // Load current proposal to mutate snapshot
     const current = await ProposalRepository.findById(id)
@@ -213,24 +221,36 @@ export class ProposalService {
 
     const snap = current.snapshot as any
 
-    // Merge tower/condition/paymentPlan into snapshot
+    // Merge tower/condition/paymentPlan/floor plans into snapshot
     const updatedSnapshot = {
       ...snap,
       unit: {
         ...snap.unit,
         towerBlock: data.towerBlock ?? snap.unit?.towerBlock,
         condition: data.unitCondition ?? snap.unit?.condition,
+        floorPlanUrl: data.customFloorPlanUrl !== undefined ? (data.customFloorPlanUrl || null) : snap.unit?.floorPlanUrl,
+        floorPlanUrl2: data.customFloorPlanUrl2 !== undefined ? (data.customFloorPlanUrl2 || null) : snap.unit?.floorPlanUrl2,
       },
       customPaymentPlan: data.paymentPlan ?? snap.customPaymentPlan ?? [],
     }
 
+    const customHandover = data.handover !== undefined
+      ? (data.handover ? new Date(data.handover) : null)
+      : undefined
+
     return ProposalRepository.update(id, {
-      customPrice: data.customPrice ?? undefined,
-      discountPercent: data.discountPercent ?? undefined,
+      customPrice: data.customPrice !== undefined ? (data.customPrice ?? null) : undefined,
+      discountPercent: data.discountPercent !== undefined ? (data.discountPercent ?? null) : undefined,
       customerMessage: data.customerMessage,
       notes: data.notes,
       selectedImages: data.selectedImages,
       snapshot: updatedSnapshot,
+      pricingType: data.pricingType !== undefined ? (data.pricingType ?? null) : undefined,
+      selectedPrice: data.selectedPrice !== undefined ? (data.selectedPrice ?? null) : undefined,
+      paymentPlanName: data.paymentPlanName !== undefined ? (data.paymentPlanName ?? null) : undefined,
+      visibleFields: data.visibleFields !== undefined ? (data.visibleFields ?? null) : undefined,
+      handover: customHandover,
+      templateId: data.templateId !== undefined ? (data.templateId ?? null) : undefined,
     })
   }
 

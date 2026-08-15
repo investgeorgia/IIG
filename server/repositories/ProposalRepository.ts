@@ -76,23 +76,35 @@ export class ProposalRepository {
   }
 
   static async update(id: number, data: {
-    customPrice?: number
-    discountPercent?: number
+    customPrice?: number | null
+    discountPercent?: number | null
     customerMessage?: string
     notes?: string
     selectedImages?: string[]
     snapshot?: object
+    pricingType?: string | null
+    selectedPrice?: number | null
+    paymentPlanName?: string | null
+    visibleFields?: string[] | null
+    handover?: Date | null
+    templateId?: number | null
   }) {
     return prisma.proposal.update({
       where: { id },
       data: {
-        ...(data.customPrice !== undefined && { customPrice: data.customPrice }),
-        ...(data.discountPercent !== undefined && { discountPercent: data.discountPercent }),
-        ...(data.customerMessage !== undefined && { customerMessage: data.customerMessage }),
-        ...(data.notes !== undefined && { notes: data.notes }),
-        ...(data.selectedImages !== undefined && { selectedImages: data.selectedImages }),
-        ...(data.snapshot !== undefined && { snapshot: data.snapshot }),
-      },
+        ...(data.customPrice !== undefined && { customPrice: data.customPrice ?? null }),
+        ...(data.discountPercent !== undefined && { discountPercent: data.discountPercent ?? null }),
+        ...(data.customerMessage !== undefined && { customerMessage: data.customerMessage ?? null }),
+        ...(data.notes !== undefined && { notes: data.notes ?? null }),
+        ...(data.selectedImages !== undefined && { selectedImages: data.selectedImages ?? null }),
+        ...(data.snapshot !== undefined && { snapshot: data.snapshot as any }),
+        ...(data.pricingType !== undefined && { pricingType: data.pricingType ?? null }),
+        ...(data.selectedPrice !== undefined && { selectedPrice: data.selectedPrice ?? null }),
+        ...(data.paymentPlanName !== undefined && { paymentPlanName: data.paymentPlanName ?? null }),
+        ...(data.visibleFields !== undefined && { visibleFields: data.visibleFields ?? null }),
+        ...(data.handover !== undefined && { handover: data.handover ?? null }),
+        ...(data.templateId !== undefined && { templateId: data.templateId ?? null }),
+      } as any,
       include: {
         customer: true,
         createdBy: { select: { id: true, name: true, email: true, phone: true } },
