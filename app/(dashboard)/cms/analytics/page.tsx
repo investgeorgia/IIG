@@ -220,7 +220,9 @@ export default function AnalyticsPage() {
                         <span className="an-ev-type">{ev.eventType === 'WHATSAPP_CLICK' ? 'WhatsApp Click' : 'Page Visit'}</span>
                         {ev.utmSource && <span className="an-ev-meta"> via {fmtSrc(ev.utmSource)}</span>}
                       </div>
-                      <span className="an-ev-time">{new Date(ev.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' })}</span>
+                      <span className="an-ev-time">
+                        {new Date(ev.createdAt).toLocaleDateString('en-GB', { day:'numeric', month:'short' })} @ {new Date(ev.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                      </span>
                     </div>
                   ))}
             </div>

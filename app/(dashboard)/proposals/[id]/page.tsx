@@ -169,7 +169,9 @@ export default function ProposalDetailsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Proposal for {proposal.customer?.name}</h1>
-          <p className="text-sm text-neutral-500 mt-1">Created on {new Date(proposal.createdAt).toLocaleDateString()}</p>
+          <p className="text-sm text-neutral-500 mt-1">
+            Created on {new Date(proposal.createdAt).toLocaleDateString()} {new Date(proposal.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <select

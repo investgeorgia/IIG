@@ -253,7 +253,7 @@ export default function ProposalsPage() {
                       <div className="flex justify-between text-xs pt-2 border-t border-neutral-100 text-neutral-600">
                         <span>Agent: <strong className="text-neutral-800">{p.createdBy?.name ?? '—'}</strong></span>
                         <span className="text-[10px] text-neutral-400">
-                          {new Date(p.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {new Date(p.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} {new Date(p.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                         </span>
                       </div>
                     </CardContent>
@@ -351,7 +351,7 @@ export default function ProposalsPage() {
                           </select>
                         </td>
                         <td className="px-5 py-4 text-neutral-400 text-xs whitespace-nowrap">
-                          {new Date(p.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {new Date(p.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })} {new Date(p.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-end gap-1">
