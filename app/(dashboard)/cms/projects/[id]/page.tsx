@@ -80,10 +80,10 @@ export default function ProjectDetailPage() {
 
   // Unit filter states
   const [unitFilterSearch, setUnitFilterSearch] = useState('')
-  const [unitFilterType, setUnitFilterType] = useState('')
+  const [unitFilterBuilding, setUnitFilterBuilding] = useState('')
+  const [unitFilterTower, setUnitFilterTower] = useState('')
   const [unitFilterFloor, setUnitFilterFloor] = useState('')
   const [unitFilterBeds, setUnitFilterBeds] = useState('')
-  const [unitFilterBaths, setUnitFilterBaths] = useState('')
   const [unitFilterMinSize, setUnitFilterMinSize] = useState('')
   const [unitFilterMaxSize, setUnitFilterMaxSize] = useState('')
   const [unitFilterMinPrice, setUnitFilterMinPrice] = useState('')
@@ -492,10 +492,10 @@ export default function ProjectDetailPage() {
     setUnitPage(1)
   }, [
     unitFilterSearch,
-    unitFilterType,
+    unitFilterBuilding,
+    unitFilterTower,
     unitFilterFloor,
     unitFilterBeds,
-    unitFilterBaths,
     unitFilterMinSize,
     unitFilterMaxSize,
     unitFilterMinPrice,
@@ -826,10 +826,10 @@ export default function ProjectDetailPage() {
 
         const filteredUnits = units.filter((unit: any) => {
           if (unitFilterSearch && !(unit?.unitNumber || '').toLowerCase().includes(unitFilterSearch.toLowerCase())) return false
-          if (unitFilterType && unit?.type !== unitFilterType) return false
+          if (unitFilterBuilding && !(unit?.building || '').toLowerCase().includes(unitFilterBuilding.toLowerCase())) return false
+          if (unitFilterTower && !(unit?.towerBlock || '').toLowerCase().includes(unitFilterTower.toLowerCase())) return false
           if (unitFilterFloor && String(unit?.floor ?? '') !== unitFilterFloor) return false
           if (unitFilterBeds && String(unit?.bedrooms ?? '') !== unitFilterBeds) return false
-          if (unitFilterBaths && String(unit?.bathrooms ?? '') !== unitFilterBaths) return false
           if (unitFilterMinSize && Number(unit?.size || 0) < Number(unitFilterMinSize)) return false
           if (unitFilterMaxSize && Number(unit?.size || 0) > Number(unitFilterMaxSize)) return false
           if (unitFilterMinPrice && Number(unit?.price || 0) < Number(unitFilterMinPrice)) return false
@@ -852,13 +852,12 @@ export default function ProjectDetailPage() {
                   <Input placeholder="Search..." value={unitFilterSearch} onChange={e => setUnitFilterSearch(e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Type</Label>
-                  <select value={unitFilterType} onChange={e => setUnitFilterType(e.target.value)} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
-                    <option value="">All Types</option>
-                    {Object.entries(UNIT_TYPE_LABELS).map(([value, label]) => (
-                      <option key={value} value={value}>{label}</option>
-                    ))}
-                  </select>
+                  <Label className="text-xs">Building</Label>
+                  <Input placeholder="Search Building..." value={unitFilterBuilding} onChange={e => setUnitFilterBuilding(e.target.value)} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Tower/Block</Label>
+                  <Input placeholder="Search Tower/Block..." value={unitFilterTower} onChange={e => setUnitFilterTower(e.target.value)} />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Floor</Label>
@@ -870,15 +869,6 @@ export default function ProjectDetailPage() {
                     <option value="">Any</option>
                     {[0, 1, 2, 3, 4, 5, 6].map(n => (
                       <option key={n} value={n}>{n} Bed</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Baths</Label>
-                  <select value={unitFilterBaths} onChange={e => setUnitFilterBaths(e.target.value)} className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500">
-                    <option value="">Any</option>
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <option key={n} value={n}>{n} Bath</option>
                     ))}
                   </select>
                 </div>
@@ -901,10 +891,10 @@ export default function ProjectDetailPage() {
                 <div className="flex items-end">
                   <Button variant="outline" className="w-full text-xs" onClick={() => {
                     setUnitFilterSearch('')
-                    setUnitFilterType('')
+                    setUnitFilterBuilding('')
+                    setUnitFilterTower('')
                     setUnitFilterFloor('')
                     setUnitFilterBeds('')
-                    setUnitFilterBaths('')
                     setUnitFilterMinSize('')
                     setUnitFilterMaxSize('')
                     setUnitFilterMinPrice('')
