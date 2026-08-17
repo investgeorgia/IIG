@@ -64,13 +64,20 @@ function buildPaymentPlanPages(
     </tr>`)
 
     if (m.subMilestones && m.subMilestones.length > 0) {
+      const subSum = m.subMilestones.reduce((s: number, sub: any) => s + (Number(sub.percentage) || 0), 0)
+      const isLegacyFormat = subSum > (Number(m.percentage) || 0) + 0.1
       m.subMilestones.forEach((sub: any, subIdx: number) => {
-        const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
+        const subAmtUSD = isLegacyFormat
+          ? (amtUSD * (Number(sub.percentage) || 0)) / 100
+          : (finalPriceUSD * (Number(sub.percentage) || 0)) / 100
         const subAmtAED = subAmtUSD * USD_TO_AED
+        const displayPct = isLegacyFormat && Number(m.percentage) > 0
+          ? Number(((Number(sub.percentage) * Number(m.percentage)) / 100).toFixed(2))
+          : sub.percentage
         allRows.push(`<tr>
           <td style="text-align:center;color:#94A3B8;font-size:10px;">${i + 1}.${subIdx + 1}</td>
           <td style="font-weight:400;padding-left:24px;color:#475569;"><span style="color:#CBD5E1;margin-right:4px;">-</span> ${sub.milestone}</td>
-          <td style="text-align:center;color:#475569;">${sub.percentage}%</td>
+          <td style="text-align:center;color:#475569;">${displayPct}%</td>
           <td style="text-align:center;color:#64748B;">${sub.date}</td>
           <td style="text-align:right;font-weight:500;color:#475569;">$${formatNum(subAmtUSD)}</td>
           <td style="text-align:right;color:#64748B;">AED ${formatNum(subAmtAED)}</td>

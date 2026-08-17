@@ -281,7 +281,7 @@ export default function ProposalDetailsPage() {
 
   const editBasePrice = editCustomPrice
     ? Number(editCustomPrice)
-    : basePrice - (basePrice * (Number(editDiscount) || 0) / 100)
+    : editSelectedPriceVal - (editSelectedPriceVal * (Number(editDiscount) || 0) / 100)
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -352,6 +352,8 @@ export default function ProposalDetailsPage() {
                         if (editDiscount) {
                           const discounted = val * (1 - Number(editDiscount) / 100)
                           setEditCustomPrice(discounted.toFixed(0))
+                        } else {
+                          setEditCustomPrice('')
                         }
                       }}
                       className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 font-medium"
@@ -765,17 +767,18 @@ export default function ProposalDetailsPage() {
                                           toast.error("Please enter 2 or more installments")
                                           return
                                         }
-                                        const distributePercentage = (n: number): number[] => {
-                                          const pct = Number((100 / n).toFixed(2))
+                                        const parentPct = Number(p.percentage) || 0
+                                        const distributePercentage = (totalPct: number, n: number): number[] => {
+                                          const pct = Number((totalPct / n).toFixed(2))
                                           const list = Array(n).fill(pct)
                                           const sum = Number(list.reduce((a, b) => a + b, 0).toFixed(2))
-                                          if (sum !== 100) {
-                                            const diff = Number((100 - sum).toFixed(2))
+                                          if (sum !== totalPct) {
+                                            const diff = Number((totalPct - sum).toFixed(2))
                                             list[list.length - 1] = Number((list[list.length - 1] + diff).toFixed(2))
                                           }
                                           return list
                                         }
-                                        const pcts = distributePercentage(qty)
+                                        const pcts = distributePercentage(parentPct, qty)
                                         const n = [...editPaymentPlan]
                                         const milestoneName = n[idx].milestone || `Milestone ${idx + 1}`
                                         n[idx].subMilestones = pcts.map((pct, subIdx) => ({
@@ -847,9 +850,10 @@ export default function ProposalDetailsPage() {
                           )
                           
                           if (p.subMilestones && p.subMilestones.length > 0) {
-                            const subSum = p.subMilestones.reduce((sum, s) => sum + (Number(s.percentage) || 0), 0)
+                            const subSum = Number(p.subMilestones.reduce((sum, s) => sum + (Number(s.percentage) || 0), 0).toFixed(2))
+                            const parentPct = Number((p.percentage || 0).toFixed(2))
                             p.subMilestones.forEach((sub, subIdx) => {
-                              const subAmtUSD = (amtUSD * (Number(sub.percentage) || 0)) / 100
+                              const subAmtUSD = (baseForCalc * (Number(sub.percentage) || 0)) / 100
                               const subAmtAED = subAmtUSD * USD_TO_AED
                               rows.push(
                                 <tr key={sub.id} className="border-t border-neutral-100 bg-neutral-50/50">
@@ -894,8 +898,8 @@ export default function ProposalDetailsPage() {
                                       onChange={e => {
                                         const amt = Number(e.target.value)
                                         const n = [...editPaymentPlan]
-                                        if (amtUSD > 0) {
-                                          n[idx].subMilestones![subIdx].percentage = Number(((amt / amtUSD) * 100).toFixed(2))
+                                        if (baseForCalc > 0) {
+                                          n[idx].subMilestones![subIdx].percentage = Number(((amt / baseForCalc) * 100).toFixed(2))
                                         } else {
                                           n[idx].subMilestones![subIdx].percentage = 0
                                         }
@@ -918,11 +922,11 @@ export default function ProposalDetailsPage() {
                                 </tr>
                               )
                             })
-                            if (subSum > 100) {
+                            if (subSum > parentPct) {
                               rows.push(
                                 <tr key={`sub-warn-${p.id}`} className="bg-red-50 border-t border-red-200">
                                   <td colSpan={7} className="px-4 py-1.5 text-xs text-red-700 font-semibold">
-                                    ⚠️ Sub-milestones for "{p.milestone || `Milestone ${idx + 1}`}" total {subSum}%. Sub-milestones percentage cannot exceed 100%.
+                                    ⚠️ Sub-milestones for "{p.milestone || `Milestone ${idx + 1}`}" total {subSum}%. Sub-milestones percentage cannot exceed {parentPct}%.
                                   </td>
                                 </tr>
                               )
