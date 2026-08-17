@@ -204,8 +204,8 @@ export default function IpsRegistrationPage() {
   const [email, setEmail] = useState('')
   const [countryCode, setCountryCode] = useState('+971')
   const [phone, setPhone] = useState('')
-  const [country, setCountry] = useState('United Arab Emirates')
-  const [language, setLanguage] = useState('')
+  const [preferredContactMode, setPreferredContactMode] = useState('WhatsApp')
+  const [language, setLanguage] = useState('English')
   const [role, setRole] = useState<'investor' | 'broker'>('investor')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -239,7 +239,7 @@ export default function IpsRegistrationPage() {
           name, 
           email, 
           phone: `${countryCode} ${phone.trim()}`, 
-          country, 
+          preferredContactMode, 
           language, 
           role 
         }),
@@ -259,8 +259,8 @@ export default function IpsRegistrationPage() {
       setEmail('')
       setCountryCode('+971')
       setPhone('')
-      setCountry('United Arab Emirates')
-      setLanguage('')
+      setPreferredContactMode('WhatsApp')
+      setLanguage('English')
       setRole('investor')
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit registration')
@@ -391,36 +391,51 @@ export default function IpsRegistrationPage() {
                 </div>
               </div>
 
-              {/* Country of Residence Input */}
+              {/* Preferred Mode of Contact Dropdown */}
               <div className="space-y-1.5">
-                <label className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
-                  Country of Residence
+                <label htmlFor="preferredContactMode" className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
+                  Preferred Mode of Contact <span className="text-emerald-400">*</span>
                 </label>
-                <SearchableDropdown
-                  items={COUNTRY_LIST}
-                  value={country}
-                  onChange={(item) => setCountry(item.name)}
-                  placeholder="Select country"
-                  displayFormat={(item) => `${item.flag} ${item.name}`}
-                  matchKey="name"
-                  disabled={isSubmitting}
-                />
+                <div className="relative w-full">
+                  <select
+                    id="preferredContactMode"
+                    value={preferredContactMode}
+                    onChange={(e) => setPreferredContactMode(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="WhatsApp" className="bg-neutral-950 text-white">WhatsApp</option>
+                    <option value="Call" className="bg-neutral-950 text-white">Call</option>
+                    <option value="Email" className="bg-neutral-950 text-white">Email</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 text-xs">
+                    ▼
+                  </div>
+                </div>
               </div>
 
-              {/* Preferred Language Input */}
+              {/* Preferred Language Dropdown */}
               <div className="space-y-1.5">
                 <label htmlFor="language" className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
-                  Preferred Language
+                  Preferred Language <span className="text-emerald-400">*</span>
                 </label>
-                <input
-                  type="text"
-                  id="language"
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  placeholder="e.g. English, Arabic"
-                  disabled={isSubmitting}
-                  className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none placeholder-white/30 focus:shadow-[0_0_20px_rgba(255,255,255,0.03)]"
-                />
+                <div className="relative w-full">
+                  <select
+                    id="language"
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="English" className="bg-neutral-950 text-white">English</option>
+                    <option value="Arabic" className="bg-neutral-950 text-white">Arabic</option>
+                    <option value="Hindi" className="bg-neutral-950 text-white">Hindi</option>
+                    <option value="Other" className="bg-neutral-950 text-white">Other</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 text-xs">
+                    ▼
+                  </div>
+                </div>
               </div>
 
               {/* Role Selection */}

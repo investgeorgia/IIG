@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2, Download, Send, CheckCircle, FileText, User, Building2, MapPin, Pencil, Plus, Trash2, X, Check, Upload } from 'lucide-react'
+import { ArrowLeft, Loader2, Download, Send, CheckCircle, FileText, User, Building2, MapPin, Pencil, Plus, Trash2, X, Check, Upload, Eye, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -49,6 +49,7 @@ export default function ProposalDetailsPage() {
   const [floorPlanUploading, setFloorPlanUploading] = useState(false)
   const [floorPlanUploading2, setFloorPlanUploading2] = useState(false)
   const [divideInputs, setDivideInputs] = useState<Record<number, string>>({})
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null)
 
   const { data: proposal, isLoading } = useQuery({
     queryKey: ['proposal', id],
@@ -507,7 +508,7 @@ export default function ProposalDetailsPage() {
               {/* Custom Floor Plan Images 1 & 2 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-neutral-100">
                 <div className="space-y-1">
-                  <Label className="text-xs text-neutral-500">Floor Plan Image 1</Label>
+                  <Label className="text-xs font-semibold text-neutral-800">Floor Plan Image 1</Label>
                   <div className="flex gap-2">
                     <Input placeholder="URL or upload..." value={editCustomFloorPlanUrl} onChange={e => setEditCustomFloorPlanUrl(e.target.value)} className="flex-1 text-xs" />
                     <input type="file" id="edit-custom-floor-upload" className="hidden" accept="image/*" onChange={handleFloorPlanUpload} />
@@ -527,10 +528,52 @@ export default function ProposalDetailsPage() {
                       ))}
                     </select>
                   )}
+                  {(editCustomFloorPlanUrl || proposal?.unit?.floorPlanUrl) && (
+                    <div className="relative mt-2 rounded-lg border border-neutral-200 bg-neutral-50/80 p-2.5 group overflow-hidden shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="relative h-16 w-20 shrink-0 rounded-md border border-neutral-200 bg-white overflow-hidden flex items-center justify-center shadow-xs">
+                          <img src={editCustomFloorPlanUrl || proposal?.unit?.floorPlanUrl} alt="Floor Plan 1" className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setPreviewImage({ url: editCustomFloorPlanUrl || proposal?.unit?.floorPlanUrl, title: 'Floor Plan Image 1' })}
+                            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                            title="View full image"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-neutral-800 truncate">
+                              {editCustomFloorPlanUrl ? 'Custom Floor Plan 1' : 'Saved Unit Floor Plan 1'}
+                            </span>
+                            {editCustomFloorPlanUrl && (
+                              <button
+                                type="button"
+                                onClick={() => setEditCustomFloorPlanUrl('')}
+                                className="text-neutral-400 hover:text-red-500 text-xs flex items-center gap-0.5"
+                                title="Reset to default unit floor plan"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Clear
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-neutral-400 truncate mt-0.5">{editCustomFloorPlanUrl || proposal?.unit?.floorPlanUrl}</p>
+                          <button
+                            type="button"
+                            onClick={() => setPreviewImage({ url: editCustomFloorPlanUrl || proposal?.unit?.floorPlanUrl, title: 'Floor Plan Image 1' })}
+                            className="mt-1 text-xs font-semibold text-red-600 hover:text-red-700 flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View Floor Plan 1
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs text-neutral-500">Floor Plan Image 2</Label>
+                  <Label className="text-xs font-semibold text-neutral-800">Floor Plan Image 2</Label>
                   <div className="flex gap-2">
                     <Input placeholder="URL or upload..." value={editCustomFloorPlanUrl2} onChange={e => setEditCustomFloorPlanUrl2(e.target.value)} className="flex-1 text-xs" />
                     <input type="file" id="edit-custom-floor-upload-2" className="hidden" accept="image/*" onChange={handleFloorPlanUpload2} />
@@ -549,6 +592,48 @@ export default function ProposalDetailsPage() {
                         <option key={fp.id} value={fp.url}>{fp.name || fp.url.split('/').pop()}</option>
                       ))}
                     </select>
+                  )}
+                  {(editCustomFloorPlanUrl2 || proposal?.unit?.floorPlanUrl2) && (
+                    <div className="relative mt-2 rounded-lg border border-neutral-200 bg-neutral-50/80 p-2.5 group overflow-hidden shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <div className="relative h-16 w-20 shrink-0 rounded-md border border-neutral-200 bg-white overflow-hidden flex items-center justify-center shadow-xs">
+                          <img src={editCustomFloorPlanUrl2 || proposal?.unit?.floorPlanUrl2} alt="Floor Plan 2" className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setPreviewImage({ url: editCustomFloorPlanUrl2 || proposal?.unit?.floorPlanUrl2, title: 'Floor Plan Image 2' })}
+                            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white"
+                            title="View full image"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-neutral-800 truncate">
+                              {editCustomFloorPlanUrl2 ? 'Custom Floor Plan 2' : 'Saved Unit Floor Plan 2'}
+                            </span>
+                            {editCustomFloorPlanUrl2 && (
+                              <button
+                                type="button"
+                                onClick={() => setEditCustomFloorPlanUrl2('')}
+                                className="text-neutral-400 hover:text-red-500 text-xs flex items-center gap-0.5"
+                                title="Reset to default unit floor plan"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Clear
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-neutral-400 truncate mt-0.5">{editCustomFloorPlanUrl2 || proposal?.unit?.floorPlanUrl2}</p>
+                          <button
+                            type="button"
+                            onClick={() => setPreviewImage({ url: editCustomFloorPlanUrl2 || proposal?.unit?.floorPlanUrl2, title: 'Floor Plan Image 2' })}
+                            className="mt-1 text-xs font-semibold text-red-600 hover:text-red-700 flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View Floor Plan 2
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1085,6 +1170,42 @@ export default function ProposalDetailsPage() {
           </Card>
         </div>
       </div>
+      {previewImage && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200" onClick={() => setPreviewImage(null)}>
+          <div className="relative max-w-4xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-red-600" />
+                <h3 className="font-bold text-neutral-900 text-base">{previewImage.title || 'Floor Plan Preview'}</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={previewImage.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-medium"
+                >
+                  <ExternalLink className="w-4 h-4" /> Open Original
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewImage(null)}
+                  className="p-2 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6 overflow-auto flex-1 flex items-center justify-center bg-neutral-950/5">
+              <img
+                src={previewImage.url}
+                alt={previewImage.title}
+                className="max-h-[70vh] max-w-full object-contain rounded-lg shadow-md border border-neutral-200"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

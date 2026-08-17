@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const { name, email, phone, country, language, role } = await request.json()
+    const { name, email, phone, preferredContactMode, country, language, role } = await request.json()
 
     // Server-side validation
     if (!name || !name.trim()) {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         success: true, 
         message: 'Form submitted successfully (Simulated - Bitrix24 URL missing)',
-        data: { name, email, phone, country, language, role }
+        data: { name, email, phone, preferredContactMode: preferredContactMode || country, language, role }
       })
     }
 
@@ -36,11 +36,12 @@ export async function POST(request: Request) {
 
     // Construct the lead comments
     const roleLabel = role === 'investor' ? 'Investor' : 'Real Estate Broker / Agent'
+    const contactMode = preferredContactMode || country
     const commentsArray = [
       `Submitted via custom IPS Registration Form.`,
       `Role Selected: ${roleLabel}`,
-      phone ? `Phone / WhatsApp: ${phone.trim()}` : null,
-      country ? `Country of Residence: ${country.trim()}` : null,
+      phone ? `Phone Number: ${phone.trim()}` : null,
+      contactMode ? `Preferred Mode of Contact: ${contactMode.trim()}` : null,
       language ? `Preferred Language: ${language.trim()}` : null,
     ].filter(Boolean)
 
