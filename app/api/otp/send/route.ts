@@ -104,6 +104,24 @@ export async function POST(request: Request) {
           }
 
           if (!lastError && effectiveChannelId) {
+            const templateId = process.env.WAZZUP_TEMPLATE_ID?.trim()
+
+            const wazzupBody: any = {
+              channelId: effectiveChannelId,
+              chatType: 'whatsapp',
+              chatId: formattedPhone,
+              crmMessageId: crypto.randomUUID()
+            }
+
+            if (templateId && templateId !== '') {
+              // WABA Approved Template payload format
+              wazzupBody.templateId = templateId
+              wazzupBody.templateValues = [code]
+            } else {
+              // Plain text payload format
+              wazzupBody.text = `Invest Georgia UAE: Your IPS 2026 verification code is: ${code}\nValid for 5 minutes.`
+            }
+
             // 2. Send message via Wazzup API using the active channel ID
             const wazzupRes = await fetch('https://api.wazzup24.com/v3/message', {
               method: 'POST',
@@ -111,13 +129,7 @@ export async function POST(request: Request) {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({
-                channelId: effectiveChannelId,
-                chatType: 'whatsapp',
-                chatId: formattedPhone,
-                crmMessageId: crypto.randomUUID(),
-                text: `Invest Georgia UAE: Your IPS 2026 verification code is: ${code}\nValid for 5 minutes.`
-              })
+              body: JSON.stringify(wazzupBody)
             })
 
             const responseData = await wazzupRes.json().catch(() => null)

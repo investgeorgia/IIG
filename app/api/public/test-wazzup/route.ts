@@ -23,10 +23,23 @@ export async function GET(request: Request) {
 
     const channelsData = await channelsRes.json().catch(() => null)
 
+    // 2. Fetch approved WABA templates list
+    const templatesRes = await fetch('https://api.wazzup24.com/v3/templates/whatsapp', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const templatesData = await templatesRes.json().catch(() => null)
+
     return NextResponse.json({
       configured: true,
       channelsStatus: channelsRes.status,
-      channelsData
+      channelsData,
+      templatesStatus: templatesRes.status,
+      templatesData
     })
 
   } catch (error: any) {
@@ -36,7 +49,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { phone } = await request.json()
+    const { phone, templateId, templateValues } = await request.json()
     const apiKey = process.env.WAZZUP_API_KEY?.trim()
     const channelId = process.env.WAZZUP_CHANNEL_ID?.trim()
 
@@ -46,6 +59,21 @@ export async function POST(request: Request) {
 
     const cleanPhone = (phone || '').replace(/[^0-9]/g, '')
     const crmMessageId = crypto.randomUUID()
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString()
+
+    const bodyPayload: any = {
+      channelId,
+      chatType: 'whatsapp',
+      chatId: cleanPhone,
+      crmMessageId
+    }
+
+    if (templateId) {
+      bodyPayload.templateId = templateId
+      bodyPayload.templateValues = templateValues || [otpCode]
+    } else {
+      bodyPayload.text = `Invest Georgia UAE Test OTP: ${otpCode}`
+    }
 
     // 1. Send message via Wazzup API
     const sendRes = await fetch('https://api.wazzup24.com/v3/message', {
@@ -54,39 +82,17 @@ export async function POST(request: Request) {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        channelId,
-        chatType: 'whatsapp',
-        chatId: cleanPhone,
-        crmMessageId,
-        text: `Invest Georgia UAE Test OTP: ${Math.floor(1000 + Math.random() * 9000)}`
-      })
+      body: JSON.stringify(bodyPayload)
     })
 
     const sendData = await sendRes.json().catch(() => null)
-
-    // 2. Fetch recent messages for this chat to check status
-    let messageStatusData = null
-    if (sendRes.ok && sendData?.messageId) {
-      await new Promise(r => setTimeout(r, 1500))
-      
-      const statusRes = await fetch(`https://api.wazzup24.com/v3/messages?chatId=${cleanPhone}&channelId=${channelId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      messageStatusData = await statusRes.json().catch(() => null)
-    }
 
     return NextResponse.json({
       sendHttpStatus: sendRes.status,
       sendOk: sendRes.ok,
       sendData,
-      crmMessageId,
-      sentToPhone: cleanPhone,
-      messageStatusData
+      payloadUsed: bodyPayload,
+      sentToPhone: cleanPhone
     })
 
   } catch (error: any) {
