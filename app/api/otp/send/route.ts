@@ -55,11 +55,11 @@ export async function POST(request: Request) {
     let lastError = ''
 
     if (channel === 'WHATSAPP') {
-      const apiKey = process.env.WAZZUP_API_KEY
-      const channelId = process.env.WAZZUP_CHANNEL_ID
+      const apiKey = process.env.WAZZUP_API_KEY?.trim()
+      const channelId = process.env.WAZZUP_CHANNEL_ID?.trim()
       const formattedPhone = cleanTarget.replace(/[^0-9]/g, '')
 
-      if (apiKey && channelId) {
+      if (apiKey && channelId && channelId !== '') {
         try {
           const wazzupRes = await fetch('https://api.wazzup24.com/v3/message', {
             method: 'POST',
@@ -80,14 +80,19 @@ export async function POST(request: Request) {
           } else {
             const errText = await wazzupRes.text()
             console.error('Wazzup API Error response:', errText)
-            lastError = `Wazzup API Error (${wazzupRes.status}): ${errText}`
+            
+            if (errText.includes('channelId')) {
+              lastError = 'Wazzup Channel ID is invalid or disconnected in Wazzup account.'
+            } else {
+              lastError = `Wazzup API Error (${wazzupRes.status}): ${errText}`
+            }
           }
         } catch (wazzupErr: any) {
           console.error('Failed to send WhatsApp message via Wazzup:', wazzupErr)
           lastError = wazzupErr.message || 'Wazzup connection error'
         }
       } else {
-        lastError = 'Wazzup API Key or Channel ID is missing in environment variables'
+        lastError = 'Wazzup WAZZUP_CHANNEL_ID or WAZZUP_API_KEY is not configured in .env'
         console.warn(`[DEV/TEST] Wazzup API credentials not configured. WhatsApp OTP Code for ${cleanTarget}: ${code}`)
       }
 

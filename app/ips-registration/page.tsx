@@ -503,8 +503,8 @@ export default function IpsRegistrationPage() {
     <div className="relative min-h-screen w-full flex items-center justify-center bg-black overflow-x-hidden font-sans px-4 py-8 md:px-12 lg:px-16">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-30 z-0 scale-105"
-        style={{ backgroundImage: `url('/ips-bg.webp')` }}
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40 z-0 scale-105"
+        style={{ backgroundImage: `url('/batumi-bg.jpg')` }}
       />
       {/* Dark gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/80 to-black/90 z-0" />
