@@ -127,7 +127,7 @@ const validateEmail = (emailStr: string): { valid: boolean; error?: string } => 
   return { valid: true }
 }
 
-// Custom Searchable Dropdown with clean UI using brand accent #ca2d39
+// Custom Searchable Dropdown with clean, neutral styling
 function SearchableDropdown({
   items,
   value,
@@ -173,7 +173,7 @@ function SearchableDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left bg-zinc-900/90 hover:bg-zinc-800/90 text-white border border-zinc-700/60 focus:border-[#ca2d39]/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none flex justify-between items-center cursor-pointer select-none"
+        className="w-full text-left bg-zinc-900/90 hover:bg-zinc-800/90 text-white border border-zinc-700/60 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none flex justify-between items-center cursor-pointer select-none"
       >
         <span className="truncate">
           {selectedItem ? displayFormat(selectedItem) : placeholder}
@@ -189,7 +189,7 @@ function SearchableDropdown({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="w-full bg-zinc-900 text-white border border-zinc-700/60 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-[#ca2d39]/50 font-light"
+              className="w-full bg-zinc-900 text-white border border-zinc-700/60 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-zinc-500 font-light"
               autoFocus
             />
           </div>
@@ -502,12 +502,12 @@ export default function IpsRegistrationPage() {
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center bg-zinc-950 overflow-x-hidden font-sans px-4 py-8 md:px-12 lg:px-16">
-      {/* Background Image - Fixed, Vivid & Clearly Visible */}
+      {/* Background Image - Fixed & Clearly Visible */}
       <div 
         className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-55 z-0 scale-105"
         style={{ backgroundImage: `url('/batumi-bg.jpg')` }}
       />
-      {/* Gradient Vignette Overlay for Crisp Readability */}
+      {/* Gradient Vignette Overlay */}
       <div className="fixed inset-0 bg-gradient-to-b from-zinc-950/70 via-zinc-950/55 to-zinc-950/80 z-0 pointer-events-none" />
 
       {/* Main 12-Column Container */}
@@ -519,7 +519,7 @@ export default function IpsRegistrationPage() {
             
             {success ? (
               <div className="flex flex-col items-center justify-center text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-[#ca2d39]/10 border border-[#ca2d39]/30 flex items-center justify-center text-[#ca2d39] mb-5">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-5">
                   <UserCheck className="w-8 h-8" />
                 </div>
                 
@@ -556,7 +556,7 @@ export default function IpsRegistrationPage() {
                   {/* Name Input */}
                   <div className="space-y-1">
                     <label htmlFor="name" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Full Name <span className="text-[#ca2d39]">*</span>
+                      Full Name <span className="text-zinc-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -565,7 +565,7 @@ export default function IpsRegistrationPage() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
                       disabled={isSubmitting}
-                      className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-[#ca2d39]/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
+                      className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
                       required
                     />
                   </div>
@@ -573,7 +573,7 @@ export default function IpsRegistrationPage() {
                   {/* Email Input */}
                   <div className="space-y-1">
                     <label htmlFor="email" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Email Address <span className="text-[#ca2d39]">*</span>
+                      Email Address <span className="text-zinc-400">*</span>
                     </label>
                     <input
                       type="email"
@@ -582,7 +582,7 @@ export default function IpsRegistrationPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@domain.com"
                       disabled={isSubmitting}
-                      className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-[#ca2d39]/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
+                      className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
                       required
                     />
                   </div>
@@ -590,7 +590,7 @@ export default function IpsRegistrationPage() {
                   {/* Phone / WhatsApp Input with Inline Verification */}
                   <div className="space-y-1">
                     <label htmlFor="phone" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Phone / WhatsApp Number <span className="text-[#ca2d39]">*</span>
+                      Phone / WhatsApp Number <span className="text-zinc-400">*</span>
                     </label>
                     <div className="flex gap-2 items-center">
                       <div className="w-[105px] shrink-0">
@@ -618,12 +618,12 @@ export default function IpsRegistrationPage() {
                         }}
                         placeholder="50 123 4567"
                         disabled={isSubmitting}
-                        className="flex-1 bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-[#ca2d39]/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500 min-w-0"
+                        className="flex-1 bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500 min-w-0"
                         required
                       />
                       {isPhoneVerified ? (
-                        <div className="shrink-0 bg-[#ca2d39]/10 border border-[#ca2d39]/30 text-[#ca2d39] font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#ca2d39]" />
+                        <div className="shrink-0 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                           <span>Verified</span>
                         </div>
                       ) : (
@@ -631,9 +631,9 @@ export default function IpsRegistrationPage() {
                           type="button"
                           onClick={handleVerifyPhoneClick}
                           disabled={isSendingOtp || !phone.trim()}
-                          className="shrink-0 bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                          className="shrink-0 bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-900 disabled:text-zinc-600 text-white border border-zinc-700 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
                         >
-                          {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                          {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5 text-[#ca2d39]" />}
                           <span>Verify</span>
                         </button>
                       )}
@@ -643,7 +643,7 @@ export default function IpsRegistrationPage() {
                   {/* Preferred Mode of Contact Dropdown */}
                   <div className="space-y-1">
                     <label htmlFor="preferredContactMode" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Preferred Mode of Contact <span className="text-[#ca2d39]">*</span>
+                      Preferred Mode of Contact <span className="text-zinc-400">*</span>
                     </label>
                     <div className="relative w-full">
                       <select
@@ -666,7 +666,7 @@ export default function IpsRegistrationPage() {
                   {/* Preferred Language Dropdown */}
                   <div className="space-y-1">
                     <label htmlFor="language" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Preferred Language <span className="text-[#ca2d39]">*</span>
+                      Preferred Language <span className="text-zinc-400">*</span>
                     </label>
                     <div className="relative w-full">
                       <select
@@ -690,7 +690,7 @@ export default function IpsRegistrationPage() {
                   {/* Role Selection */}
                   <div className="space-y-2 pt-1">
                     <label className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      I am a: <span className="text-[#ca2d39]">*</span>
+                      I am a: <span className="text-zinc-400">*</span>
                     </label>
                     
                     <div className="grid grid-cols-2 gap-3">
@@ -734,13 +734,13 @@ export default function IpsRegistrationPage() {
                     </div>
                   </div>
 
-                  {/* Submit Button */}
+                  {/* Primary Submit Button (Brand Crimson Red #ca2d39) */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
                     className={`w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-3.5 rounded-xl transition-colors ${
                       isPhoneVerified
-                        ? 'bg-[#ca2d39] hover:bg-[#b02530] text-white cursor-pointer'
+                        ? 'bg-[#ca2d39] hover:bg-[#b02530] text-white cursor-pointer shadow-sm'
                         : 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700/50'
                     }`}
                   >
@@ -813,7 +813,7 @@ export default function IpsRegistrationPage() {
             <div className="flex flex-col items-center text-center">
               <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center mb-3 ${
                 otpChannel === 'WHATSAPP'
-                  ? 'bg-[#ca2d39]/10 border-[#ca2d39]/30 text-[#ca2d39]'
+                  ? 'bg-zinc-900 border-zinc-700 text-[#ca2d39]'
                   : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
               }`}>
                 {otpChannel === 'WHATSAPP' ? (
@@ -833,7 +833,7 @@ export default function IpsRegistrationPage() {
 
               <p className="text-zinc-400 text-xs sm:text-sm font-light max-w-xs mb-6">
                 {otpChannel === 'WHATSAPP' ? (
-                  <>Enter the 4-digit code sent to your WhatsApp number <span className="font-semibold text-[#ca2d39]">{fullPhone}</span></>
+                  <>Enter the 4-digit code sent to your WhatsApp number <span className="font-semibold text-white">{fullPhone}</span></>
                 ) : (
                   <>Enter the 4-digit code sent to your email address <span className="font-semibold text-blue-400">{email}</span></>
                 )}
@@ -852,7 +852,7 @@ export default function IpsRegistrationPage() {
                     onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                     disabled={isVerifyingOtp || isSendingOtp}
-                    className="w-12 h-14 text-center text-xl font-bold text-white bg-zinc-900 border border-zinc-700 rounded-xl focus:border-[#ca2d39] outline-none transition-colors"
+                    className="w-12 h-14 text-center text-xl font-bold text-white bg-zinc-900 border border-zinc-700 rounded-xl focus:border-zinc-400 outline-none transition-colors"
                   />
                 ))}
               </div>
@@ -891,7 +891,7 @@ export default function IpsRegistrationPage() {
                     type="button"
                     onClick={() => sendOtpCode(otpChannel)}
                     disabled={isSendingOtp}
-                    className="text-[#ca2d39] hover:underline inline-flex items-center gap-1 font-medium cursor-pointer"
+                    className="text-white hover:underline inline-flex items-center gap-1 font-medium cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" /> Resend Code
                   </button>

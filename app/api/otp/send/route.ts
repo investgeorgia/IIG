@@ -115,6 +115,7 @@ export async function POST(request: Request) {
                 channelId: effectiveChannelId,
                 chatType: 'whatsapp',
                 chatId: formattedPhone,
+                crmMessageId: crypto.randomUUID(),
                 text: `Invest Georgia UAE: Your IPS 2026 verification code is: ${code}\nValid for 5 minutes.`
               })
             })
