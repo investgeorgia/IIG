@@ -81,20 +81,30 @@ export async function POST(request: Request) {
             }
           })
 
+          let effectiveChannelId = channelId
+
           if (channelsRes.ok) {
             const channelsList = await channelsRes.json()
-            const targetChannel = Array.isArray(channelsList) 
-              ? channelsList.find((ch: any) => ch.channelId === channelId)
-              : null
+            if (Array.isArray(channelsList) && channelsList.length > 0) {
+              const targetChannel = channelsList.find((ch: any) => ch.channelId === channelId)
 
-            if (targetChannel && targetChannel.state !== 'active') {
-              lastError = `Wazzup WhatsApp channel status is "${targetChannel.state}" (not active). Please check your Wazzup account.`
-              console.warn(`[Wazzup Warning] ${lastError}`)
+              if (!targetChannel || targetChannel.state !== 'active') {
+                console.warn(`[Wazzup Warning] Configured channel ${channelId} state is "${targetChannel?.state || 'not_found'}". Searching for active channel...`)
+                
+                // Smart auto-select active channel in Wazzup account
+                const activeChannel = channelsList.find((ch: any) => ch.state === 'active')
+                if (activeChannel) {
+                  effectiveChannelId = activeChannel.channelId
+                  console.log(`[Wazzup Auto-Select] Automatically using active Wazzup channel: ${effectiveChannelId} (${activeChannel.plainId || activeChannel.name})`)
+                } else {
+                  lastError = `All Wazzup WhatsApp channels in account are currently inactive or blocked.`
+                }
+              }
             }
           }
 
-          if (!lastError) {
-            // 2. Send message via Wazzup API
+          if (!lastError && effectiveChannelId) {
+            // 2. Send message via Wazzup API using the active channel ID
             const wazzupRes = await fetch('https://api.wazzup24.com/v3/message', {
               method: 'POST',
               headers: {
@@ -102,7 +112,7 @@ export async function POST(request: Request) {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                channelId,
+                channelId: effectiveChannelId,
                 chatType: 'whatsapp',
                 chatId: formattedPhone,
                 text: `Invest Georgia UAE: Your IPS 2026 verification code is: ${code}\nValid for 5 minutes.`
