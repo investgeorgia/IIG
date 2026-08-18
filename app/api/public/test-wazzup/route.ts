@@ -45,6 +45,7 @@ export async function POST(request: Request) {
     }
 
     const cleanPhone = (phone || '').replace(/[^0-9]/g, '')
+    const crmMessageId = crypto.randomUUID()
 
     // 1. Send message via Wazzup API
     const sendRes = await fetch('https://api.wazzup24.com/v3/message', {
@@ -57,19 +58,19 @@ export async function POST(request: Request) {
         channelId,
         chatType: 'whatsapp',
         chatId: cleanPhone,
+        crmMessageId,
         text: `Invest Georgia UAE Test OTP: ${Math.floor(1000 + Math.random() * 9000)}`
       })
     })
 
     const sendData = await sendRes.json().catch(() => null)
 
-    // 2. Fetch recent messages to check status of the message
+    // 2. Fetch recent messages for this chat to check status
     let messageStatusData = null
     if (sendRes.ok && sendData?.messageId) {
-      // Wait 1 second for status update in Wazzup
-      await new Promise(r => setTimeout(r, 1200))
+      await new Promise(r => setTimeout(r, 1500))
       
-      const statusRes = await fetch(`https://api.wazzup24.com/v3/messages?messageId=${sendData.messageId}`, {
+      const statusRes = await fetch(`https://api.wazzup24.com/v3/messages?chatId=${cleanPhone}&channelId=${channelId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${apiKey}`,
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
       sendHttpStatus: sendRes.status,
       sendOk: sendRes.ok,
       sendData,
+      crmMessageId,
       sentToPhone: cleanPhone,
       messageStatusData
     })
