@@ -1,6 +1,27 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+async function ensureOtpTableExists() {
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS \`OtpVerification\` (
+        \`id\` INT NOT NULL AUTO_INCREMENT,
+        \`target\` VARCHAR(191) NOT NULL,
+        \`channel\` VARCHAR(191) NOT NULL,
+        \`code\` VARCHAR(191) NOT NULL,
+        \`attempts\` INT NOT NULL DEFAULT 0,
+        \`expiresAt\` DATETIME(3) NOT NULL,
+        \`verified\` BOOLEAN NOT NULL DEFAULT false,
+        \`createdAt\` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        PRIMARY KEY (\`id\`),
+        INDEX \`OtpVerification_target_channel_idx\`(\`target\`, \`channel\`)
+      ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    `)
+  } catch (err) {
+    console.error('Failed to create OtpVerification table via raw SQL:', err)
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const { target, channel } = await request.json()
@@ -16,6 +37,9 @@ export async function POST(request: Request) {
     // Generate 4-digit OTP code
     const code = Math.floor(1000 + Math.random() * 9000).toString()
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes expiration
+
+    // Ensure table exists on production DB
+    await ensureOtpTableExists()
 
     // Store in DB
     await prisma.otpVerification.create({
