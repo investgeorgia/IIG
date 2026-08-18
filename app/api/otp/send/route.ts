@@ -57,7 +57,18 @@ export async function POST(request: Request) {
     if (channel === 'WHATSAPP') {
       const apiKey = process.env.WAZZUP_API_KEY?.trim()
       const channelId = process.env.WAZZUP_CHANNEL_ID?.trim()
-      const formattedPhone = cleanTarget.replace(/[^0-9]/g, '')
+      
+      let formattedPhone = cleanTarget.replace(/[^0-9]/g, '')
+      // Strip leading zero right after common country codes (e.g. 971050... -> 97150...)
+      if (formattedPhone.startsWith('9710')) {
+        formattedPhone = '971' + formattedPhone.slice(4)
+      } else if (formattedPhone.startsWith('9660')) {
+        formattedPhone = '966' + formattedPhone.slice(4)
+      } else if (formattedPhone.startsWith('440')) {
+        formattedPhone = '44' + formattedPhone.slice(3)
+      } else if (formattedPhone.startsWith('9950')) {
+        formattedPhone = '995' + formattedPhone.slice(4)
+      }
 
       if (apiKey && channelId && channelId !== '') {
         try {

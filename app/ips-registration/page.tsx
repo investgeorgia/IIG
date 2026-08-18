@@ -278,7 +278,8 @@ export default function IpsRegistrationPage() {
     }
   }, [showOtpModal, otpChannel])
 
-  const fullPhone = `${countryCode} ${phone.trim()}`
+  const cleanPhoneDigits = phone.trim().replace(/^0+/, '')
+  const fullPhone = `${countryCode} ${cleanPhoneDigits}`
 
   // Function to send OTP via API
   const sendOtpCode = async (channel: 'WHATSAPP' | 'EMAIL') => {
