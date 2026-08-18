@@ -127,7 +127,7 @@ const validateEmail = (emailStr: string): { valid: boolean; error?: string } => 
   return { valid: true }
 }
 
-// Custom Searchable Dropdown with clean, non-shadowed UI
+// Custom Searchable Dropdown with clean UI
 function SearchableDropdown({
   items,
   value,
@@ -173,7 +173,7 @@ function SearchableDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left bg-zinc-900/80 hover:bg-zinc-800/80 text-white border border-zinc-700/60 focus:border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none flex justify-between items-center cursor-pointer select-none"
+        className="w-full text-left bg-zinc-900/90 hover:bg-zinc-800/90 text-white border border-zinc-700/60 focus:border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none flex justify-between items-center cursor-pointer select-none"
       >
         <span className="truncate">
           {selectedItem ? displayFormat(selectedItem) : placeholder}
@@ -501,50 +501,20 @@ export default function IpsRegistrationPage() {
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center bg-zinc-950 overflow-x-hidden font-sans px-4 py-8 md:px-12 lg:px-16">
-      {/* Background Image with Dark Vignette Overlay */}
+      {/* Background Image - Fixed, Vivid & Clearly Visible */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-25 z-0 scale-105"
+        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-55 z-0 scale-105"
         style={{ backgroundImage: `url('/batumi-bg.jpg')` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/90 to-zinc-950/70 z-0" />
+      {/* Gradient Vignette Overlay for Crisp Readability */}
+      <div className="fixed inset-0 bg-gradient-to-b from-zinc-950/70 via-zinc-950/55 to-zinc-950/80 z-0 pointer-events-none" />
 
-      {/* Main 12-Column Container - Split Layout (Form on Right Side Desktop) */}
+      {/* Main 12-Column Container */}
       <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center py-6">
         
-        {/* Left Column: Event & Branding Hero Info (Desktop Left Side - 7 Columns) */}
-        <div className="lg:col-span-7 flex flex-col justify-center space-y-6 text-left">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs uppercase tracking-widest font-medium w-fit">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Invest Georgia UAE · IPS 2026</span>
-          </div>
-
-          <h1 className={`${cormorant.className} text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-wide text-white`}>
-            Invest Georgia UAE
-          </h1>
-
-          <p className="text-zinc-300 text-sm sm:text-base font-light leading-relaxed max-w-xl">
-            Join Invest Georgia UAE at the International Property Show (IPS 2026) in Dubai. Connect with top development teams, discover zero-tax property investments, and access exclusive developer rates.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-xl">
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs">
-              <p className="font-semibold text-emerald-400 text-sm mb-1">0% Tax</p>
-              <p className="text-zinc-400 text-[11px] font-light">On Property Capital Gains</p>
-            </div>
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs">
-              <p className="font-semibold text-emerald-400 text-sm mb-1">High ROI</p>
-              <p className="text-zinc-400 text-[11px] font-light">Strong Rental Yields</p>
-            </div>
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs">
-              <p className="font-semibold text-emerald-400 text-sm mb-1">Direct Access</p>
-              <p className="text-zinc-400 text-[11px] font-light">Exclusive IPS Offers</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Registration Form Panel (Desktop Right Side - 5 Columns) */}
-        <div className="lg:col-span-5 flex justify-center lg:justify-end">
-          <div className="w-full max-w-md bg-zinc-900/90 backdrop-blur-md border border-zinc-800 rounded-2xl p-6 sm:p-8">
+        {/* Right Column: Registration Form Panel (FIRST ON PHONE order-1, RIGHT ON DESKTOP lg:order-2 lg:col-span-5) */}
+        <div className="order-1 lg:order-2 lg:col-span-5 flex justify-center lg:justify-end">
+          <div className="w-full max-w-md bg-zinc-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8">
             
             {success ? (
               <div className="flex flex-col items-center justify-center text-center py-8">
@@ -594,7 +564,7 @@ export default function IpsRegistrationPage() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
                       disabled={isSubmitting}
-                      className="w-full bg-zinc-950/80 hover:bg-zinc-950 focus:bg-zinc-950 text-white border border-zinc-800 focus:border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
+                      className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
                       required
                     />
                   </div>
@@ -611,7 +581,7 @@ export default function IpsRegistrationPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@domain.com"
                       disabled={isSubmitting}
-                      className="w-full bg-zinc-950/80 hover:bg-zinc-950 focus:bg-zinc-950 text-white border border-zinc-800 focus:border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
+                      className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
                       required
                     />
                   </div>
@@ -647,7 +617,7 @@ export default function IpsRegistrationPage() {
                         }}
                         placeholder="50 123 4567"
                         disabled={isSubmitting}
-                        className="flex-1 bg-zinc-950/80 hover:bg-zinc-950 focus:bg-zinc-950 text-white border border-zinc-800 focus:border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500 min-w-0"
+                        className="flex-1 bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500 min-w-0"
                         required
                       />
                       {isPhoneVerified ? (
@@ -680,7 +650,7 @@ export default function IpsRegistrationPage() {
                         value={preferredContactMode}
                         onChange={(e) => setPreferredContactMode(e.target.value)}
                         disabled={isSubmitting}
-                        className="w-full bg-zinc-950/80 hover:bg-zinc-950 focus:bg-zinc-950 text-white border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none appearance-none cursor-pointer"
+                        className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none appearance-none cursor-pointer"
                       >
                         <option value="WhatsApp" className="bg-zinc-950 text-white">WhatsApp</option>
                         <option value="Call" className="bg-zinc-950 text-white">Call</option>
@@ -703,7 +673,7 @@ export default function IpsRegistrationPage() {
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
                         disabled={isSubmitting}
-                        className="w-full bg-zinc-950/80 hover:bg-zinc-950 focus:bg-zinc-950 text-white border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none appearance-none cursor-pointer"
+                        className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none appearance-none cursor-pointer"
                       >
                         <option value="English" className="bg-zinc-950 text-white">English</option>
                         <option value="Arabic" className="bg-zinc-950 text-white">Arabic</option>
@@ -731,7 +701,7 @@ export default function IpsRegistrationPage() {
                         className={`relative py-2.5 px-3 rounded-xl border text-left transition-colors duration-150 flex items-center justify-between cursor-pointer ${
                           role === 'investor'
                             ? 'bg-zinc-800 border-zinc-600 text-white font-semibold'
-                            : 'bg-zinc-950/50 border-zinc-800 hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200'
+                            : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         <span className="text-xs uppercase tracking-wider">Investor</span>
@@ -750,7 +720,7 @@ export default function IpsRegistrationPage() {
                         className={`relative py-2.5 px-3 rounded-xl border text-left transition-colors duration-150 flex items-center justify-between cursor-pointer ${
                           role === 'broker'
                             ? 'bg-zinc-800 border-zinc-600 text-white font-semibold'
-                            : 'bg-zinc-950/50 border-zinc-800 hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200'
+                            : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         <span className="text-xs uppercase tracking-wider truncate">Broker / Agent</span>
@@ -792,6 +762,38 @@ export default function IpsRegistrationPage() {
             
           </div>
         </div>
+
+        {/* Left Column: Event & Branding Hero Info (SECOND ON PHONE order-2, LEFT ON DESKTOP lg:order-1 lg:col-span-7) */}
+        <div className="order-2 lg:order-1 lg:col-span-7 flex flex-col justify-center space-y-6 text-left">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs uppercase tracking-widest font-medium w-fit">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Invest Georgia UAE · IPS 2026</span>
+          </div>
+
+          <h1 className={`${cormorant.className} text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-wide text-white`}>
+            Invest Georgia UAE
+          </h1>
+
+          <p className="text-zinc-300 text-sm sm:text-base font-light leading-relaxed max-w-xl">
+            Join Invest Georgia UAE at the International Property Show (IPS 2026) in Dubai. Connect with top development teams, discover zero-tax property investments, and access exclusive developer rates.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-xl">
+            <div className="p-4 rounded-xl bg-zinc-950/80 border border-white/10 text-xs backdrop-blur-md">
+              <p className="font-semibold text-emerald-400 text-sm mb-1">0% Tax</p>
+              <p className="text-zinc-400 text-[11px] font-light">On Property Capital Gains</p>
+            </div>
+            <div className="p-4 rounded-xl bg-zinc-950/80 border border-white/10 text-xs backdrop-blur-md">
+              <p className="font-semibold text-emerald-400 text-sm mb-1">High ROI</p>
+              <p className="text-zinc-400 text-[11px] font-light">Strong Rental Yields</p>
+            </div>
+            <div className="p-4 rounded-xl bg-zinc-950/80 border border-white/10 text-xs backdrop-blur-md">
+              <p className="font-semibold text-emerald-400 text-sm mb-1">Direct Access</p>
+              <p className="text-zinc-400 text-[11px] font-light">Exclusive IPS Offers</p>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* ─── OTP VERIFICATION MODAL ─── */}
