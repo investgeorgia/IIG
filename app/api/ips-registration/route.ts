@@ -59,6 +59,8 @@ export async function POST(request: Request) {
       fields: {
         TITLE: `IPS Registration: ${name} (${role.toUpperCase()})`,
         NAME: name.trim(),
+        SOURCE_ID: 'TRADE_SHOW',
+        SOURCE_DESCRIPTION: 'IPS 2026',
         EMAIL: [
           {
             VALUE: email.trim(),
