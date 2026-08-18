@@ -61,30 +61,57 @@ export async function POST(request: Request) {
 
       if (apiKey && channelId && channelId !== '') {
         try {
-          const wazzupRes = await fetch('https://api.wazzup24.com/v3/message', {
-            method: 'POST',
+          // 1. Verify Wazzup channel status first
+          const channelsRes = await fetch('https://api.wazzup24.com/v3/channels', {
+            method: 'GET',
             headers: {
               'Authorization': `Bearer ${apiKey}`,
               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              channelId,
-              chatType: 'whatsapp',
-              chatId: formattedPhone,
-              text: `Invest Georgia UAE: Your IPS 2026 verification code is: ${code}\nValid for 5 minutes.`
-            })
+            }
           })
 
-          if (wazzupRes.ok) {
-            sentReal = true
-          } else {
-            const errText = await wazzupRes.text()
-            console.error('Wazzup API Error response:', errText)
-            
-            if (errText.includes('channelId')) {
-              lastError = 'Wazzup Channel ID is invalid or disconnected in Wazzup account.'
+          if (channelsRes.ok) {
+            const channelsList = await channelsRes.json()
+            const targetChannel = Array.isArray(channelsList) 
+              ? channelsList.find((ch: any) => ch.channelId === channelId)
+              : null
+
+            if (targetChannel && targetChannel.state !== 'active') {
+              lastError = `Wazzup WhatsApp channel status is "${targetChannel.state}" (not active). Please check your Wazzup account.`
+              console.warn(`[Wazzup Warning] ${lastError}`)
+            }
+          }
+
+          if (!lastError) {
+            // 2. Send message via Wazzup API
+            const wazzupRes = await fetch('https://api.wazzup24.com/v3/message', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                channelId,
+                chatType: 'whatsapp',
+                chatId: formattedPhone,
+                text: `Invest Georgia UAE: Your IPS 2026 verification code is: ${code}\nValid for 5 minutes.`
+              })
+            })
+
+            const responseData = await wazzupRes.json().catch(() => null)
+
+            if (wazzupRes.ok && responseData?.messageId) {
+              sentReal = true
+              console.log(`[Wazzup Success] WhatsApp OTP queued with ID ${responseData.messageId} for ${formattedPhone}`)
             } else {
-              lastError = `Wazzup API Error (${wazzupRes.status}): ${errText}`
+              const errStr = JSON.stringify(responseData) || 'Unknown Wazzup error'
+              console.error('Wazzup API Error response:', errStr)
+              
+              if (errStr.includes('channelId')) {
+                lastError = 'Wazzup Channel ID is invalid or disconnected in your Wazzup account.'
+              } else {
+                lastError = `Wazzup API Error (${wazzupRes.status}): ${responseData?.description || errStr}`
+              }
             }
           }
         } catch (wazzupErr: any) {
@@ -92,7 +119,7 @@ export async function POST(request: Request) {
           lastError = wazzupErr.message || 'Wazzup connection error'
         }
       } else {
-        lastError = 'Wazzup WAZZUP_CHANNEL_ID or WAZZUP_API_KEY is not configured in .env'
+        lastError = 'Wazzup WAZZUP_CHANNEL_ID or WAZZUP_API_KEY is not configured in environment variables (.env)'
         console.warn(`[DEV/TEST] Wazzup API credentials not configured. WhatsApp OTP Code for ${cleanTarget}: ${code}`)
       }
 
