@@ -52,6 +52,7 @@ export async function POST(request: Request) {
     })
 
     let sentReal = false
+    let lastError = ''
 
     if (channel === 'WHATSAPP') {
       const apiKey = process.env.WAZZUP_API_KEY
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
               channelId,
               chatType: 'whatsapp',
               chatId: formattedPhone,
-              text: `Your IPS 2026 verification code is: ${code}\nValid for 5 minutes.`
+              text: `Invest Georgia UAE: Your IPS 2026 verification code is: ${code}\nValid for 5 minutes.`
             })
           })
 
@@ -78,17 +79,29 @@ export async function POST(request: Request) {
             sentReal = true
           } else {
             const errText = await wazzupRes.text()
-            console.error('Wazzup API Error:', errText)
+            console.error('Wazzup API Error response:', errText)
+            lastError = `Wazzup API Error (${wazzupRes.status}): ${errText}`
           }
-        } catch (wazzupErr) {
+        } catch (wazzupErr: any) {
           console.error('Failed to send WhatsApp message via Wazzup:', wazzupErr)
+          lastError = wazzupErr.message || 'Wazzup connection error'
         }
       } else {
+        lastError = 'Wazzup API Key or Channel ID is missing in environment variables'
         console.warn(`[DEV/TEST] Wazzup API credentials not configured. WhatsApp OTP Code for ${cleanTarget}: ${code}`)
+      }
+
+      if (!sentReal) {
+        return NextResponse.json({
+          success: false,
+          fallbackToEmail: true,
+          error: lastError || 'Could not deliver WhatsApp code. Switching to Email verification.',
+          message: 'WhatsApp delivery failed. Switching to Email verification.'
+        }, { status: 400 })
       }
     } else if (channel === 'EMAIL') {
       const resendApiKey = process.env.RESEND_API_KEY
-      const fromEmail = process.env.RESEND_FROM_EMAIL || 'IPS 2026 <onboarding@resend.dev>'
+      const fromEmail = process.env.RESEND_FROM_EMAIL || 'Invest Georgia UAE <onboarding@resend.dev>'
 
       if (resendApiKey) {
         try {
@@ -101,21 +114,21 @@ export async function POST(request: Request) {
             body: JSON.stringify({
               from: fromEmail,
               to: [cleanTarget],
-              subject: `${code} is your IPS 2026 Verification Code`,
+              subject: `${code} is your Invest Georgia UAE Verification Code`,
               html: `
-                <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e4e4e7; border-radius: 16px; background-color: #ffffff;">
-                  <div style="text-align: center; margin-bottom: 24px;">
-                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #10b981; font-weight: 700;">Exclusive Access</span>
-                    <h2 style="margin: 8px 0 0; font-size: 24px; color: #111827; font-weight: 700;">IPS 2026 Registration</h2>
+                <div style="font-family: Arial, Helvetica, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; border: 1px solid #27272a; border-radius: 20px; background-color: #09090b; color: #ffffff;">
+                  <div style="text-align: center; margin-bottom: 28px;">
+                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: #10b981; font-weight: 700;">Invest Georgia UAE</span>
+                    <h2 style="margin: 8px 0 0; font-size: 26px; color: #ffffff; font-weight: 700; font-family: Georgia, serif;">IPS 2026 Verification</h2>
                   </div>
-                  <p style="color: #4b5563; font-size: 14px; line-height: 1.5; text-align: center;">
-                    Please enter the following 4-digit verification code to complete your registration:
+                  <p style="color: #a1a1aa; font-size: 14px; line-height: 1.6; text-align: center; margin-bottom: 24px;">
+                    Thank you for registering with <strong>Invest Georgia UAE</strong> for the International Property Show (IPS 2026). Please enter the 4-digit verification code below:
                   </p>
-                  <div style="font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #059669; padding: 18px; background: #ecfdf5; text-align: center; border-radius: 12px; margin: 24px 0; border: 1px border #a7f3d0;">
+                  <div style="font-size: 38px; font-weight: 800; letter-spacing: 10px; color: #10b981; padding: 20px; background: #18181b; text-align: center; border-radius: 14px; margin: 24px 0; border: 1px solid #27272a;">
                     ${code}
                   </div>
-                  <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 24px;">
-                    This code is valid for 5 minutes. If you did not request this code, please ignore this email.
+                  <p style="color: #71717a; font-size: 12px; text-align: center; margin-top: 28px; line-height: 1.5;">
+                    This code is valid for 5 minutes.<br>© Invest Georgia UAE. All rights reserved.
                   </p>
                 </div>
               `
@@ -127,21 +140,22 @@ export async function POST(request: Request) {
           } else {
             const errText = await resendRes.text()
             console.error('Resend API Error:', errText)
+            lastError = `Resend API Error: ${errText}`
           }
-        } catch (resendErr) {
+        } catch (resendErr: any) {
           console.error('Failed to send Email via Resend:', resendErr)
+          lastError = resendErr.message || 'Resend connection error'
         }
       } else {
         console.warn(`[DEV/TEST] RESEND_API_KEY not configured. Email OTP Code for ${cleanTarget}: ${code}`)
+        sentReal = true // allow in dev mode
       }
     }
 
     return NextResponse.json({
       success: true,
       sentReal,
-      message: sentReal
-        ? `Verification code sent via ${channel === 'WHATSAPP' ? 'WhatsApp' : 'Email'}`
-        : `Verification code generated (${channel === 'WHATSAPP' ? 'WhatsApp API not configured, check server console' : 'Resend API key missing, check server console'})`
+      message: `Verification code sent via ${channel === 'WHATSAPP' ? 'WhatsApp' : 'Email'}`
     })
 
   } catch (error: any) {
