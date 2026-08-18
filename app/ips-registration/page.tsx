@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Cormorant_Garamond } from 'next/font/google'
 import { toast } from 'sonner'
-import { Loader2, ArrowRight, UserCheck } from 'lucide-react'
+import { Loader2, ArrowRight, UserCheck, MessageSquare, Mail, RefreshCw, X, ShieldCheck } from 'lucide-react'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -210,10 +210,89 @@ export default function IpsRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // OTP Verification States
+  const [showOtpModal, setShowOtpModal] = useState(false)
+  const [otpChannel, setOtpChannel] = useState<'WHATSAPP' | 'EMAIL'>('WHATSAPP')
+  const [otpDigits, setOtpDigits] = useState(['', '', '', ''])
+  const [isSendingOtp, setIsSendingOtp] = useState(false)
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
+  const [failedAttempts, setFailedAttempts] = useState(0)
+  const [resendTimer, setResendTimer] = useState(30)
+  const [canResend, setCanResend] = useState(false)
+
+  const otpInputRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null)
+  ]
+
+  // Countdown timer for OTP resend
+  useEffect(() => {
+    let timer: any
+    if (showOtpModal && resendTimer > 0) {
+      setCanResend(false)
+      timer = setInterval(() => {
+        setResendTimer((prev) => prev - 1)
+      }, 1000)
+    } else if (resendTimer === 0) {
+      setCanResend(true)
+    }
+    return () => clearInterval(timer)
+  }, [showOtpModal, resendTimer])
+
+  // Focus first OTP input when modal opens
+  useEffect(() => {
+    if (showOtpModal) {
+      setTimeout(() => {
+        otpInputRefs[0]?.current?.focus()
+      }, 150)
+    }
+  }, [showOtpModal, otpChannel])
+
+  const fullPhone = `${countryCode} ${phone.trim()}`
+
+  // Function to send OTP via API
+  const sendOtpCode = async (channel: 'WHATSAPP' | 'EMAIL') => {
+    setIsSendingOtp(true)
+    const target = channel === 'WHATSAPP' ? fullPhone : email.trim()
     
-    // Validation
+    try {
+      const res = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target, channel })
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to send verification code')
+
+      setOtpChannel(channel)
+      setResendTimer(30)
+      setCanResend(false)
+      setOtpDigits(['', '', '', ''])
+      
+      toast.success(
+        channel === 'WHATSAPP'
+          ? 'Verification code sent to your WhatsApp!'
+          : 'Verification code sent to your Email!'
+      )
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send OTP')
+      // If WhatsApp API fails completely, fallback to Email immediately
+      if (channel === 'WHATSAPP') {
+        toast.info('Switching to Email verification...')
+        sendOtpCode('EMAIL')
+      }
+    } finally {
+      setIsSendingOtp(false)
+    }
+  }
+
+  // Handle initial form submission (triggers OTP process)
+  const handleInitialSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
     if (!name.trim()) {
       toast.error('Please enter your full name')
       return
@@ -227,6 +306,102 @@ export default function IpsRegistrationPage() {
       return
     }
 
+    setFailedAttempts(0)
+    setShowOtpModal(true)
+    sendOtpCode('WHATSAPP')
+  }
+
+  // Handle OTP digit changes
+  const handleOtpDigitChange = (index: number, value: string) => {
+    // Only accept numeric digit
+    const digit = value.replace(/[^0-9]/g, '').slice(-1)
+    const newDigits = [...otpDigits]
+    newDigits[index] = digit
+    setOtpDigits(newDigits)
+
+    // Auto-advance focus
+    if (digit && index < 3) {
+      otpInputRefs[index + 1]?.current?.focus()
+    }
+
+    // Auto verify if 4 digits are entered
+    if (digit && index === 3 && newDigits.every(d => d !== '')) {
+      verifyOtpCode(newDigits.join(''))
+    }
+  }
+
+  // Handle paste in OTP inputs
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4)
+    if (pastedData) {
+      const digits = pastedData.split('').concat(['', '', '', '']).slice(0, 4)
+      setOtpDigits(digits)
+      digits.forEach((d, idx) => {
+        if (otpInputRefs[idx]?.current) {
+          otpInputRefs[idx]!.current!.value = d
+        }
+      })
+      if (digits.every(d => d !== '')) {
+        verifyOtpCode(digits.join(''))
+      }
+    }
+  }
+
+  // Handle Backspace navigation
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpInputRefs[index - 1]?.current?.focus()
+    }
+  }
+
+  // Function to verify OTP and complete registration
+  const verifyOtpCode = async (enteredCode?: string) => {
+    const code = enteredCode || otpDigits.join('')
+    if (code.length < 4) {
+      toast.error('Please enter the full 4-digit code')
+      return
+    }
+
+    setIsVerifyingOtp(true)
+    const target = otpChannel === 'WHATSAPP' ? fullPhone : email.trim()
+
+    try {
+      const verifyRes = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target, channel: otpChannel, code })
+      })
+
+      const verifyData = await verifyRes.json()
+
+      if (!verifyRes.ok) {
+        const attempts = (failedAttempts + 1)
+        setFailedAttempts(attempts)
+        
+        if (verifyData.fallbackToEmail || attempts >= 3) {
+          toast.warning('3 failed attempts on WhatsApp. Switching to Email verification.')
+          setFailedAttempts(0)
+          sendOtpCode('EMAIL')
+          return
+        }
+
+        throw new Error(verifyData.error || 'Incorrect verification code')
+      }
+
+      // Verification Success! Proceed to create lead in Bitrix24
+      setShowOtpModal(false)
+      completeRegistration()
+
+    } catch (err: any) {
+      toast.error(err.message || 'Verification failed')
+    } finally {
+      setIsVerifyingOtp(false)
+    }
+  }
+
+  // Complete registration API call
+  const completeRegistration = async () => {
     setIsSubmitting(true)
 
     try {
@@ -235,13 +410,13 @@ export default function IpsRegistrationPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          name, 
-          email, 
-          phone: `${countryCode} ${phone.trim()}`, 
-          preferredContactMode, 
-          language, 
-          role 
+        body: JSON.stringify({
+          name,
+          email,
+          phone: fullPhone,
+          preferredContactMode,
+          language,
+          role
         }),
       })
 
@@ -253,7 +428,7 @@ export default function IpsRegistrationPage() {
 
       toast.success(data.message || 'Registration successful!')
       setSuccess(true)
-      
+
       // Reset form
       setName('')
       setEmail('')
@@ -325,7 +500,7 @@ export default function IpsRegistrationPage() {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleInitialSubmit} className="space-y-4">
               
               {/* Name Input */}
               <div className="space-y-1.5">
@@ -498,7 +673,7 @@ export default function IpsRegistrationPage() {
                   </>
                 ) : (
                   <>
-                    <span>Submit Registration</span>
+                    <span>Register Now</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -509,6 +684,124 @@ export default function IpsRegistrationPage() {
         )}
         
       </div>
+
+      {/* ─── OTP VERIFICATION MODAL ─── */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-2xl flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-3xl p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowOtpModal(false)}
+              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors p-2"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Modal Icon Badge */}
+            <div className="flex flex-col items-center text-center">
+              <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center mb-4 shadow-lg ${
+                otpChannel === 'WHATSAPP'
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-emerald-500/10'
+                  : 'bg-blue-500/10 border-blue-500/30 text-blue-400 shadow-blue-500/10'
+              }`}>
+                {otpChannel === 'WHATSAPP' ? (
+                  <MessageSquare className="w-8 h-8" />
+                ) : (
+                  <Mail className="w-8 h-8" />
+                )}
+              </div>
+
+              <h3 className={`${cormorant.className} text-2xl md:text-3xl font-bold text-white mb-2`}>
+                Verification Code
+              </h3>
+
+              <p className="text-white/70 text-xs md:text-sm font-light max-w-xs mb-6">
+                {otpChannel === 'WHATSAPP' ? (
+                  <>Enter the 4-digit code sent to your WhatsApp number <span className="font-semibold text-emerald-400">{fullPhone}</span></>
+                ) : (
+                  <>Enter the 4-digit code sent to your email address <span className="font-semibold text-blue-400">{email}</span></>
+                )}
+              </p>
+
+              {/* 4-Digit Inputs */}
+              <div className="flex gap-3 justify-center mb-6" onPaste={handleOtpPaste}>
+                {otpDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={otpInputRefs[idx]}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    disabled={isVerifyingOtp || isSendingOtp}
+                    className="w-14 h-16 text-center text-2xl font-bold text-white bg-white/[0.05] border border-white/10 rounded-xl focus:border-emerald-400 focus:bg-white/[0.08] focus:shadow-[0_0_15px_rgba(16,185,129,0.3)] outline-none transition-all"
+                  />
+                ))}
+              </div>
+
+              {/* Error / Remaining Attempts Banner */}
+              {failedAttempts > 0 && otpChannel === 'WHATSAPP' && (
+                <div className="w-full bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl py-2 px-3 text-xs mb-4 text-center">
+                  ⚠️ {3 - failedAttempts} attempt{3 - failedAttempts === 1 ? '' : 's'} remaining on WhatsApp before switching to Email.
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <button
+                type="button"
+                onClick={() => verifyOtpCode()}
+                disabled={isVerifyingOtp || isSendingOtp || otpDigits.some(d => d === '')}
+                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-black font-semibold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 mb-4"
+              >
+                {isVerifyingOtp ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Verifying Code...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Verify & Complete Registration</span>
+                  </>
+                )}
+              </button>
+
+              {/* Resend & Channel Switch Footer */}
+              <div className="flex flex-col gap-2 items-center text-xs text-white/50">
+                {canResend ? (
+                  <button
+                    type="button"
+                    onClick={() => sendOtpCode(otpChannel)}
+                    disabled={isSendingOtp}
+                    className="text-emerald-400 hover:underline inline-flex items-center gap-1 font-medium"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Resend Code
+                  </button>
+                ) : (
+                  <span>Resend code in {resendTimer}s</span>
+                )}
+
+                {otpChannel === 'WHATSAPP' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFailedAttempts(0)
+                      sendOtpCode('EMAIL')
+                    }}
+                    disabled={isSendingOtp}
+                    className="text-white/60 hover:text-white underline mt-2 text-[11px]"
+                  >
+                    Didn't receive WhatsApp code? Verify via Email
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

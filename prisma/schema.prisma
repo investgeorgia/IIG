@@ -379,3 +379,16 @@ model ReferralTrackingEvent {
   @@index([eventType])
   @@index([createdAt])
 }
+
+model OtpVerification {
+  id        Int      @id @default(autoincrement())
+  target    String   // Phone or Email
+  channel   String   // "WHATSAPP" or "EMAIL"
+  code      String   // 4-digit code e.g. "4829"
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([target, channel])
+}
