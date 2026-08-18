@@ -30,9 +30,18 @@ export async function POST(request: Request) {
       })
     }
 
-    // Format the URL properly (ensure trailing slash and append crm.lead.add.json)
-    const normalizedUrl = webhookUrl.endsWith('/') ? webhookUrl : `${webhookUrl}/`
-    const bitrixEndpoint = `${normalizedUrl}crm.lead.add.json`
+    // Intelligently normalize Bitrix24 webhook URL regardless of how it was copied
+    let bitrixEndpoint = webhookUrl.trim()
+    if (bitrixEndpoint.includes('crm.lead.add')) {
+      bitrixEndpoint = bitrixEndpoint.replace(/\/+$/, '')
+      if (!bitrixEndpoint.endsWith('.json')) {
+        bitrixEndpoint = `${bitrixEndpoint}.json`
+      }
+    } else {
+      bitrixEndpoint = bitrixEndpoint.replace(/\/profile\/?$/, '')
+      bitrixEndpoint = bitrixEndpoint.replace(/\/+$/, '')
+      bitrixEndpoint = `${bitrixEndpoint}/crm.lead.add.json`
+    }
 
     // Construct the lead comments
     const roleLabel = role === 'investor' ? 'Investor' : 'Real Estate Broker / Agent'
