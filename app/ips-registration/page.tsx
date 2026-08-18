@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Cormorant_Garamond } from 'next/font/google'
 import { toast } from 'sonner'
-import { Loader2, ArrowRight, UserCheck, MessageSquare, Mail, RefreshCw, X, ShieldCheck, CheckCircle2, Sparkles } from 'lucide-react'
+import { Loader2, ArrowRight, UserCheck, MessageSquare, Mail, RefreshCw, X, ShieldCheck, CheckCircle2 } from 'lucide-react'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -127,7 +127,7 @@ const validateEmail = (emailStr: string): { valid: boolean; error?: string } => 
   return { valid: true }
 }
 
-// Custom Searchable Dropdown with clean glassmorphism styles
+// Custom Searchable Dropdown with glassmorphism styles
 function SearchableDropdown({
   items,
   value,
@@ -173,7 +173,7 @@ function SearchableDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] text-white border border-white/10 rounded-xl px-3.5 py-3 text-xs md:text-sm font-light transition-all outline-none flex justify-between items-center cursor-pointer select-none"
+        className="w-full text-left bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-3.5 py-3 text-sm font-light transition-all outline-none flex justify-between items-center cursor-pointer select-none"
       >
         <span className="truncate">
           {selectedItem ? displayFormat(selectedItem) : placeholder}
@@ -182,14 +182,14 @@ function SearchableDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-neutral-950 border border-white/10 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="p-2 border-b border-white/5">
+        <div className="absolute z-50 w-full mt-2 bg-neutral-950/90 backdrop-blur-2xl border border-white/[0.1] rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="p-2 border-b border-white/[0.05]">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="w-full bg-white/5 text-white border border-white/10 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-emerald-500/50 font-light"
+              className="w-full bg-white/[0.05] text-white border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs outline-none focus:border-white/20 font-light"
               autoFocus
             />
           </div>
@@ -204,7 +204,7 @@ function SearchableDropdown({
                       setIsOpen(false)
                       setSearch('')
                     }}
-                    className="w-full text-left px-4 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
+                    className="w-full text-left px-4 py-2.5 text-xs text-white/80 hover:text-white hover:bg-white/[0.08] transition-all flex items-center gap-2"
                   >
                     <span className="text-sm shrink-0">{item.flag}</span>
                     <span className="truncate">{item.name}</span>
@@ -500,305 +500,274 @@ export default function IpsRegistrationPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center bg-black overflow-x-hidden font-sans px-4 py-8 md:px-12 lg:px-16">
+    <div className="relative min-h-screen md:h-screen w-full flex items-center justify-center bg-black overflow-hidden font-sans px-4 py-6 md:py-0 md:px-8">
       {/* Background Image */}
       <div 
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40 z-0 scale-105"
         style={{ backgroundImage: `url('/batumi-bg.jpg')` }}
       />
-      {/* Dark gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/80 to-black/90 z-0" />
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/55 z-0" />
 
-      {/* Main Container - Split Layout on Desktop */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center py-6">
+      {/* Decorative Blob 1 */}
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none animate-pulse duration-[8000ms]" />
+      
+      {/* Decorative Blob 2 */}
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[400px] h-[400px] rounded-full bg-blue-500/10 blur-[130px] pointer-events-none animate-pulse duration-[10000ms]" />
+
+      {/* Centered Glassmorphism Panel */}
+      <div className="relative z-10 w-full max-w-xl bg-white/[0.04] backdrop-blur-[24px] border border-white/[0.08] shadow-2xl rounded-3xl p-6 md:p-8 transition-all duration-500 my-4 md:my-0">
         
-        {/* Left Column: Branding & Event Hero Info (Desktop Left Side) */}
-        <div className="lg:col-span-6 xl:col-span-7 flex flex-col justify-center space-y-6 text-left">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs uppercase tracking-widest font-semibold w-fit">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Invest Georgia UAE · IPS 2026</span>
-          </div>
-
-          <h1 className={`${cormorant.className} text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-wide text-white`}>
-            Invest Georgia UAE
-          </h1>
-
-          <p className="text-white/70 text-sm sm:text-base font-light leading-relaxed max-w-xl">
-            Join Invest Georgia UAE at the International Property Show (IPS 2026) in Dubai. Connect with top development teams, discover zero-tax property investments, and access exclusive developer rates.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs">
-              <p className="font-semibold text-emerald-400 text-sm mb-0.5">0% Tax</p>
-              <p className="text-white/50 text-[11px]">On Capital Gains</p>
+        {success ? (
+          <div className="flex flex-col items-center justify-center text-center py-10 animate-fade-in">
+            <div className="w-20 h-20 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-6">
+              <UserCheck className="w-10 h-10" />
             </div>
-            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs">
-              <p className="font-semibold text-emerald-400 text-sm mb-0.5">High ROI</p>
-              <p className="text-white/50 text-[11px]">Strong Rental Yields</p>
-            </div>
-            <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs">
-              <p className="font-semibold text-emerald-400 text-sm mb-0.5">Direct Pricing</p>
-              <p className="text-white/50 text-[11px]">IPS 2026 Offers</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Registration Form Panel (Desktop Right Side) */}
-        <div className="lg:col-span-6 xl:col-span-5 flex justify-center lg:justify-end">
-          <div className="w-full max-w-md bg-neutral-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 transition-all">
             
-            {success ? (
-              <div className="flex flex-col items-center justify-center text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-5">
-                  <UserCheck className="w-8 h-8" />
-                </div>
-                
-                <h2 className={`${cormorant.className} text-3xl font-bold text-white mb-3 tracking-wide`}>
-                  Registration Received
-                </h2>
-                
-                <p className="text-white/70 text-xs sm:text-sm max-w-sm leading-relaxed font-light mb-6">
-                  Thank you for registering with <strong>Invest Georgia UAE</strong>. Our team will get in touch with you shortly.
-                </p>
+            <h2 className={`${cormorant.className} text-4xl font-bold text-white mb-4 tracking-wide`}>
+              Registration Received
+            </h2>
+            
+            <p className="text-white/70 text-sm md:text-base max-w-md leading-relaxed font-light mb-8">
+              Thank you for registering with <strong>Invest Georgia UAE</strong>. Our team will get in touch with you shortly with matching opportunities.
+            </p>
 
-                <button
-                  onClick={() => setSuccess(false)}
-                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/10 px-6 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all"
-                >
-                  Submit Another Form
-                </button>
+            <button
+              onClick={() => setSuccess(false)}
+              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white border border-white/10 px-8 py-3 rounded-full text-xs font-semibold tracking-wider uppercase transition-all duration-300 transform hover:scale-[1.02]"
+            >
+              Submit Another Form
+            </button>
+          </div>
+        ) : (
+          <div className="w-full">
+            {/* Header */}
+            <div className="text-center mb-5">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-emerald-400 font-semibold mb-2 block">
+                Exclusive Access · Invest Georgia UAE
+              </span>
+              <h1 className={`${cormorant.className} text-3xl md:text-4xl font-bold leading-tight tracking-wide text-white`}>
+                Explore Global Property Opportunities
+              </h1>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleFinalSubmit} className="space-y-4">
+              
+              {/* Name Input */}
+              <div className="space-y-1.5">
+                <label htmlFor="name" className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
+                  Full Name <span className="text-emerald-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your full name"
+                  disabled={isSubmitting}
+                  className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none placeholder-white/30"
+                  required
+                />
               </div>
-            ) : (
-              <div className="w-full">
-                {/* Header */}
-                <div className="mb-5">
-                  <span className="text-[10px] uppercase tracking-[0.25em] text-emerald-400 font-semibold mb-1 block">
-                    IPS 2026 Registration
-                  </span>
-                  <h2 className={`${cormorant.className} text-2xl sm:text-3xl font-bold tracking-wide text-white`}>
-                    Register Your Interest
-                  </h2>
-                </div>
 
-                {/* Form */}
-                <form onSubmit={handleFinalSubmit} className="space-y-3.5">
-                  
-                  {/* Name Input */}
-                  <div className="space-y-1">
-                    <label htmlFor="name" className="text-white/75 text-[10px] font-semibold uppercase tracking-wider block">
-                      Full Name <span className="text-emerald-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter your full name"
+              {/* Email Input */}
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
+                  Email Address <span className="text-emerald-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address (e.g. name@domain.com)"
+                  disabled={isSubmitting}
+                  className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none placeholder-white/30"
+                  required
+                />
+              </div>
+
+              {/* Phone / WhatsApp Input with Inline Verification */}
+              <div className="space-y-1.5">
+                <label htmlFor="phone" className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
+                  Phone / WhatsApp Number <span className="text-emerald-400">*</span>
+                </label>
+                <div className="flex gap-2 items-center">
+                  <div className="w-[110px] shrink-0">
+                    <SearchableDropdown
+                      items={COUNTRY_LIST}
+                      value={countryCode}
+                      onChange={(item) => {
+                        setCountryCode(item.code)
+                        setIsPhoneVerified(false)
+                      }}
+                      placeholder="+971"
+                      displayFormat={(item) => `${item.flag} ${item.code}`}
+                      matchKey="code"
                       disabled={isSubmitting}
-                      className="w-full bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] text-white border border-white/10 focus:border-emerald-500/50 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-all outline-none placeholder-white/30"
-                      required
                     />
                   </div>
-
-                  {/* Email Input */}
-                  <div className="space-y-1">
-                    <label htmlFor="email" className="text-white/75 text-[10px] font-semibold uppercase tracking-wider block">
-                      Email Address <span className="text-emerald-400">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@domain.com"
-                      disabled={isSubmitting}
-                      className="w-full bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] text-white border border-white/10 focus:border-emerald-500/50 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-all outline-none placeholder-white/30"
-                      required
-                    />
-                  </div>
-
-                  {/* Phone / WhatsApp Input with Inline Verification */}
-                  <div className="space-y-1">
-                    <label htmlFor="phone" className="text-white/75 text-[10px] font-semibold uppercase tracking-wider block">
-                      Phone / WhatsApp Number <span className="text-emerald-400">*</span>
-                    </label>
-                    <div className="flex gap-2 items-center">
-                      <div className="w-[105px] shrink-0">
-                        <SearchableDropdown
-                          items={COUNTRY_LIST}
-                          value={countryCode}
-                          onChange={(item) => {
-                            setCountryCode(item.code)
-                            setIsPhoneVerified(false)
-                          }}
-                          placeholder="+971"
-                          displayFormat={(item) => `${item.flag} ${item.code}`}
-                          matchKey="code"
-                          disabled={isSubmitting}
-                        />
-                      </div>
-                      <input
-                        type="tel"
-                        id="phone"
-                        pattern="[0-9]*"
-                        value={phone}
-                        onChange={(e) => {
-                          setPhone(e.target.value.replace(/[^0-9]/g, ''))
-                          setIsPhoneVerified(false)
-                        }}
-                        placeholder="50 123 4567"
-                        disabled={isSubmitting}
-                        className="flex-1 bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] text-white border border-white/10 focus:border-emerald-500/50 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-all outline-none placeholder-white/30 min-w-0"
-                        required
-                      />
-                      {isPhoneVerified ? (
-                        <div className="shrink-0 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>Verified</span>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleVerifyPhoneClick}
-                          disabled={isSendingOtp || !phone.trim()}
-                          className="shrink-0 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-black font-semibold text-xs px-3 py-2.5 rounded-xl transition-all flex items-center gap-1 cursor-pointer"
-                        >
-                          {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
-                          <span>Verify</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Preferred Mode of Contact Dropdown */}
-                  <div className="space-y-1">
-                    <label htmlFor="preferredContactMode" className="text-white/75 text-[10px] font-semibold uppercase tracking-wider block">
-                      Preferred Mode of Contact <span className="text-emerald-400">*</span>
-                    </label>
-                    <div className="relative w-full">
-                      <select
-                        id="preferredContactMode"
-                        value={preferredContactMode}
-                        onChange={(e) => setPreferredContactMode(e.target.value)}
-                        disabled={isSubmitting}
-                        className="w-full bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-all outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="WhatsApp" className="bg-neutral-950 text-white">WhatsApp</option>
-                        <option value="Call" className="bg-neutral-950 text-white">Call</option>
-                        <option value="Email" className="bg-neutral-950 text-white">Email</option>
-                      </select>
-                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 text-xs">
-                        ▼
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Preferred Language Dropdown */}
-                  <div className="space-y-1">
-                    <label htmlFor="language" className="text-white/75 text-[10px] font-semibold uppercase tracking-wider block">
-                      Preferred Language <span className="text-emerald-400">*</span>
-                    </label>
-                    <div className="relative w-full">
-                      <select
-                        id="language"
-                        value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                        disabled={isSubmitting}
-                        className="w-full bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-all outline-none appearance-none cursor-pointer"
-                      >
-                        <option value="English" className="bg-neutral-950 text-white">English</option>
-                        <option value="Arabic" className="bg-neutral-950 text-white">Arabic</option>
-                        <option value="Hindi" className="bg-neutral-950 text-white">Hindi</option>
-                        <option value="Other" className="bg-neutral-950 text-white">Other</option>
-                      </select>
-                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 text-xs">
-                        ▼
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Role Selection */}
-                  <div className="space-y-2 pt-1">
-                    <label className="text-white/75 text-[10px] font-semibold uppercase tracking-wider block">
-                      I am a: <span className="text-emerald-400">*</span>
-                    </label>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      {/* Investor Option */}
-                      <button
-                        type="button"
-                        onClick={() => setRole('investor')}
-                        disabled={isSubmitting}
-                        className={`relative py-2 px-3 rounded-xl border text-left transition-all duration-200 flex items-center justify-between cursor-pointer ${
-                          role === 'investor'
-                            ? 'bg-white/10 border-white/30 text-white font-semibold'
-                            : 'bg-white/[0.02] border-white/10 hover:bg-white/5 text-white/50 hover:text-white/70'
-                        }`}
-                      >
-                        <span className="text-xs uppercase tracking-wider">Investor</span>
-                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                          role === 'investor' ? 'border-white bg-white' : 'border-white/30'
-                        }`}>
-                          {role === 'investor' && <div className="w-1 h-1 rounded-full bg-black" />}
-                        </div>
-                      </button>
-
-                      {/* Broker Option */}
-                      <button
-                        type="button"
-                        onClick={() => setRole('broker')}
-                        disabled={isSubmitting}
-                        className={`relative py-2 px-3 rounded-xl border text-left transition-all duration-200 flex items-center justify-between cursor-pointer ${
-                          role === 'broker'
-                            ? 'bg-white/10 border-white/30 text-white font-semibold'
-                            : 'bg-white/[0.02] border-white/10 hover:bg-white/5 text-white/50 hover:text-white/70'
-                        }`}
-                      >
-                        <span className="text-xs uppercase tracking-wider truncate">Broker / Agent</span>
-                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                          role === 'broker' ? 'border-white bg-white' : 'border-white/30'
-                        }`}>
-                          {role === 'broker' && <div className="w-1 h-1 rounded-full bg-black" />}
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
+                  <input
+                    type="tel"
+                    id="phone"
+                    pattern="[0-9]*"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value.replace(/[^0-9]/g, ''))
+                      setIsPhoneVerified(false)
+                    }}
+                    placeholder="50 123 4567"
                     disabled={isSubmitting}
-                    className={`w-full mt-3 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-3.5 rounded-xl transition-all ${
-                      isPhoneVerified
-                        ? 'bg-white text-black hover:bg-neutral-100 cursor-pointer'
-                        : 'bg-white/10 text-white/40 cursor-not-allowed border border-white/10'
+                    className="flex-1 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-3.5 py-3 text-sm font-light transition-all outline-none placeholder-white/30 min-w-0"
+                    required
+                  />
+                  {isPhoneVerified ? (
+                    <div className="shrink-0 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold text-xs px-3 py-3 rounded-xl flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Verified</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleVerifyPhoneClick}
+                      disabled={isSendingOtp || !phone.trim()}
+                      className="shrink-0 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-black font-semibold text-xs px-3.5 py-3 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                      <span>Verify Phone</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Preferred Mode of Contact Dropdown */}
+              <div className="space-y-1.5">
+                <label htmlFor="preferredContactMode" className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
+                  Preferred Mode of Contact <span className="text-emerald-400">*</span>
+                </label>
+                <div className="relative w-full">
+                  <select
+                    id="preferredContactMode"
+                    value={preferredContactMode}
+                    onChange={(e) => setPreferredContactMode(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="WhatsApp" className="bg-neutral-950 text-white">WhatsApp</option>
+                    <option value="Call" className="bg-neutral-950 text-white">Call</option>
+                    <option value="Email" className="bg-neutral-950 text-white">Email</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 text-xs">
+                    ▼
+                  </div>
+                </div>
+              </div>
+
+              {/* Preferred Language Dropdown */}
+              <div className="space-y-1.5">
+                <label htmlFor="language" className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
+                  Preferred Language <span className="text-emerald-400">*</span>
+                </label>
+                <div className="relative w-full">
+                  <select
+                    id="language"
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    disabled={isSubmitting}
+                    className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="English" className="bg-neutral-950 text-white">English</option>
+                    <option value="Arabic" className="bg-neutral-950 text-white">Arabic</option>
+                    <option value="Hindi" className="bg-neutral-950 text-white">Hindi</option>
+                    <option value="Other" className="bg-neutral-950 text-white">Other</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40 text-xs">
+                    ▼
+                  </div>
+                </div>
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-2.5">
+                <label className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
+                  I am a: <span className="text-emerald-400">*</span>
+                </label>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Investor Option */}
+                  <button
+                    type="button"
+                    onClick={() => setRole('investor')}
+                    disabled={isSubmitting}
+                    className={`relative py-2.5 px-4 rounded-xl border text-left transition-all duration-300 flex items-center justify-between cursor-pointer ${
+                      role === 'investor'
+                        ? 'bg-white/10 border-white/30 text-white font-semibold'
+                        : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-white/50 hover:text-white/70'
                     }`}
                   >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Processing Registration...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Submit Registration</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
+                    <span className="text-xs uppercase tracking-wider">Investor</span>
+                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                      role === 'investor' ? 'border-white bg-white' : 'border-white/30'
+                    }`}>
+                      {role === 'investor' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                    </div>
                   </button>
 
-                </form>
+                  {/* Broker Option */}
+                  <button
+                    type="button"
+                    onClick={() => setRole('broker')}
+                    disabled={isSubmitting}
+                    className={`relative py-2.5 px-4 rounded-xl border text-left transition-all duration-300 flex items-center justify-between cursor-pointer ${
+                      role === 'broker'
+                        ? 'bg-white/10 border-white/30 text-white font-semibold'
+                        : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] text-white/50 hover:text-white/70'
+                    }`}
+                  >
+                    <span className="text-xs uppercase tracking-wider truncate">Broker / Agent</span>
+                    <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                      role === 'broker' ? 'border-white bg-white' : 'border-white/30'
+                    }`}>
+                      {role === 'broker' && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                    </div>
+                  </button>
+                </div>
               </div>
-            )}
-            
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-4 rounded-xl transition-all duration-300 transform ${
+                  isPhoneVerified
+                    ? 'bg-white text-black hover:bg-neutral-100 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+                    : 'bg-white/10 text-white/40 cursor-not-allowed border border-white/10'
+                }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Processing Submission...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit Registration</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+
+            </form>
           </div>
-        </div>
+        )}
+        
       </div>
 
       {/* ─── OTP VERIFICATION MODAL ─── */}
       {showOtpModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-2xl p-6 sm:p-8 overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-2xl flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-neutral-950 border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden">
             {/* Close Button */}
             <button
               onClick={() => setShowOtpModal(false)}
@@ -807,29 +776,29 @@ export default function IpsRegistrationPage() {
               <X className="w-5 h-5" />
             </button>
 
-            {/* Modal Content */}
+            {/* Modal Icon Badge */}
             <div className="flex flex-col items-center text-center">
-              <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center mb-3 ${
+              <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center mb-4 ${
                 otpChannel === 'WHATSAPP'
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                   : 'bg-blue-500/10 border-blue-500/30 text-blue-400'
               }`}>
                 {otpChannel === 'WHATSAPP' ? (
-                  <MessageSquare className="w-7 h-7" />
+                  <MessageSquare className="w-8 h-8" />
                 ) : (
-                  <Mail className="w-7 h-7" />
+                  <Mail className="w-8 h-8" />
                 )}
               </div>
 
-              <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-semibold mb-1">
+              <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-semibold mb-1 block">
                 Invest Georgia UAE
               </span>
 
-              <h3 className={`${cormorant.className} text-2xl font-bold text-white mb-2`}>
+              <h3 className={`${cormorant.className} text-2xl md:text-3xl font-bold text-white mb-2`}>
                 Verification Code
               </h3>
 
-              <p className="text-white/70 text-xs sm:text-sm font-light max-w-xs mb-6">
+              <p className="text-white/70 text-xs md:text-sm font-light max-w-xs mb-6">
                 {otpChannel === 'WHATSAPP' ? (
                   <>Enter the 4-digit code sent to your WhatsApp number <span className="font-semibold text-emerald-400">{fullPhone}</span></>
                 ) : (
@@ -850,24 +819,24 @@ export default function IpsRegistrationPage() {
                     onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                     disabled={isVerifyingOtp || isSendingOtp}
-                    className="w-12 h-14 text-center text-xl font-bold text-white bg-white/5 border border-white/10 rounded-xl focus:border-emerald-400 focus:bg-white/10 outline-none transition-all"
+                    className="w-14 h-16 text-center text-2xl font-bold text-white bg-white/[0.05] border border-white/10 rounded-xl focus:border-emerald-400 focus:bg-white/[0.08] outline-none transition-all"
                   />
                 ))}
               </div>
 
-              {/* Remaining Attempts Warning */}
+              {/* Error / Remaining Attempts Banner */}
               {failedAttempts > 0 && otpChannel === 'WHATSAPP' && (
                 <div className="w-full bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl py-2 px-3 text-xs mb-4 text-center">
                   ⚠️ {3 - failedAttempts} attempt{3 - failedAttempts === 1 ? '' : 's'} remaining on WhatsApp before switching to Email.
                 </div>
               )}
 
-              {/* Verify Button */}
+              {/* Action Buttons */}
               <button
                 type="button"
                 onClick={() => verifyOtpCode()}
                 disabled={isVerifyingOtp || isSendingOtp || otpDigits.some(d => d === '')}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-black font-semibold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 mb-4 cursor-pointer"
+                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-black font-semibold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 mb-4 cursor-pointer"
               >
                 {isVerifyingOtp ? (
                   <>
@@ -882,7 +851,7 @@ export default function IpsRegistrationPage() {
                 )}
               </button>
 
-              {/* Resend Footer */}
+              {/* Resend & Channel Switch Footer */}
               <div className="flex flex-col gap-2 items-center text-xs text-white/50">
                 {canResend ? (
                   <button
