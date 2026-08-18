@@ -8,15 +8,11 @@ export async function GET(request: Request) {
     if (!apiKey || !channelId) {
       return NextResponse.json({
         configured: false,
-        error: 'WAZZUP_API_KEY or WAZZUP_CHANNEL_ID is not configured in .env',
-        env: {
-          hasApiKey: !!apiKey,
-          hasChannelId: !!channelId
-        }
+        error: 'WAZZUP_API_KEY or WAZZUP_CHANNEL_ID is not configured in .env'
       })
     }
 
-    // 1. Fetch channel details
+    // 1. Fetch channel list
     const channelsRes = await fetch('https://api.wazzup24.com/v3/channels', {
       method: 'GET',
       headers: {
@@ -50,7 +46,7 @@ export async function POST(request: Request) {
 
     const cleanPhone = (phone || '').replace(/[^0-9]/g, '')
 
-    // Send test message
+    // 1. Send message via Wazzup API
     const sendRes = await fetch('https://api.wazzup24.com/v3/message', {
       method: 'POST',
       headers: {
@@ -67,11 +63,28 @@ export async function POST(request: Request) {
 
     const sendData = await sendRes.json().catch(() => null)
 
+    // 2. Fetch recent messages to check status of the message
+    let messageStatusData = null
+    if (sendRes.ok && sendData?.messageId) {
+      // Wait 1 second for status update in Wazzup
+      await new Promise(r => setTimeout(r, 1200))
+      
+      const statusRes = await fetch(`https://api.wazzup24.com/v3/messages?messageId=${sendData.messageId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      messageStatusData = await statusRes.json().catch(() => null)
+    }
+
     return NextResponse.json({
       sendHttpStatus: sendRes.status,
       sendOk: sendRes.ok,
       sendData,
-      sentToPhone: cleanPhone
+      sentToPhone: cleanPhone,
+      messageStatusData
     })
 
   } catch (error: any) {
