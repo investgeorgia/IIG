@@ -24,29 +24,25 @@ async function ensureOtpTableExists() {
 
 export async function POST(request: Request) {
   try {
-    const { target, channel, code } = await request.json()
+    const { target, code } = await request.json()
 
     if (!target || !target.trim()) {
-      return NextResponse.json({ error: 'Target is required' }, { status: 400 })
-    }
-    if (!channel || (channel !== 'WHATSAPP' && channel !== 'EMAIL')) {
-      return NextResponse.json({ error: 'Channel is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Target email is required' }, { status: 400 })
     }
     if (!code || !code.trim()) {
       return NextResponse.json({ error: 'Verification code is required' }, { status: 400 })
     }
 
-    const cleanTarget = target.trim()
+    const cleanTarget = target.trim().toLowerCase()
     const cleanCode = code.trim()
 
     // Ensure table exists on production DB
     await ensureOtpTableExists()
 
-    // Find the latest active OTP for this target & channel
+    // Find the latest active OTP for this target
     const otpRecord = await prisma.otpVerification.findFirst({
       where: {
         target: cleanTarget,
-        channel,
       },
       orderBy: {
         createdAt: 'desc'
@@ -62,14 +58,9 @@ export async function POST(request: Request) {
     }
 
     // Check attempt limit
-    if (otpRecord.attempts >= 3) {
-      const fallbackToEmail = channel === 'WHATSAPP'
+    if (otpRecord.attempts >= 5) {
       return NextResponse.json({
-        error: fallbackToEmail
-          ? 'Too many failed attempts. Verification switched to Email.'
-          : 'Too many failed attempts. Please request a new code.',
-        fallbackToEmail,
-        attempts: otpRecord.attempts
+        error: 'Too many failed attempts. Please request a new verification code.'
       }, { status: 400 })
     }
 
@@ -81,14 +72,9 @@ export async function POST(request: Request) {
         data: { attempts: newAttempts }
       })
 
-      const fallbackToEmail = newAttempts >= 3 && channel === 'WHATSAPP'
-
       return NextResponse.json({
-        error: fallbackToEmail
-          ? '3 incorrect attempts on WhatsApp. Switching to Email verification.'
-          : `Incorrect verification code. (${3 - newAttempts} attempt${3 - newAttempts === 1 ? '' : 's'} remaining)`,
-        attempts: newAttempts,
-        fallbackToEmail
+        error: `Incorrect verification code. (${5 - newAttempts} attempt${5 - newAttempts === 1 ? '' : 's'} remaining)`,
+        attempts: newAttempts
       }, { status: 400 })
     }
 
@@ -100,7 +86,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: 'Verification successful'
+      message: 'Email address verified successfully!'
     })
 
   } catch (error: any) {
