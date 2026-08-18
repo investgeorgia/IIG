@@ -45,6 +45,7 @@ export async function POST(request: Request) {
 
     // Construct the lead comments
     const roleLabel = role === 'investor' ? 'Investor' : 'Real Estate Broker / Agent'
+    const leadTrackingText = role === 'investor' ? 'IPS 2026 Investor' : 'IPS 2026 Broker'
     const contactMode = preferredContactMode || country
     const commentsArray = [
       `Submitted via custom IPS Registration Form.`,
@@ -61,6 +62,13 @@ export async function POST(request: Request) {
         NAME: name.trim(),
         SOURCE_ID: 'TRADE_SHOW',
         SOURCE_DESCRIPTION: 'IPS 2026',
+
+        // Custom Bitrix24 User Fields
+        UF_CRM_1746615728097: name.trim(),           // Full Name
+        UF_CRM_65F049FADAF0F: email.trim(),          // Email
+        UF_CRM_1708933298368: phone.trim(),          // [Phone No]
+        UF_CRM_1777284846883: leadTrackingText,      // lead_tracking: IPS 2026 Investor / IPS 2026 Broker
+
         EMAIL: [
           {
             VALUE: email.trim(),
