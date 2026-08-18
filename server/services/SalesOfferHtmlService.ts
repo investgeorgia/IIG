@@ -13,9 +13,9 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
   const snap = proposal.snapshot as any
 
   // Calculate prices
-  const basePrice = Number(snap.unit.price)
+  const basePrice = Number(proposal.selectedPrice || snap?.unit?.price || 0)
   const discountAmount = proposal.discountPercent ? basePrice * (proposal.discountPercent / 100) : 0
-  const finalPriceNum = proposal.customPrice ? Number(proposal.customPrice) : (basePrice - discountAmount)
+  const finalPriceNum = (proposal.customPrice && Number(proposal.customPrice) > 0) ? Number(proposal.customPrice) : (basePrice - discountAmount)
   const finalPriceUSD = finalPriceNum
   const finalPriceAED = finalPriceNum * USD_TO_AED
 

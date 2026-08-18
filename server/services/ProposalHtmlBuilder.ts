@@ -301,11 +301,11 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   }
 
   // --- Compute values ---
-  const basePrice = Number(snap?.unit?.price || 0)
+  const basePrice = Number(proposal.selectedPrice || snap?.unit?.price || 0)
   const discountAmount = proposal.discountPercent
     ? basePrice * (proposal.discountPercent / 100)
     : 0
-  const finalPriceNum = proposal.customPrice
+  const finalPriceNum = (proposal.customPrice && Number(proposal.customPrice) > 0)
     ? Number(proposal.customPrice)
     : basePrice - discountAmount
   const finalPriceUSD = finalPriceNum
