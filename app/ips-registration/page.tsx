@@ -173,27 +173,27 @@ function SearchableDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left bg-zinc-900/90 hover:bg-zinc-800/90 text-white border border-zinc-700/60 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none flex justify-between items-center cursor-pointer select-none"
+        className="w-full text-left bg-slate-50 hover:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none flex justify-between items-center cursor-pointer select-none"
       >
         <span className="truncate">
           {selectedItem ? displayFormat(selectedItem) : placeholder}
         </span>
-        <span className="text-zinc-400 text-xs ml-1">▼</span>
+        <span className="text-slate-400 text-xs ml-1">▼</span>
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-zinc-950 border border-zinc-700/70 rounded-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-          <div className="p-2 border-b border-zinc-800">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="p-2 border-b border-slate-100">
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search..."
-              className="w-full bg-zinc-900 text-white border border-zinc-700/60 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-zinc-500 font-light"
+              className="w-full bg-slate-50 text-slate-900 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-zinc-500 font-normal"
               autoFocus
             />
           </div>
-          <ul className="max-h-60 overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+          <ul className="max-h-60 overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => (
                 <li key={item.name + '-' + item.code}>
@@ -204,16 +204,16 @@ function SearchableDropdown({
                       setIsOpen(false)
                       setSearch('')
                     }}
-                    className="w-full text-left px-3.5 py-2 text-xs text-zinc-300 hover:text-white hover:bg-zinc-800/80 transition-colors flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <span className="text-sm shrink-0">{item.flag}</span>
-                    <span className="truncate">{item.name}</span>
-                    <span className="text-zinc-500 ml-auto shrink-0">{item.code}</span>
+                    <span className="truncate font-medium">{item.name}</span>
+                    <span className="text-slate-400 ml-auto shrink-0 text-[11px]">{item.code}</span>
                   </button>
                 </li>
               ))
             ) : (
-              <li className="px-4 py-3 text-xs text-zinc-500 text-center">
+              <li className="px-4 py-3 text-xs text-slate-400 text-center">
                 No results found
               </li>
             )}
@@ -235,7 +235,7 @@ export default function IpsRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  // Verification State
+  // Email Verification State
   const [isEmailVerified, setIsEmailVerified] = useState(false)
 
   // OTP Verification Modal States
@@ -476,39 +476,39 @@ export default function IpsRegistrationPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center bg-zinc-950 overflow-x-hidden font-sans px-4 py-8 md:px-12 lg:px-16">
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-slate-50 overflow-x-hidden font-sans px-4 py-8 md:px-12 lg:px-16">
       {/* Background Image - Fixed & Clearly Visible */}
       <div 
-        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-55 z-0 scale-105"
+        className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-40 z-0 scale-105"
         style={{ backgroundImage: `url('/batumi-bg.jpg')` }}
       />
-      {/* Gradient Vignette Overlay */}
-      <div className="fixed inset-0 bg-gradient-to-b from-zinc-950/70 via-zinc-950/55 to-zinc-950/80 z-0 pointer-events-none" />
+      {/* Light Gradient Vignette Overlay */}
+      <div className="fixed inset-0 bg-gradient-to-b from-slate-100/85 via-slate-50/75 to-slate-100/90 z-0 pointer-events-none" />
 
       {/* Main 12-Column Container */}
       <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center py-6">
         
         {/* Right Column: Registration Form Panel (FIRST ON PHONE order-1, RIGHT ON DESKTOP lg:order-2 lg:col-span-5) */}
         <div className="order-1 lg:order-2 lg:col-span-5 flex justify-center lg:justify-end">
-          <div className="w-full max-w-md bg-zinc-950/85 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8">
+          <div className="w-full max-w-md bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-2xl shadow-slate-300/40 rounded-2xl p-6 sm:p-8">
             
             {success ? (
               <div className="flex flex-col items-center justify-center text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-5">
+                <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-5 shadow-xs">
                   <UserCheck className="w-8 h-8" />
                 </div>
                 
-                <h2 className={`${cormorant.className} text-3xl font-bold text-white mb-3 tracking-wide`}>
+                <h2 className={`${cormorant.className} text-3xl font-bold text-slate-900 mb-3 tracking-wide`}>
                   Registration Received
                 </h2>
                 
-                <p className="text-zinc-300 text-xs sm:text-sm max-w-sm leading-relaxed font-light mb-6">
+                <p className="text-slate-600 text-xs sm:text-sm max-w-sm leading-relaxed font-normal mb-6">
                   Thank you for registering with <strong>Invest Georgia UAE</strong>. Our team will get in touch with you shortly.
                 </p>
 
                 <button
                   onClick={() => setSuccess(false)}
-                  className="inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 px-6 py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase transition-colors"
+                  className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase transition-colors shadow-sm cursor-pointer"
                 >
                   Submit Another Form
                 </button>
@@ -517,10 +517,10 @@ export default function IpsRegistrationPage() {
               <div className="w-full">
                 {/* Form Header */}
                 <div className="mb-5">
-                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#ca2d39] font-semibold mb-1 block">
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#ca2d39] font-bold mb-1 block">
                     IPS 2026 Registration
                   </span>
-                  <h2 className={`${cormorant.className} text-2xl sm:text-3xl font-bold tracking-wide text-white`}>
+                  <h2 className={`${cormorant.className} text-2xl sm:text-3xl font-bold tracking-wide text-slate-900`}>
                     Register Your Interest
                   </h2>
                 </div>
@@ -530,8 +530,8 @@ export default function IpsRegistrationPage() {
                   
                   {/* Name Input */}
                   <div className="space-y-1">
-                    <label htmlFor="name" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Full Name <span className="text-zinc-400">*</span>
+                    <label htmlFor="name" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Full Name <span className="text-slate-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -540,15 +540,15 @@ export default function IpsRegistrationPage() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
                       disabled={isSubmitting}
-                      className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500"
+                      className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400"
                       required
                     />
                   </div>
 
                   {/* Email Input with Inline Verification */}
                   <div className="space-y-1">
-                    <label htmlFor="email" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Email Address <span className="text-zinc-400">*</span>
+                    <label htmlFor="email" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Email Address <span className="text-slate-400">*</span>
                     </label>
                     <div className="flex gap-2 items-center">
                       <input
@@ -561,12 +561,12 @@ export default function IpsRegistrationPage() {
                         }}
                         placeholder="name@domain.com"
                         disabled={isSubmitting}
-                        className="flex-1 bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500 min-w-0"
+                        className="flex-1 bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400 min-w-0"
                         required
                       />
                       {isEmailVerified ? (
-                        <div className="shrink-0 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <div className="shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                           <span>Verified</span>
                         </div>
                       ) : (
@@ -574,7 +574,7 @@ export default function IpsRegistrationPage() {
                           type="button"
                           onClick={handleVerifyEmailClick}
                           disabled={isSendingOtp || !email.trim()}
-                          className="shrink-0 bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-900 disabled:text-zinc-600 text-white border border-zinc-700 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                          className="shrink-0 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                         >
                           {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5 text-[#ca2d39]" />}
                           <span>Verify Email</span>
@@ -585,8 +585,8 @@ export default function IpsRegistrationPage() {
 
                   {/* Phone / WhatsApp Input */}
                   <div className="space-y-1">
-                    <label htmlFor="phone" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Phone / WhatsApp Number <span className="text-zinc-400">*</span>
+                    <label htmlFor="phone" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Phone / WhatsApp Number <span className="text-slate-400">*</span>
                     </label>
                     <div className="flex gap-2 items-center">
                       <div className="w-[105px] shrink-0">
@@ -608,7 +608,7 @@ export default function IpsRegistrationPage() {
                         onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
                         placeholder="50 123 4567"
                         disabled={isSubmitting}
-                        className="flex-1 bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none placeholder-zinc-500 min-w-0"
+                        className="flex-1 bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400 min-w-0"
                         required
                       />
                     </div>
@@ -616,8 +616,8 @@ export default function IpsRegistrationPage() {
 
                   {/* Preferred Mode of Contact Dropdown */}
                   <div className="space-y-1">
-                    <label htmlFor="preferredContactMode" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Preferred Mode of Contact <span className="text-zinc-400">*</span>
+                    <label htmlFor="preferredContactMode" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Preferred Mode of Contact <span className="text-slate-400">*</span>
                     </label>
                     <div className="relative w-full">
                       <select
@@ -625,13 +625,13 @@ export default function IpsRegistrationPage() {
                         value={preferredContactMode}
                         onChange={(e) => setPreferredContactMode(e.target.value)}
                         disabled={isSubmitting}
-                        className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none appearance-none cursor-pointer"
+                        className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none appearance-none cursor-pointer"
                       >
-                        <option value="WhatsApp" className="bg-zinc-950 text-white">WhatsApp</option>
-                        <option value="Call" className="bg-zinc-950 text-white">Call</option>
-                        <option value="Email" className="bg-zinc-950 text-white">Email</option>
+                        <option value="WhatsApp" className="bg-white text-slate-900">WhatsApp</option>
+                        <option value="Call" className="bg-white text-slate-900">Call</option>
+                        <option value="Email" className="bg-white text-slate-900">Email</option>
                       </select>
-                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500 text-xs">
+                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
                         ▼
                       </div>
                     </div>
@@ -639,8 +639,8 @@ export default function IpsRegistrationPage() {
 
                   {/* Preferred Language Dropdown */}
                   <div className="space-y-1">
-                    <label htmlFor="language" className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      Preferred Language <span className="text-zinc-400">*</span>
+                    <label htmlFor="language" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Preferred Language <span className="text-slate-400">*</span>
                     </label>
                     <div className="relative w-full">
                       <select
@@ -648,14 +648,14 @@ export default function IpsRegistrationPage() {
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
                         disabled={isSubmitting}
-                        className="w-full bg-zinc-900/90 hover:bg-zinc-900 focus:bg-zinc-900 text-white border border-zinc-700/70 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-light transition-colors outline-none appearance-none cursor-pointer"
+                        className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none appearance-none cursor-pointer"
                       >
-                        <option value="English" className="bg-zinc-950 text-white">English</option>
-                        <option value="Arabic" className="bg-zinc-950 text-white">Arabic</option>
-                        <option value="Hindi" className="bg-zinc-950 text-white">Hindi</option>
-                        <option value="Other" className="bg-zinc-950 text-white">Other</option>
+                        <option value="English" className="bg-white text-slate-900">English</option>
+                        <option value="Arabic" className="bg-white text-slate-900">Arabic</option>
+                        <option value="Hindi" className="bg-white text-slate-900">Hindi</option>
+                        <option value="Other" className="bg-white text-slate-900">Other</option>
                       </select>
-                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500 text-xs">
+                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
                         ▼
                       </div>
                     </div>
@@ -663,8 +663,8 @@ export default function IpsRegistrationPage() {
 
                   {/* Role Selection */}
                   <div className="space-y-2 pt-1">
-                    <label className="text-zinc-300 text-[10px] font-semibold uppercase tracking-wider block">
-                      I am a: <span className="text-zinc-400">*</span>
+                    <label className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      I am a: <span className="text-slate-400">*</span>
                     </label>
                     
                     <div className="grid grid-cols-2 gap-3">
@@ -673,17 +673,17 @@ export default function IpsRegistrationPage() {
                         type="button"
                         onClick={() => setRole('investor')}
                         disabled={isSubmitting}
-                        className={`relative py-2.5 px-3 rounded-xl border text-left transition-colors duration-150 flex items-center justify-between cursor-pointer ${
+                        className={`relative py-2.5 px-3 rounded-xl border text-left transition-all duration-150 flex items-center justify-between cursor-pointer ${
                           role === 'investor'
-                            ? 'bg-zinc-800 border-zinc-600 text-white font-semibold'
-                            : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200'
+                            ? 'bg-slate-900 border-slate-900 text-white font-semibold shadow-xs'
+                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 text-slate-700'
                         }`}
                       >
                         <span className="text-xs uppercase tracking-wider">Investor</span>
-                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                          role === 'investor' ? 'border-[#ca2d39] bg-[#ca2d39]' : 'border-zinc-600'
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                          role === 'investor' ? 'border-[#ca2d39] bg-[#ca2d39]' : 'border-slate-300 bg-white'
                         }`}>
-                          {role === 'investor' && <div className="w-1 h-1 rounded-full bg-white" />}
+                          {role === 'investor' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                         </div>
                       </button>
 
@@ -692,17 +692,17 @@ export default function IpsRegistrationPage() {
                         type="button"
                         onClick={() => setRole('broker')}
                         disabled={isSubmitting}
-                        className={`relative py-2.5 px-3 rounded-xl border text-left transition-colors duration-150 flex items-center justify-between cursor-pointer ${
+                        className={`relative py-2.5 px-3 rounded-xl border text-left transition-all duration-150 flex items-center justify-between cursor-pointer ${
                           role === 'broker'
-                            ? 'bg-zinc-800 border-zinc-600 text-white font-semibold'
-                            : 'bg-zinc-900/50 border-zinc-800 hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200'
+                            ? 'bg-slate-900 border-slate-900 text-white font-semibold shadow-xs'
+                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 text-slate-700'
                         }`}
                       >
                         <span className="text-xs uppercase tracking-wider truncate">Broker / Agent</span>
-                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                          role === 'broker' ? 'border-[#ca2d39] bg-[#ca2d39]' : 'border-zinc-600'
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                          role === 'broker' ? 'border-[#ca2d39] bg-[#ca2d39]' : 'border-slate-300 bg-white'
                         }`}>
-                          {role === 'broker' && <div className="w-1 h-1 rounded-full bg-white" />}
+                          {role === 'broker' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                         </div>
                       </button>
                     </div>
@@ -712,10 +712,10 @@ export default function IpsRegistrationPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-3.5 rounded-xl transition-colors ${
+                    className={`w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-3.5 rounded-xl transition-all ${
                       isEmailVerified
-                        ? 'bg-[#ca2d39] hover:bg-[#b02530] text-white cursor-pointer shadow-sm'
-                        : 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700/50'
+                        ? 'bg-[#ca2d39] hover:bg-[#b02530] text-white cursor-pointer shadow-md'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300/60'
                     }`}
                   >
                     {isSubmitting ? (
@@ -740,65 +740,65 @@ export default function IpsRegistrationPage() {
 
         {/* Left Column: Event & Branding Hero Info (SECOND ON PHONE order-2, LEFT ON DESKTOP lg:order-1 lg:col-span-7) */}
         <div className="order-2 lg:order-1 lg:col-span-7 flex flex-col justify-center space-y-6 text-left">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ca2d39]/10 border border-[#ca2d39]/30 text-[#ca2d39] text-xs uppercase tracking-widest font-medium w-fit">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#ca2d39]/10 border border-[#ca2d39]/30 text-[#ca2d39] text-xs uppercase tracking-widest font-bold w-fit shadow-xs">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Invest Georgia UAE · IPS 2026</span>
           </div>
 
-          <h1 className={`${cormorant.className} text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-wide text-white`}>
+          <h1 className={`${cormorant.className} text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-wide text-slate-900`}>
             Invest Georgia UAE
           </h1>
 
-          <p className="text-zinc-300 text-sm sm:text-base font-light leading-relaxed max-w-xl">
+          <p className="text-slate-700 text-sm sm:text-base font-normal leading-relaxed max-w-xl">
             Join Invest Georgia UAE at the International Property Show (IPS 2026) in Dubai. Connect with top development teams, discover zero-tax property investments, and access exclusive developer rates.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-xl">
-            <div className="p-4 rounded-xl bg-zinc-950/80 border border-white/10 text-xs backdrop-blur-md">
-              <p className="font-semibold text-[#ca2d39] text-sm mb-1">0% Tax</p>
-              <p className="text-zinc-400 text-[11px] font-light">On Property Capital Gains</p>
+            <div className="p-4 rounded-xl bg-white/90 border border-slate-200/80 shadow-md shadow-slate-200/50 text-xs backdrop-blur-md">
+              <p className="font-bold text-[#ca2d39] text-sm mb-1">0% Tax</p>
+              <p className="text-slate-600 text-[11px] font-medium">On Property Capital Gains</p>
             </div>
-            <div className="p-4 rounded-xl bg-zinc-950/80 border border-white/10 text-xs backdrop-blur-md">
-              <p className="font-semibold text-[#ca2d39] text-sm mb-1">High ROI</p>
-              <p className="text-zinc-400 text-[11px] font-light">Strong Rental Yields</p>
+            <div className="p-4 rounded-xl bg-white/90 border border-slate-200/80 shadow-md shadow-slate-200/50 text-xs backdrop-blur-md">
+              <p className="font-bold text-[#ca2d39] text-sm mb-1">High ROI</p>
+              <p className="text-slate-600 text-[11px] font-medium">Strong Rental Yields</p>
             </div>
-            <div className="p-4 rounded-xl bg-zinc-950/80 border border-white/10 text-xs backdrop-blur-md">
-              <p className="font-semibold text-[#ca2d39] text-sm mb-1">Direct Access</p>
-              <p className="text-zinc-400 text-[11px] font-light">Exclusive IPS Offers</p>
+            <div className="p-4 rounded-xl bg-white/90 border border-slate-200/80 shadow-md shadow-slate-200/50 text-xs backdrop-blur-md">
+              <p className="font-bold text-[#ca2d39] text-sm mb-1">Direct Access</p>
+              <p className="text-slate-600 text-[11px] font-medium">Exclusive IPS Offers</p>
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* ─── OTP VERIFICATION MODAL ─── */}
+      {/* ─── EMAIL OTP VERIFICATION MODAL (LIGHT THEME) ─── */}
       {showOtpModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-6 sm:p-8 overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden">
             {/* Close Button */}
             <button
               onClick={() => setShowOtpModal(false)}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors p-2"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors p-2 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             {/* Modal Content */}
             <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 rounded-2xl border bg-zinc-900 border-zinc-700 text-[#ca2d39] flex items-center justify-center mb-3">
+              <div className="w-14 h-14 rounded-2xl border bg-slate-50 border-slate-200 text-[#ca2d39] flex items-center justify-center mb-3 shadow-xs">
                 <Mail className="w-7 h-7" />
               </div>
 
-              <span className="text-[10px] uppercase tracking-widest text-[#ca2d39] font-semibold mb-1">
+              <span className="text-[10px] uppercase tracking-widest text-[#ca2d39] font-bold mb-1">
                 Invest Georgia UAE
               </span>
 
-              <h3 className={`${cormorant.className} text-2xl font-bold text-white mb-2`}>
+              <h3 className={`${cormorant.className} text-2xl font-bold text-slate-900 mb-2`}>
                 Email Verification Code
               </h3>
 
-              <p className="text-zinc-400 text-xs sm:text-sm font-light max-w-xs mb-6">
-                Enter the 4-digit code sent to your email address <span className="font-semibold text-white">{email}</span>
+              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-xs mb-6">
+                Enter the 4-digit code sent to your email address <span className="font-bold text-slate-900">{email}</span>
               </p>
 
               {/* 4-Digit Inputs */}
@@ -814,14 +814,14 @@ export default function IpsRegistrationPage() {
                     onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                     disabled={isVerifyingOtp || isSendingOtp}
-                    className="w-12 h-14 text-center text-xl font-bold text-white bg-zinc-900 border border-zinc-700 rounded-xl focus:border-zinc-400 outline-none transition-colors"
+                    className="w-12 h-14 text-center text-xl font-bold text-slate-900 bg-slate-50 border border-slate-200 focus:border-zinc-500 rounded-xl outline-none transition-colors shadow-xs"
                   />
                 ))}
               </div>
 
               {/* Remaining Attempts Warning */}
               {failedAttempts > 0 && (
-                <div className="w-full bg-amber-500/10 border border-amber-500/20 text-amber-300 rounded-xl py-2 px-3 text-xs mb-4 text-center">
+                <div className="w-full bg-amber-50 border border-amber-200 text-amber-800 rounded-xl py-2 px-3 text-xs mb-4 text-center font-medium">
                   ⚠️ {5 - failedAttempts} attempt{5 - failedAttempts === 1 ? '' : 's'} remaining.
                 </div>
               )}
@@ -831,7 +831,7 @@ export default function IpsRegistrationPage() {
                 type="button"
                 onClick={() => verifyOtpCode()}
                 disabled={isVerifyingOtp || isSendingOtp || otpDigits.some(d => d === '')}
-                className="w-full py-3 bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 mb-4 cursor-pointer"
+                className="w-full py-3 bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 mb-4 cursor-pointer shadow-md"
               >
                 {isVerifyingOtp ? (
                   <>
@@ -847,15 +847,15 @@ export default function IpsRegistrationPage() {
               </button>
 
               {/* Resend Footer */}
-              <div className="flex flex-col gap-2 items-center text-xs text-zinc-500">
+              <div className="flex flex-col gap-2 items-center text-xs text-slate-500">
                 {canResend ? (
                   <button
                     type="button"
                     onClick={() => sendOtpCode()}
                     disabled={isSendingOtp}
-                    className="text-white hover:underline inline-flex items-center gap-1 font-medium cursor-pointer"
+                    className="text-slate-900 hover:underline inline-flex items-center gap-1 font-semibold cursor-pointer"
                   >
-                    <RefreshCw className="w-3.5 h-3.5" /> Resend Code
+                    <RefreshCw className="w-3.5 h-3.5 text-[#ca2d39]" /> Resend Code
                   </button>
                 ) : (
                   <span>Resend code in {resendTimer}s</span>
