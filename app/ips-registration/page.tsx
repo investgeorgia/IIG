@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Cormorant_Garamond } from 'next/font/google'
 import { toast } from 'sonner'
-import { Loader2, ArrowRight, UserCheck, MessageSquare, Mail, RefreshCw, X, ShieldCheck } from 'lucide-react'
+import { Loader2, ArrowRight, UserCheck, MessageSquare, Mail, RefreshCw, X, ShieldCheck, CheckCircle2 } from 'lucide-react'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -88,7 +88,7 @@ const COUNTRY_LIST = [
   { code: '+977', name: 'Nepal', flag: '🇳🇵' },
   { code: '+251', name: 'Ethiopia', flag: '🇪🇹' },
   { code: '+233', name: 'Ghana', flag: '🇬🇭' },
-  { code: '+255', name: 'Tanzania', flag: '🇹🇿' },
+  { code: '+255', name: 'Tanzania', flag: '🇹ℤ' },
   { code: '+256', name: 'Uganda', flag: '🇺🇬' },
   { code: '+263', name: 'Zimbabwe', flag: '🇿🇼' },
   { code: '+244', name: 'Angola', flag: '🇦🇴' },
@@ -102,7 +102,35 @@ interface DropdownItem {
   flag: string
 }
 
-// Custom Premium Searchable Dropdown with glassmorphism styles
+// Strict email validator function to reject fake/spam patterns
+const validateEmail = (emailStr: string): { valid: boolean; error?: string } => {
+  const trimmed = emailStr.trim().toLowerCase()
+  if (!trimmed) return { valid: false, error: 'Email address is required' }
+  
+  // Standard email format regex
+  const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/
+  if (!emailRegex.test(trimmed)) {
+    return { valid: false, error: 'Please enter a valid email address (e.g. name@domain.com)' }
+  }
+
+  const [localPart, domainPart] = trimmed.split('@')
+
+  // Reject spammy local prefixes
+  const spamPrefixes = ['xyz', 'test', 'asdf', 'abc', 'fake', '123', 'admin', 'user', 'sample', 'demo', 'qwerty', 'temp', 'null', 'undefined', 'aaa', 'bbb', 'ccc', 'xxx', 'yyy', 'zzz']
+  if (spamPrefixes.includes(localPart) || localPart.length < 2) {
+    return { valid: false, error: 'Please enter a valid personal or business email address' }
+  }
+
+  // Reject fake domain names
+  const invalidDomains = ['test.com', 'example.com', 'invalid.com', 'fake.com', 'domain.com', 'temp.com', 'mailinator.com', 'yopmail.com', 'gamil.com', 'gmaill.com', 'hotmial.com']
+  if (invalidDomains.includes(domainPart)) {
+    return { valid: false, error: 'Please enter a valid email domain name' }
+  }
+
+  return { valid: true }
+}
+
+// Custom Searchable Dropdown with glassmorphism styles
 function SearchableDropdown({
   items,
   value,
@@ -148,12 +176,12 @@ function SearchableDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none flex justify-between items-center cursor-pointer select-none"
+        className="w-full text-left bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-3.5 py-3 text-xs md:text-sm font-light transition-all outline-none flex justify-between items-center cursor-pointer select-none"
       >
         <span className="truncate">
           {selectedItem ? displayFormat(selectedItem) : placeholder}
         </span>
-        <span className="text-white/40 text-xs ml-2">▼</span>
+        <span className="text-white/40 text-xs ml-1">▼</span>
       </button>
 
       {isOpen && (
@@ -210,7 +238,10 @@ export default function IpsRegistrationPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  // OTP Verification States
+  // Verification State
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false)
+
+  // OTP Verification Modal States
   const [showOtpModal, setShowOtpModal] = useState(false)
   const [otpChannel, setOtpChannel] = useState<'WHATSAPP' | 'EMAIL'>('WHATSAPP')
   const [otpDigits, setOtpDigits] = useState(['', '', '', ''])
@@ -241,7 +272,7 @@ export default function IpsRegistrationPage() {
     return () => clearInterval(timer)
   }, [showOtpModal, resendTimer])
 
-  // Focus first OTP input when modal opens
+  // Auto focus first OTP input when modal opens
   useEffect(() => {
     if (showOtpModal) {
       setTimeout(() => {
@@ -278,8 +309,7 @@ export default function IpsRegistrationPage() {
           : 'Verification code sent to your Email!'
       )
     } catch (err: any) {
-      toast.error(err.message || 'Failed to send OTP')
-      // If WhatsApp API fails completely, fallback to Email immediately
+      toast.error(err.message || 'Failed to send verification code')
       if (channel === 'WHATSAPP') {
         toast.info('Switching to Email verification...')
         sendOtpCode('EMAIL')
@@ -289,20 +319,21 @@ export default function IpsRegistrationPage() {
     }
   }
 
-  // Handle initial form submission (triggers OTP process)
-  const handleInitialSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
+  // Handle clicking "Verify Phone" button inline
+  const handleVerifyPhoneClick = () => {
     if (!name.trim()) {
-      toast.error('Please enter your full name')
+      toast.error('Please enter your full name first')
       return
     }
-    if (!email.trim() || !email.includes('@')) {
-      toast.error('Please enter a valid email address')
+
+    const emailCheck = validateEmail(email)
+    if (!emailCheck.valid) {
+      toast.error(emailCheck.error || 'Please enter a valid email address')
       return
     }
-    if (!phone.trim()) {
-      toast.error('Please enter your Phone / WhatsApp number')
+
+    if (!phone.trim() || phone.trim().length < 5) {
+      toast.error('Please enter a valid phone number')
       return
     }
 
@@ -313,18 +344,15 @@ export default function IpsRegistrationPage() {
 
   // Handle OTP digit changes
   const handleOtpDigitChange = (index: number, value: string) => {
-    // Only accept numeric digit
     const digit = value.replace(/[^0-9]/g, '').slice(-1)
     const newDigits = [...otpDigits]
     newDigits[index] = digit
     setOtpDigits(newDigits)
 
-    // Auto-advance focus
     if (digit && index < 3) {
       otpInputRefs[index + 1]?.current?.focus()
     }
 
-    // Auto verify if 4 digits are entered
     if (digit && index === 3 && newDigits.every(d => d !== '')) {
       verifyOtpCode(newDigits.join(''))
     }
@@ -355,7 +383,7 @@ export default function IpsRegistrationPage() {
     }
   }
 
-  // Function to verify OTP and complete registration
+  // Verify OTP code
   const verifyOtpCode = async (enteredCode?: string) => {
     const code = enteredCode || otpDigits.join('')
     if (code.length < 4) {
@@ -389,9 +417,10 @@ export default function IpsRegistrationPage() {
         throw new Error(verifyData.error || 'Incorrect verification code')
       }
 
-      // Verification Success! Proceed to create lead in Bitrix24
+      // Verification Success!
+      setIsPhoneVerified(true)
       setShowOtpModal(false)
-      completeRegistration()
+      toast.success('Phone number verified successfully!')
 
     } catch (err: any) {
       toast.error(err.message || 'Verification failed')
@@ -400,8 +429,31 @@ export default function IpsRegistrationPage() {
     }
   }
 
-  // Complete registration API call
-  const completeRegistration = async () => {
+  // Submit final registration form
+  const handleFinalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!name.trim()) {
+      toast.error('Please enter your full name')
+      return
+    }
+
+    const emailCheck = validateEmail(email)
+    if (!emailCheck.valid) {
+      toast.error(emailCheck.error || 'Please enter a valid email address')
+      return
+    }
+
+    if (!phone.trim()) {
+      toast.error('Please enter your phone number')
+      return
+    }
+
+    if (!isPhoneVerified) {
+      toast.error('Please click "Verify Phone" to verify your phone number via WhatsApp/Email before submitting.')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -437,6 +489,7 @@ export default function IpsRegistrationPage() {
       setPreferredContactMode('WhatsApp')
       setLanguage('English')
       setRole('investor')
+      setIsPhoneVerified(false)
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit registration')
     } finally {
@@ -494,13 +547,10 @@ export default function IpsRegistrationPage() {
               <h1 className={`${cormorant.className} text-3xl md:text-4xl font-bold leading-tight tracking-wide text-white`}>
                 Explore Global Property Opportunities
               </h1>
-              <p className="mt-2 text-white/70 text-xs md:text-sm font-light leading-relaxed max-w-md mx-auto">
-                Tell us a little about yourself and what you’re looking for. Our team will get in touch with the right opportunities and information.
-              </p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleInitialSubmit} className="space-y-4">
+            <form onSubmit={handleFinalSubmit} className="space-y-4">
               
               {/* Name Input */}
               <div className="space-y-1.5">
@@ -529,24 +579,27 @@ export default function IpsRegistrationPage() {
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
+                  placeholder="Enter your email address (e.g. name@domain.com)"
                   disabled={isSubmitting}
                   className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none placeholder-white/30 focus:shadow-[0_0_20px_rgba(255,255,255,0.03)]"
                   required
                 />
               </div>
 
-              {/* Phone / WhatsApp Input */}
+              {/* Phone / WhatsApp Input with Inline Verification */}
               <div className="space-y-1.5">
                 <label htmlFor="phone" className="text-white/80 text-[11px] font-semibold uppercase tracking-wider block">
                   Phone / WhatsApp Number <span className="text-emerald-400">*</span>
                 </label>
-                <div className="flex gap-2">
-                  <div className="w-[120px] shrink-0">
+                <div className="flex gap-2 items-center">
+                  <div className="w-[110px] shrink-0">
                     <SearchableDropdown
                       items={COUNTRY_LIST}
                       value={countryCode}
-                      onChange={(item) => setCountryCode(item.code)}
+                      onChange={(item) => {
+                        setCountryCode(item.code)
+                        setIsPhoneVerified(false)
+                      }}
                       placeholder="+971"
                       displayFormat={(item) => `${item.flag} ${item.code}`}
                       matchKey="code"
@@ -556,13 +609,33 @@ export default function IpsRegistrationPage() {
                   <input
                     type="tel"
                     id="phone"
+                    pattern="[0-9]*"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => {
+                      setPhone(e.target.value.replace(/[^0-9]/g, ''))
+                      setIsPhoneVerified(false)
+                    }}
                     placeholder="50 123 4567"
                     disabled={isSubmitting}
-                    className="flex-1 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-4 py-3 text-sm font-light transition-all outline-none placeholder-white/30 focus:shadow-[0_0_20px_rgba(255,255,255,0.03)]"
+                    className="flex-1 bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.06] text-white border border-white/[0.08] focus:border-white/20 rounded-xl px-3.5 py-3 text-sm font-light transition-all outline-none placeholder-white/30 focus:shadow-[0_0_20px_rgba(255,255,255,0.03)] min-w-0"
                     required
                   />
+                  {isPhoneVerified ? (
+                    <div className="shrink-0 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold text-xs px-3 py-3 rounded-xl flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Verified</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleVerifyPhoneClick}
+                      disabled={isSendingOtp || !phone.trim()}
+                      className="shrink-0 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-black font-semibold text-xs px-3.5 py-3 rounded-xl transition-all shadow-md hover:shadow-emerald-500/20 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                      <span>Verify Phone</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -664,7 +737,11 @@ export default function IpsRegistrationPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full mt-4 inline-flex items-center justify-center gap-2 bg-white text-black hover:bg-neutral-100 disabled:bg-neutral-800 disabled:text-neutral-500 font-semibold text-xs tracking-wider uppercase py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.01] active:scale-[0.99]"
+                className={`w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-4 rounded-xl shadow-lg transition-all duration-300 transform ${
+                  isPhoneVerified
+                    ? 'bg-white text-black hover:bg-neutral-100 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+                    : 'bg-white/10 text-white/40 cursor-not-allowed border border-white/10'
+                }`}
               >
                 {isSubmitting ? (
                   <>
@@ -673,7 +750,7 @@ export default function IpsRegistrationPage() {
                   </>
                 ) : (
                   <>
-                    <span>Register Now</span>
+                    <span>Submit Registration</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -753,7 +830,7 @@ export default function IpsRegistrationPage() {
                 type="button"
                 onClick={() => verifyOtpCode()}
                 disabled={isVerifyingOtp || isSendingOtp || otpDigits.some(d => d === '')}
-                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-black font-semibold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 mb-4"
+                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-white/10 disabled:text-white/30 text-black font-semibold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 mb-4 cursor-pointer"
               >
                 {isVerifyingOtp ? (
                   <>
@@ -763,7 +840,7 @@ export default function IpsRegistrationPage() {
                 ) : (
                   <>
                     <ShieldCheck className="w-4 h-4" />
-                    <span>Verify & Complete Registration</span>
+                    <span>Verify Phone Number</span>
                   </>
                 )}
               </button>
@@ -775,7 +852,7 @@ export default function IpsRegistrationPage() {
                     type="button"
                     onClick={() => sendOtpCode(otpChannel)}
                     disabled={isSendingOtp}
-                    className="text-emerald-400 hover:underline inline-flex items-center gap-1 font-medium"
+                    className="text-emerald-400 hover:underline inline-flex items-center gap-1 font-medium cursor-pointer"
                   >
                     <RefreshCw className="w-3.5 h-3.5" /> Resend Code
                   </button>
@@ -791,7 +868,7 @@ export default function IpsRegistrationPage() {
                       sendOtpCode('EMAIL')
                     }}
                     disabled={isSendingOtp}
-                    className="text-white/60 hover:text-white underline mt-2 text-[11px]"
+                    className="text-white/60 hover:text-white underline mt-2 text-[11px] cursor-pointer"
                   >
                     Didn't receive WhatsApp code? Verify via Email
                   </button>

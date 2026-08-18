@@ -8,7 +8,9 @@ const PUBLIC_API_PREFIXES = [
   '/api/auth/',
   '/api/public/',
   '/api/tracking/',
-  '/api/salesperson/'
+  '/api/salesperson/',
+  '/api/ips-registration',
+  '/api/otp/'
 ]
 
 export async function proxy(request: NextRequest) {
