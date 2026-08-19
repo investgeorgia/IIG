@@ -83,30 +83,38 @@ enum ProjectStatus {
 }
 
 model Project {
-  id             Int               @id @default(autoincrement())
-  name           String
-  description    String?           @db.Text
-  address        String
-  city           String
-  country        String            @default("Georgia")
-  latitude       Float?
-  longitude      Float?
-  status         ProjectStatus     @default(PLANNING)
-  isPublished    Boolean           @default(false)
-  completionDate DateTime?
-  startingPrice  Decimal?          @db.Decimal(15, 2)
-  roi            Float?            // Return on Investment %
-  coverImageUrl  String?
-  developerId    Int
-  developer      Developer         @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  units          Unit[]
-  amenities      ProjectAmenity[]
-  paymentPlans   PaymentPlan[]
-  media          Media[]
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
+  id                Int               @id @default(autoincrement())
+  name              String
+  slug              String?
+  description       String?           @db.Text
+  address           String
+  city              String
+  country           String            @default("Georgia")
+  latitude          Float?
+  longitude         Float?
+  status            ProjectStatus     @default(PLANNING)
+  isPublished       Boolean           @default(true)
+  completionDate    DateTime?
+  completionText    String?
+  startingPrice     Decimal?          @db.Decimal(15, 2)
+  startingPriceText String?
+  projectType       String?
+  paymentPlanText   String?
+  sizeText          String?
+  roiText           String?
+  roi               Float?            // Return on Investment %
+  coverImageUrl     String?
+  developerId       Int
+  developer         Developer         @relation(fields: [developerId], references: [id], onDelete: Cascade)
+  units             Unit[]
+  amenities         ProjectAmenity[]
+  paymentPlans      PaymentPlan[]
+  media             Media[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@index([developerId])
+  @@index([slug])
 }
 
 

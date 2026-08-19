@@ -27,7 +27,22 @@ function ProjectsList() {
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [form, setForm] = useState({
-    name: '', developerId: '', address: '', city: '', country: 'Georgia', status: 'PLANNING', completionDate: '', startingPrice: '', roi: ''
+    name: '',
+    slug: '',
+    developerId: '',
+    address: '',
+    city: '',
+    country: 'Georgia',
+    status: 'PLANNING',
+    completionDate: '',
+    startingPrice: '',
+    roi: '',
+    projectType: '',
+    startingPriceText: '',
+    paymentPlanText: '',
+    sizeText: '',
+    roiText: '',
+    completionText: '',
   })
 
   const { data: projects, isLoading } = useQuery({
@@ -76,7 +91,8 @@ function ProjectsList() {
         startingPrice: form.startingPrice ? Number(form.startingPrice) : undefined,
         roi: form.roi ? Number(form.roi) : undefined,
         completionDate: form.completionDate ? form.completionDate : undefined,
-        address: form.address || 'TBD', // default to TBD if left empty just in case
+        address: form.address || form.city || 'TBD',
+        isPublished: true,
       }
       const url = editingProjectId ? `/api/cms/projects/${editingProjectId}` : '/api/cms/projects'
       const method = editingProjectId ? 'PUT' : 'POST'
@@ -90,7 +106,9 @@ function ProjectsList() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
-      setForm({ name: '', developerId: '', address: '', city: '', country: 'Georgia', status: 'PLANNING', completionDate: '', startingPrice: '', roi: '' })
+      setForm({
+        name: '', slug: '', developerId: '', address: '', city: '', country: 'Georgia', status: 'PLANNING', completionDate: '', startingPrice: '', roi: '', projectType: '', startingPriceText: '', paymentPlanText: '', sizeText: '', roiText: '', completionText: ''
+      })
       setIsAdding(false)
       setEditingProjectId(null)
       toast.success(editingProjectId ? 'Project updated successfully!' : 'Project created successfully!')
@@ -102,6 +120,7 @@ function ProjectsList() {
     setEditingProjectId(project.id)
     setForm({
       name: project.name || '',
+      slug: project.slug || '',
       developerId: project.developerId?.toString() || '',
       address: project.address || '',
       city: project.city || '',
@@ -109,7 +128,13 @@ function ProjectsList() {
       status: project.status || 'PLANNING',
       completionDate: project.completionDate ? new Date(project.completionDate).toISOString().split('T')[0] : '',
       startingPrice: project.startingPrice?.toString() || '',
-      roi: project.roi?.toString() || ''
+      roi: project.roi?.toString() || '',
+      projectType: project.projectType || '',
+      startingPriceText: project.startingPriceText || '',
+      paymentPlanText: project.paymentPlanText || '',
+      sizeText: project.sizeText || '',
+      roiText: project.roiText || '',
+      completionText: project.completionText || ''
     })
     setIsAdding(true)
   }
@@ -178,7 +203,7 @@ function ProjectsList() {
             </Button>
           )}
           {canEdit && (
-            <Button onClick={() => { setEditingProjectId(null); setForm({ name: '', developerId: '', address: '', city: '', country: 'Georgia', status: 'PLANNING', completionDate: '', startingPrice: '', roi: '' }); setIsAdding(!isAdding) }} className="bg-red-600 hover:bg-red-700">
+            <Button onClick={() => { setEditingProjectId(null); setForm({ name: '', slug: '', developerId: '', address: '', city: '', country: 'Georgia', status: 'PLANNING', completionDate: '', startingPrice: '', roi: '', projectType: '', startingPriceText: '', paymentPlanText: '', sizeText: '', roiText: '', completionText: '' }); setIsAdding(!isAdding) }} className="bg-red-600 hover:bg-red-700">
               <Plus className="w-4 h-4 mr-2" /> Add Project
             </Button>
           )}
@@ -190,7 +215,8 @@ function ProjectsList() {
           <CardHeader><CardTitle className="text-lg">{editingProjectId ? 'Edit Project' : 'New Project'}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-1"><Label>Project Name *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+              <div className="space-y-1"><Label>Project Name *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Kavataradze" /></div>
+              <div className="space-y-1"><Label>Project Slug (Folder / URL)</Label><Input value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} placeholder="e.g. kavtaradze" /></div>
               <div className="space-y-1"><Label>Developer *</Label>
                 <select value={form.developerId} onChange={e => setForm({ ...form, developerId: e.target.value })}
                   className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm">
@@ -198,6 +224,13 @@ function ProjectsList() {
                   {developers.map((d: any) => <option key={d.id} value={d.id}>{d.name}</option>)}
                 </select>
               </div>
+              <div className="space-y-1"><Label>City / Location *</Label><Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="e.g. Tbilisi" /></div>
+              <div className="space-y-1"><Label>Project Type</Label><Input value={form.projectType} onChange={e => setForm({ ...form, projectType: e.target.value })} placeholder="e.g. 2-4 Bedroom Apartments" /></div>
+              <div className="space-y-1"><Label>Starting Price Display</Label><Input value={form.startingPriceText} onChange={e => setForm({ ...form, startingPriceText: e.target.value })} placeholder="e.g. $140,000" /></div>
+              <div className="space-y-1"><Label>Payment Plan Display</Label><Input value={form.paymentPlanText} onChange={e => setForm({ ...form, paymentPlanText: e.target.value })} placeholder="e.g. 15 / 10 / 75" /></div>
+              <div className="space-y-1"><Label>Size Display</Label><Input value={form.sizeText} onChange={e => setForm({ ...form, sizeText: e.target.value })} placeholder="e.g. From 54.2 m²" /></div>
+              <div className="space-y-1"><Label>ROI Display</Label><Input value={form.roiText} onChange={e => setForm({ ...form, roiText: e.target.value })} placeholder="e.g. 12%" /></div>
+              <div className="space-y-1"><Label>Completion Display</Label><Input value={form.completionText} onChange={e => setForm({ ...form, completionText: e.target.value })} placeholder="e.g. Q2 2027" /></div>
               <div className="space-y-1"><Label>Status *</Label>
                 <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
                   className="flex h-9 w-full rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm shadow-sm">
@@ -207,12 +240,6 @@ function ProjectsList() {
                   <option value="CANCELLED">Cancelled</option>
                 </select>
               </div>
-              <div className="space-y-1"><Label>Address *</Label><Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="e.g. 123 Rustaveli Ave" /></div>
-              <div className="space-y-1"><Label>City *</Label><Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Country *</Label><Input value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Completion Date</Label><Input type="date" value={form.completionDate} onChange={e => setForm({ ...form, completionDate: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Starting Price (USD)</Label><Input type="number" value={form.startingPrice} onChange={e => setForm({ ...form, startingPrice: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Expected ROI (%)</Label><Input type="number" step="0.1" value={form.roi} onChange={e => setForm({ ...form, roi: e.target.value })} /></div>
             </div>
             <div className="flex gap-3">
               <Button onClick={() => saveMutation.mutate()} disabled={!form.name || !form.developerId || !form.city || !form.country || saveMutation.isPending} className="bg-red-600 hover:bg-red-700">

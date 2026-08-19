@@ -418,6 +418,51 @@ export default function ProjectDetailPage() {
     }
   })
 
+  // Full Project Details Edit state & mutation
+  const [isEditingProject, setIsEditingProject] = useState(false)
+  const [editProjectData, setEditProjectData] = useState<any>({})
+
+  useEffect(() => {
+    if (project) {
+      setEditProjectData({
+        name: project.name || '',
+        slug: project.slug || '',
+        city: project.city || '',
+        startingPriceText: project.startingPriceText || '',
+        projectType: project.projectType || '',
+        paymentPlanText: project.paymentPlanText || '',
+        sizeText: project.sizeText || '',
+        roiText: project.roiText || '',
+        completionText: project.completionText || '',
+        description: project.description || '',
+        isPublished: project.isPublished ?? true,
+      })
+    }
+  }, [project])
+
+  const updateProjectMutation = useMutation({
+    mutationFn: async (updatedFields: any) => {
+      const res = await fetch(`/api/cms/projects/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedFields)
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to update project')
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project', id] })
+      toast.success('Project details updated successfully')
+      setIsEditingProject(false)
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to update project')
+    }
+  })
+
   // -- Unit add form state --
   const [expandedViewUnitId, setExpandedViewUnitId] = useState<number | null>(null)
   const [expandedEditUnitId, setExpandedEditUnitId] = useState<number | null>(null)
@@ -664,6 +709,8 @@ export default function ProjectDetailPage() {
       const result = await uploadFiles(fileList, {
         type: mediaType,
         projectId: id as string,
+        folder: 'iigproject',
+        slug: project?.slug || (id as string),
         onSingleSuccess: async (file, responseData) => {
           if (responseData && responseData.url) {
             await fetch(`/api/cms/projects/${id}/media`, {
@@ -801,35 +848,207 @@ export default function ProjectDetailPage() {
 
       {/* ─── TAB: OVERVIEW ─── */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="shadow-sm">
-            <CardContent className="p-6 space-y-1">
-              <p className="text-xs text-neutral-500 uppercase tracking-wider font-medium">Total Units</p>
-              <p className="text-3xl font-bold">{units.length}</p>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="shadow-sm">
+              <CardContent className="p-6 space-y-1">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider font-medium">Total Units</p>
+                <p className="text-3xl font-bold">{units.length}</p>
+              </CardContent>
+            </Card>
+            <Card className="shadow-sm">
+              <CardContent className="p-6 space-y-1">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider font-medium">Available</p>
+                <p className="text-3xl font-bold text-green-600">{units.filter((u: any) => u.status === 'AVAILABLE').length}</p>
+              </CardContent>
+            </Card>
+            <Card className="shadow-sm">
+              <CardContent className="p-6 space-y-1">
+                <p className="text-xs text-neutral-500 uppercase tracking-wider font-medium">Sold</p>
+                <p className="text-3xl font-bold text-red-600">{units.filter((u: any) => u.status === 'SOLD').length}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Project Details & /iigprojects Metadata Card */}
+          <Card className="shadow-sm border-neutral-200">
+            <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
+              <div>
+                <CardTitle className="text-base font-bold text-neutral-900">Project Details &amp; Display Specs</CardTitle>
+                <p className="text-xs text-neutral-500 mt-0.5">Manage project information displayed on the showcase page (/iigprojects)</p>
+              </div>
+              {canEdit && (
+                <Button
+                  size="sm"
+                  variant={isEditingProject ? 'outline' : 'default'}
+                  onClick={() => setIsEditingProject(!isEditingProject)}
+                  className={!isEditingProject ? 'bg-neutral-900 hover:bg-neutral-800 text-white' : ''}
+                >
+                  {isEditingProject ? 'Cancel Editing' : 'Edit Project Details'}
+                </Button>
+              )}
+            </CardHeader>
+
+            <CardContent className="p-6">
+              {isEditingProject ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    updateProjectMutation.mutate(editProjectData)
+                  }}
+                  className="space-y-4"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold">Project Name *</Label>
+                      <Input
+                        value={editProjectData.name || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold">Project Slug (URL path)</Label>
+                      <Input
+                        value={editProjectData.slug || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, slug: e.target.value })}
+                        placeholder="e.g. kavtaradze"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold">Location / City</Label>
+                      <Input
+                        value={editProjectData.city || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, city: e.target.value })}
+                        placeholder="e.g. Tbilisi"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold">Project Type</Label>
+                      <Input
+                        value={editProjectData.projectType || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, projectType: e.target.value })}
+                        placeholder="e.g. 2-4 Bedroom Apartments"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold">Starting Price Display</Label>
+                      <Input
+                        value={editProjectData.startingPriceText || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, startingPriceText: e.target.value })}
+                        placeholder="e.g. $140,000"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold">Payment Plan Display</Label>
+                      <Input
+                        value={editProjectData.paymentPlanText || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, paymentPlanText: e.target.value })}
+                        placeholder="e.g. 15 / 10 / 75"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold">Size Display</Label>
+                      <Input
+                        value={editProjectData.sizeText || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, sizeText: e.target.value })}
+                        placeholder="e.g. From 54.2 m²"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-semibold">ROI Display</Label>
+                      <Input
+                        value={editProjectData.roiText || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, roiText: e.target.value })}
+                        placeholder="e.g. 12%"
+                      />
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <Label className="text-xs font-semibold">Completion Date Display</Label>
+                      <Input
+                        value={editProjectData.completionText || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, completionText: e.target.value })}
+                        placeholder="e.g. Q2 2027 or Ready"
+                      />
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <Label className="text-xs font-semibold">Project Description</Label>
+                      <textarea
+                        value={editProjectData.description || ''}
+                        onChange={e => setEditProjectData({ ...editProjectData, description: e.target.value })}
+                        rows={4}
+                        className="flex w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
+                        placeholder="Detailed project description..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsEditingProject(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={updateProjectMutation.isPending}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      {updateProjectMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Save Changes
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm">
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">Project Name</span>
+                    <span className="font-semibold text-neutral-900">{project?.name || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">URL Slug</span>
+                    <span className="font-semibold text-neutral-700">{project?.slug || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">Location</span>
+                    <span className="font-semibold text-neutral-700">{project?.city || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">Project Type</span>
+                    <span className="font-semibold text-neutral-700">{project?.projectType || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">Starting Price</span>
+                    <span className="font-semibold text-neutral-900">{project?.startingPriceText || (project?.startingPrice ? `$${Number(project.startingPrice).toLocaleString()}` : '-')}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">Payment Plan</span>
+                    <span className="font-semibold text-neutral-700">{project?.paymentPlanText || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">Size</span>
+                    <span className="font-semibold text-neutral-700">{project?.sizeText || '-'}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">ROI</span>
+                    <span className="font-semibold text-neutral-700">{project?.roiText || (project?.roi ? `${project.roi}%` : '-')}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block">Completion</span>
+                    <span className="font-semibold text-neutral-700">{project?.completionText || '-'}</span>
+                  </div>
+                  {project?.description && (
+                    <div className="sm:col-span-2 md:col-span-3 pt-3 border-t">
+                      <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider block mb-1">Description</span>
+                      <p className="text-neutral-700 leading-relaxed text-xs sm:text-sm">{project.description}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
-          <Card className="shadow-sm">
-            <CardContent className="p-6 space-y-1">
-              <p className="text-xs text-neutral-500 uppercase tracking-wider font-medium">Available</p>
-              <p className="text-3xl font-bold text-green-600">{units.filter((u: any) => u.status === 'AVAILABLE').length}</p>
-            </CardContent>
-          </Card>
-          <Card className="shadow-sm">
-            <CardContent className="p-6 space-y-1">
-              <p className="text-xs text-neutral-500 uppercase tracking-wider font-medium">Sold</p>
-              <p className="text-3xl font-bold text-red-600">{units.filter((u: any) => u.status === 'SOLD').length}</p>
-            </CardContent>
-          </Card>
-          {project?.description && (
-            <div className="md:col-span-3">
-              <Card className="shadow-sm">
-                <CardHeader><CardTitle className="text-sm font-medium text-neutral-500 uppercase">Description</CardTitle></CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-sm text-neutral-700 leading-relaxed">{project.description}</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
         </div>
       )}
 

@@ -14,6 +14,7 @@ import {
 import { projectsData, Project } from './data'
 
 export default function IIGProjectsPage() {
+  const [projectsList, setProjectsList] = useState<Project[]>(projectsData)
   const [activeProjectId, setActiveProjectId] = useState<number>(projectsData[0].id)
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0)
   const [bgImage, setBgImage] = useState<string>('')
@@ -27,6 +28,19 @@ export default function IIGProjectsPage() {
   const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', phone: '', notes: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  // Fetch live published projects on mount
+  useEffect(() => {
+    fetch('/api/iigprojects')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProjectsList(data)
+          setActiveProjectId(data[0].id)
+        }
+      })
+      .catch(err => console.error('Error fetching dynamic projects:', err))
+  }, [])
 
   // Fetch active salesperson on mount
   useEffect(() => {
@@ -63,7 +77,7 @@ export default function IIGProjectsPage() {
   const touchStartY = useRef<number>(0)
   const minSwipeDistance = 35
 
-  const activeProject = projectsData.find(p => p.id === activeProjectId) || projectsData[0]
+  const activeProject = projectsList.find(p => p.id === activeProjectId) || projectsList[0]
 
   // Preloading image helper
   const VERSION_TAG = 'v=1.1.0'
@@ -76,7 +90,7 @@ export default function IIGProjectsPage() {
   // Preload first image of other projects
   useEffect(() => {
     const preloadFirstImages = () => {
-      projectsData.forEach(project => {
+      projectsList.forEach(project => {
         if (project.id !== activeProjectId && project.images.length > 0) {
           const img = new Image()
           img.src = appendVersion(project.images[0])
@@ -85,7 +99,7 @@ export default function IIGProjectsPage() {
     }
     const timer = setTimeout(preloadFirstImages, 1000)
     return () => clearTimeout(timer)
-  }, [activeProjectId])
+  }, [activeProjectId, projectsList])
 
   // Handle active image loading and crossfade
   useEffect(() => {

@@ -77,6 +77,8 @@ export function useFileUpload() {
       endpoint?: string
       type?: string
       projectId?: string
+      folder?: string
+      slug?: string
       onSingleSuccess?: (file: File, responseData: any) => Promise<void> | void
     } = {}
   ): Promise<{ successful: number; failed: number }> => {
@@ -132,6 +134,8 @@ export function useFileUpload() {
       formData.append('file', file)
       if (options.type) formData.append('type', options.type)
       if (options.projectId) formData.append('projectId', options.projectId)
+      if (options.folder) formData.append('folder', options.folder)
+      if (options.slug) formData.append('slug', options.slug)
 
       try {
         const responseData = await new Promise<any>((resolve, reject) => {

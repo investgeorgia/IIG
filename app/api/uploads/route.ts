@@ -86,14 +86,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'File too large (max 50MB)' }, { status: 400 })
     }
 
-    // Sanitize type and projectId to prevent path traversal
+    // Sanitize parameters to prevent path traversal
     const type = typeRaw.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase() || 'image'
     const projectId = projectIdRaw.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase() || 'general'
+    const folder = (formData.get('folder') as string || '').replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase()
+    const slug = (formData.get('slug') as string || '').replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase()
 
     const { dir: mediaRoot, urlBase } = getMediaRoot()
 
-    // Build directory: <mediaRoot>/<type>/<projectId>/
-    const subDir = path.join(type, projectId)
+    // Build directory: iigproject/<slug>/ if folder/slug specified, otherwise <type>/<projectId>/
+    let subDir = ''
+    if (folder === 'iigproject' || type === 'iigproject') {
+      const targetSlug = slug || projectId
+      subDir = path.join('iigproject', targetSlug)
+    } else if (slug) {
+      subDir = path.join('iigproject', slug)
+    } else {
+      subDir = path.join(type, projectId)
+    }
+
     const uploadDir = path.join(mediaRoot, subDir)
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true })
@@ -108,7 +119,8 @@ export async function POST(request: Request) {
     await writeFile(filePath, buffer)
 
     // URL served statically
-    const url = `${urlBase}/${type}/${projectId}/${safeName}`
+    const urlSubPath = subDir.replace(/\\/g, '/')
+    const url = `${urlBase}/${urlSubPath}/${safeName}`
 
     return NextResponse.json({
       url,
