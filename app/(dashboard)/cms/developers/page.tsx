@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useFileUpload } from '@/hooks/useFileUpload'
+import { FileUploadProgressModal } from '@/components/cms/FileUploadProgressModal'
 import Link from 'next/link'
 
 export default function DevelopersPage() {
@@ -51,35 +53,31 @@ export default function DevelopersPage() {
     enabled: hasPermission('Developers', 'VIEW')
   })
 
+  const { progressInfo, uploadFiles, cancelUpload, resetProgress } = useFileUpload()
+
   const searchedDevelopers = developers
     ? developers.filter((d: any) => (d.name || '').toLowerCase().includes(searchQuery.toLowerCase()))
     : []
 
   const uploadLogo = async (file: File, isEdit: boolean) => {
+    setUploading(true)
     try {
-      setUploading(true)
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', 'IMAGE')
-      formData.append('projectId', 'general')
-
-      const res = await fetch('/api/uploads', {
-        method: 'POST',
-        body: formData
+      await uploadFiles([file], {
+        type: 'IMAGE',
+        projectId: 'general',
+        onSingleSuccess: (f, data) => {
+          if (data && data.url) {
+            if (isEdit) {
+              setEditLogoUrl(data.url)
+            } else {
+              setNewLogoUrl(data.url)
+            }
+            toast.success('Logo uploaded successfully')
+          }
+        }
       })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Failed to upload logo')
-      }
-      const data = await res.json()
-      if (isEdit) {
-        setEditLogoUrl(data.url)
-      } else {
-        setNewLogoUrl(data.url)
-      }
-      toast.success('Logo uploaded successfully')
     } catch (err: any) {
-      toast.error(err.message)
+      toast.error(err.message || 'Failed to upload logo')
     } finally {
       setUploading(false)
     }
@@ -481,6 +479,12 @@ export default function DevelopersPage() {
           )}
         </CardContent>
       </Card>
+
+      <FileUploadProgressModal
+        progressInfo={progressInfo}
+        onCancel={cancelUpload}
+        onClose={resetProgress}
+      />
     </div>
   )
 }

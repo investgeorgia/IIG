@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useFileUpload } from '@/hooks/useFileUpload'
+import { FileUploadProgressModal } from '@/components/cms/FileUploadProgressModal'
 
 export default function SalespersonsPage() {
   const queryClient = useQueryClient()
@@ -37,32 +39,25 @@ export default function SalespersonsPage() {
     retry: 2,
   })
 
+  const { progressInfo, uploadFiles, cancelUpload, resetProgress } = useFileUpload()
+
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
       setUploading(true)
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', 'IMAGE')
-      formData.append('projectId', 'general')
-
-      const res = await fetch('/api/uploads', {
-        method: 'POST',
-        body: formData
-      })
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Failed to upload profile picture')
+      try {
+        await uploadFiles([file], {
+          type: 'IMAGE',
+          projectId: 'general',
+          onSingleSuccess: (f, data) => {
+            if (data && data.url) {
+              setProfileImage(data.url)
+              toast.success('Profile picture uploaded successfully')
+            }
+          }
+        })
+      } finally {
+        setUploading(false)
       }
-      return res.json()
-    },
-    onSuccess: (data) => {
-      setProfileImage(data.url)
-      toast.success('Profile picture uploaded successfully')
-      setUploading(false)
-    },
-    onError: (err: any) => {
-      toast.error(err.message)
-      setUploading(false)
     }
   })
 
@@ -327,6 +322,12 @@ export default function SalespersonsPage() {
           )}
         </CardContent>
       </Card>
+
+      <FileUploadProgressModal
+        progressInfo={progressInfo}
+        onCancel={cancelUpload}
+        onClose={resetProgress}
+      />
     </div>
   )
 }

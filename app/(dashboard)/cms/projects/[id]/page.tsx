@@ -13,6 +13,8 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePermissions } from '@/hooks/usePermissions'
+import { useFileUpload } from '@/hooks/useFileUpload'
+import { FileUploadProgressModal } from '@/components/cms/FileUploadProgressModal'
 
 const STATUS_COLORS: Record<string, string> = {
   PLANNING: 'bg-blue-50 text-blue-700',
@@ -45,6 +47,7 @@ export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
   const queryClient = useQueryClient()
   const { hasPermission, isLoading: permissionsLoading } = usePermissions()
+  const { progressInfo, uploadFiles, cancelUpload, resetProgress } = useFileUpload()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [showAddUnit, setShowAddUnit] = useState(false)
   const [editingUnit, setEditingUnit] = useState<any>(null)
@@ -606,18 +609,19 @@ export default function ProjectDetailPage() {
   const handleUnitFloorPlanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
+    const fileList = Array.from(files)
     setUnitFloorPlanUploading(true)
     try {
-      const file = files[0]
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', 'FLOOR_PLAN')
-      formData.append('projectId', id)
-      const uploadRes = await fetch('/api/uploads', { method: 'POST', body: formData })
-      if (!uploadRes.ok) throw new Error('Upload failed')
-      const { url } = await uploadRes.json()
-      setUnitValue('floorPlanUrl', url)
-      toast.success('Floor plan uploaded')
+      await uploadFiles(fileList, {
+        type: 'FLOOR_PLAN',
+        projectId: id as string,
+        onSingleSuccess: (file, responseData) => {
+          if (responseData && responseData.url) {
+            setUnitValue('floorPlanUrl', responseData.url)
+            toast.success('Floor plan uploaded')
+          }
+        }
+      })
     } catch (err: any) {
       toast.error('Failed to upload floor plan')
     } finally {
@@ -629,18 +633,19 @@ export default function ProjectDetailPage() {
   const handleUnitFloorPlanUpload2 = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
+    const fileList = Array.from(files)
     setUnitFloorPlanUploading2(true)
     try {
-      const file = files[0]
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', 'FLOOR_PLAN')
-      formData.append('projectId', id)
-      const uploadRes = await fetch('/api/uploads', { method: 'POST', body: formData })
-      if (!uploadRes.ok) throw new Error('Upload failed')
-      const { url } = await uploadRes.json()
-      setUnitValue('floorPlanUrl2', url)
-      toast.success('Second floor plan uploaded')
+      await uploadFiles(fileList, {
+        type: 'FLOOR_PLAN',
+        projectId: id as string,
+        onSingleSuccess: (file, responseData) => {
+          if (responseData && responseData.url) {
+            setUnitValue('floorPlanUrl2', responseData.url)
+            toast.success('Second floor plan uploaded')
+          }
+        }
+      })
     } catch (err: any) {
       toast.error('Failed to upload second floor plan')
     } finally {
@@ -653,24 +658,32 @@ export default function ProjectDetailPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
+    const fileList = Array.from(files)
     setUploading(true)
     try {
-      for (const file of Array.from(files)) {
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('type', mediaType)
-        formData.append('projectId', id)
-        const uploadRes = await fetch('/api/uploads', { method: 'POST', body: formData })
-        if (!uploadRes.ok) { toast.error(`Failed: ${file.name}`); continue }
-        const { url, name, size, mimeType } = await uploadRes.json()
-        await fetch(`/api/cms/projects/${id}/media`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: mediaType, url, name, size, mimeType })
-        })
+      const result = await uploadFiles(fileList, {
+        type: mediaType,
+        projectId: id as string,
+        onSingleSuccess: async (file, responseData) => {
+          if (responseData && responseData.url) {
+            await fetch(`/api/cms/projects/${id}/media`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: mediaType,
+                url: responseData.url,
+                name: responseData.name || file.name,
+                size: responseData.size || file.size,
+                mimeType: responseData.mimeType || file.type
+              })
+            })
+          }
+        }
+      })
+      if (result.successful > 0) {
+        queryClient.invalidateQueries({ queryKey: ['media', id] })
+        toast.success(`${result.successful} file(s) uploaded successfully`)
       }
-      queryClient.invalidateQueries({ queryKey: ['media', id] })
-      toast.success('Files uploaded')
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -2375,6 +2388,12 @@ export default function ProjectDetailPage() {
           </Card>
         </div>
       )}
+
+      <FileUploadProgressModal
+        progressInfo={progressInfo}
+        onCancel={cancelUpload}
+        onClose={resetProgress}
+      />
     </div>
   )
 }

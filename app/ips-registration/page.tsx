@@ -753,11 +753,7 @@ export default function IpsRegistrationPage() {
             Join Invest Georgia UAE at the International Property Show (IPS 2026) in Dubai. Connect with top development teams, discover zero-tax property investments, and access exclusive developer rates.
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 max-w-xl">
-            <div className="p-3.5 rounded-xl bg-white/90 border border-slate-200/80 shadow-md shadow-slate-200/50 text-xs backdrop-blur-md">
-              <p className="font-bold text-[#ca2d39] text-sm mb-1">0% Tax</p>
-              <p className="text-slate-600 text-[11px] font-medium">On Property Capital Gains</p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-xl">
             <div className="p-3.5 rounded-xl bg-white/90 border border-slate-200/80 shadow-md shadow-slate-200/50 text-xs backdrop-blur-md">
               <p className="font-bold text-[#ca2d39] text-sm mb-1">&lt;1% Tax</p>
               <p className="text-slate-600 text-[11px] font-medium">On Property</p>
