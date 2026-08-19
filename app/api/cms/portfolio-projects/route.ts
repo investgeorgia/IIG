@@ -36,7 +36,7 @@ export async function GET() {
     if (p.name) dbMap.set(p.name.toLowerCase(), p)
   }
 
-  // Merge projectsData with DB records cleanly (without forcing hardcoded fallback media)
+  // Merge projectsData with DB records for specs, but ZERO out synthetic media fallbacks
   const mergedProjects = projectsData.map(p => {
     const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())

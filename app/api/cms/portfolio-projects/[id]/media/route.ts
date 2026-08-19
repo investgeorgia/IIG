@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/server/utils/auth'
 import { checkPermission, AccessLevel } from '@/server/utils/permissions'
 import { safeErrorMessage } from '@/server/utils/errors'
-import { projectsData } from '@/app/iigprojects/data'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
@@ -20,24 +19,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       include: { media: { orderBy: { sortOrder: 'asc' } } }
     })
     if (pfProject) {
-      return NextResponse.json(pfProject.media)
+      return NextResponse.json(pfProject.media || [])
     }
   } catch (error: any) {
     console.error('[Portfolio Media GET Error]', error)
   }
 
-  // Fallback to static project images if project is not in DB yet
-  const p = projectsData.find(x => x.id === id) || projectsData[0]
-  const fallbackMedia = p.images.map((img, idx) => ({
-    id: idx + 1,
-    portfolioProjectId: p.id,
-    type: 'IMAGE' as const,
-    url: img.startsWith('/') ? img : `/${img}`,
-    name: `${p.name} image ${idx + 1}`,
-    sortOrder: idx
-  }))
-
-  return NextResponse.json(fallbackMedia)
+  // Return empty array (never inject hardcoded synthetic fallback images)
+  return NextResponse.json([])
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {

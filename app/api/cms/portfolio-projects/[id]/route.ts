@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     console.error('[Portfolio Project GET Error]', error)
   }
 
-  // Fallback to static project metadata without fallback images
+  // Fallback to static project metadata without synthetic fallback images
   const p = projectsData.find(x => x.id === id) || projectsData[0]
   const fallbackProject = {
     id: p.id,
