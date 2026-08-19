@@ -353,22 +353,30 @@ function ProjectPortfolioContent() {
                     <MapPin className="w-3.5 h-3.5" /> {project.city || 'Georgia'} &bull; {project.projectType || 'Apartments'}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t text-xs">
+                  <div className="grid grid-cols-2 gap-2.5 mt-4 pt-3 border-t text-xs">
                     <div>
                       <span className="text-neutral-400 block font-medium">Starting Price</span>
-                      <span className="font-bold text-neutral-900">{project.startingPriceText || (project.startingPrice ? `$${Number(project.startingPrice).toLocaleString()}` : '-')}</span>
+                      <span className="font-bold text-neutral-900">{project.startingPriceText || '-'}</span>
                     </div>
                     <div>
-                      <span className="text-neutral-400 block font-medium">ROI</span>
-                      <span className="font-bold text-emerald-600">{project.roiText || (project.roi ? `${project.roi}%` : '-')}</span>
+                      <span className="text-neutral-400 block font-medium">Type</span>
+                      <span className="font-semibold text-neutral-800 line-clamp-1">{project.projectType || '-'}</span>
                     </div>
                     <div>
-                      <span className="text-neutral-400 block font-medium">Completion</span>
-                      <span className="font-semibold text-neutral-700">{project.completionText || '-'}</span>
+                      <span className="text-neutral-400 block font-medium">Payment Plan</span>
+                      <span className="font-semibold text-neutral-700">{project.paymentPlanText || '-'}</span>
                     </div>
                     <div>
                       <span className="text-neutral-400 block font-medium">Size</span>
                       <span className="font-semibold text-neutral-700">{project.sizeText || '-'}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400 block font-medium">ROI</span>
+                      <span className="font-bold text-emerald-600">{project.roiText || '-'}</span>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400 block font-medium">Completion</span>
+                      <span className="font-semibold text-neutral-700">{project.completionText || '-'}</span>
                     </div>
                   </div>
                 </div>

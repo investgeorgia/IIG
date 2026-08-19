@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/server/utils/auth'
 import { checkPermission, AccessLevel } from '@/server/utils/permissions'
 import { safeErrorMessage } from '@/server/utils/errors'
+import { projectsData } from '@/app/iigprojects/data'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,10 +23,41 @@ export async function GET() {
       },
       orderBy: { sortOrder: 'asc' }
     })
-    return NextResponse.json(projects)
+
+    if (projects && projects.length > 0) {
+      return NextResponse.json(projects)
+    }
   } catch (error: any) {
-    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
+    console.error('[Portfolio Projects GET Error]', error)
   }
+
+  // Fallback to projectsData
+  const fallbackProjects = projectsData.map(p => ({
+    id: p.id,
+    name: p.name,
+    slug: p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    location: p.location || 'Tbilisi',
+    startingPriceText: p.startingPrice,
+    projectType: p.type,
+    paymentPlanText: p.paymentPlan,
+    sizeText: p.size,
+    roiText: p.roi,
+    completionText: p.completion,
+    description: null,
+    coverImageUrl: p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : null),
+    isPublished: true,
+    sortOrder: p.id,
+    media: p.images.map((img, idx) => ({
+      id: idx + 1,
+      portfolioProjectId: p.id,
+      type: 'IMAGE',
+      url: img.startsWith('/') ? img : `/${img}`,
+      name: `${p.name} image ${idx + 1}`,
+      sortOrder: idx
+    }))
+  }))
+
+  return NextResponse.json(fallbackProjects)
 }
 
 export async function POST(request: Request) {

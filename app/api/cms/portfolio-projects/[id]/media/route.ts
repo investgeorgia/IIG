@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/server/utils/auth'
 import { checkPermission, AccessLevel } from '@/server/utils/permissions'
 import { safeErrorMessage } from '@/server/utils/errors'
+import { projectsData } from '@/app/iigprojects/data'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
@@ -11,16 +12,32 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  const id = Number((await params).id)
+
   try {
-    const id = Number((await params).id)
     const media = await prisma.portfolioMedia.findMany({
       where: { portfolioProjectId: id },
       orderBy: { sortOrder: 'asc' }
     })
-    return NextResponse.json(media)
+    if (media && media.length > 0) {
+      return NextResponse.json(media)
+    }
   } catch (error: any) {
-    return NextResponse.json({ error: safeErrorMessage(error) }, { status: 500 })
+    console.error('[Portfolio Media GET Error]', error)
   }
+
+  // Fallback to static project images
+  const p = projectsData.find(x => x.id === id) || projectsData[0]
+  const fallbackMedia = p.images.map((img, idx) => ({
+    id: idx + 1,
+    portfolioProjectId: p.id,
+    type: 'IMAGE' as const,
+    url: img.startsWith('/') ? img : `/${img}`,
+    name: `${p.name} image ${idx + 1}`,
+    sortOrder: idx
+  }))
+
+  return NextResponse.json(fallbackMedia)
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -46,13 +63,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       }
     })
 
-    // If project has no cover image yet, set this as cover
-    const project = await prisma.portfolioProject.findUnique({ where: { id: portfolioProjectId } })
-    if (project && !project.coverImageUrl) {
-      await prisma.portfolioProject.update({
-        where: { id: portfolioProjectId },
-        data: { coverImageUrl: url }
-      })
+    // If project cover is missing, update cover
+    try {
+      const project = await prisma.portfolioProject.findUnique({ where: { id: portfolioProjectId } })
+      if (project && !project.coverImageUrl) {
+        await prisma.portfolioProject.update({
+          where: { id: portfolioProjectId },
+          data: { coverImageUrl: url }
+        })
+      }
+    } catch (e) {
+      console.warn('Could not update cover image URL:', e)
     }
 
     return NextResponse.json(media)
