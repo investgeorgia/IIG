@@ -496,7 +496,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
                     }
                   }}
                   disabled={bulkDeleteMutation.isPending}
-                  className="text-xs gap-1.5 bg-red-600 hover:bg-red-700"
+                  className="text-xs gap-1.5 bg-red-600 hover:bg-red-700 text-white font-medium shadow-sm"
                 >
                   {bulkDeleteMutation.isPending ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />

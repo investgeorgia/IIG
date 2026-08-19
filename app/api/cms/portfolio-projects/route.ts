@@ -36,7 +36,7 @@ export async function GET() {
     if (p.name) dbMap.set(p.name.toLowerCase(), p)
   }
 
-  // Merge projectsData with DB records to guarantee ALL 16 projects are returned
+  // Merge projectsData with DB records cleanly
   const mergedProjects = projectsData.map(p => {
     const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
@@ -54,14 +54,7 @@ export async function GET() {
         roiText: dbMatch.roiText || p.roi,
         completionText: dbMatch.completionText || p.completion,
         coverImageUrl: dbMatch.coverImageUrl || (p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : null)),
-        media: (dbMatch.media && dbMatch.media.length > 0) ? dbMatch.media : p.images.map((img, idx) => ({
-          id: idx + 1,
-          portfolioProjectId: p.id,
-          type: 'IMAGE',
-          url: img.startsWith('/') ? img : `/${img}`,
-          name: `${p.name} image ${idx + 1}`,
-          sortOrder: idx
-        }))
+        media: dbMatch.media || []
       }
     }
 

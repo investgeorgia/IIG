@@ -15,18 +15,18 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const id = Number((await params).id)
 
   try {
-    const media = await prisma.portfolioMedia.findMany({
-      where: { portfolioProjectId: id },
-      orderBy: { sortOrder: 'asc' }
+    const pfProject = await prisma.portfolioProject.findUnique({
+      where: { id },
+      include: { media: { orderBy: { sortOrder: 'asc' } } }
     })
-    if (media && media.length > 0) {
-      return NextResponse.json(media)
+    if (pfProject) {
+      return NextResponse.json(pfProject.media)
     }
   } catch (error: any) {
     console.error('[Portfolio Media GET Error]', error)
   }
 
-  // Fallback to static project images
+  // Fallback to static project images if project is not in DB yet
   const p = projectsData.find(x => x.id === id) || projectsData[0]
   const fallbackMedia = p.images.map((img, idx) => ({
     id: idx + 1,

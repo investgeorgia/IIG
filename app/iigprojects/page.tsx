@@ -78,6 +78,8 @@ export default function IIGProjectsPage() {
   const minSwipeDistance = 35
 
   const activeProject = projectsList.find(p => p.id === activeProjectId) || projectsList[0]
+  const activeMediaUrl = activeProject?.images?.[activeImageIndex] || activeProject?.thumbnail || ''
+  const isCurrentMediaVideo = activeMediaUrl?.endsWith('.mp4') || activeMediaUrl?.endsWith('.webm') || (activeProject as any)?.mediaDetails?.[activeImageIndex]?.type === 'VIDEO'
 
   // Preloading image helper
   const VERSION_TAG = 'v=1.1.0'
@@ -106,7 +108,19 @@ export default function IIGProjectsPage() {
     if (!activeProject || activeProject.images.length === 0) return
 
     setIsTransitioning(true)
-    const originalUrl = activeProject.images[activeImageIndex]
+    const originalUrl = activeProject.images[activeImageIndex] || activeProject.thumbnail
+    if (!originalUrl) {
+      setIsTransitioning(false)
+      return
+    }
+
+    const isVid = originalUrl.endsWith('.mp4') || originalUrl.endsWith('.webm') || (activeProject as any)?.mediaDetails?.[activeImageIndex]?.type === 'VIDEO'
+    if (isVid) {
+      setBgImage(originalUrl)
+      setBgOpacity(1)
+      setIsTransitioning(false)
+      return
+    }
     
     // Check/Load Image with fallbacks (.jpg -> .png -> .jpeg)
     const img = new Image()
@@ -131,7 +145,6 @@ export default function IIGProjectsPage() {
           const newUrl = url.replace('.png', '.jpeg')
           loadWithFallback(newUrl, 2)
         } else {
-          // If all failed, stop transitioning
           setIsTransitioning(false)
         }
       }
@@ -141,11 +154,14 @@ export default function IIGProjectsPage() {
 
     loadWithFallback(originalUrl)
 
-    // Preload the next image in sequence
+    // Preload next image in sequence
     if (activeProject.images.length > 1) {
       const nextIndex = (activeImageIndex + 1) % activeProject.images.length
-      const nextImg = new Image()
-      nextImg.src = appendVersion(activeProject.images[nextIndex])
+      const nextUrl = activeProject.images[nextIndex]
+      if (nextUrl && !nextUrl.endsWith('.mp4') && !nextUrl.endsWith('.webm')) {
+        const nextImg = new Image()
+        nextImg.src = appendVersion(nextUrl)
+      }
     }
 
   }, [activeProjectId, activeImageIndex])
@@ -167,7 +183,6 @@ export default function IIGProjectsPage() {
     window.addEventListener('resize', setMobileHeroHeight)
     window.addEventListener('load', setMobileHeroHeight)
 
-    // Re-measure after a small delay in case layout shifts
     const timer = setTimeout(setMobileHeroHeight, 100)
 
     return () => {
@@ -236,8 +251,9 @@ export default function IIGProjectsPage() {
     }
   }
 
-  // Draggable carousel hook behavior in React
+  // Draggable & Mouse Wheel carousel scrolling behavior
   const isDown = useRef(false)
+  const isDragOccurring = useRef(false)
   const startX = useRef(0)
   const scrollLeft = useRef(0)
 
@@ -245,6 +261,7 @@ export default function IIGProjectsPage() {
     const slider = carouselContainerRef.current
     if (!slider) return
     isDown.current = true
+    isDragOccurring.current = false
     slider.classList.add('active')
     startX.current = e.pageX - slider.offsetLeft
     scrollLeft.current = slider.scrollLeft
@@ -264,13 +281,23 @@ export default function IIGProjectsPage() {
     if (!slider) return
     const x = e.pageX - slider.offsetLeft
     const walk = (x - startX.current) * 2
+    if (Math.abs(x - startX.current) > 5) {
+      isDragOccurring.current = true
+    }
     slider.scrollLeft = scrollLeft.current - walk
+  }
+
+  const handleWheel = (e: React.WheelEvent) => {
+    const slider = carouselContainerRef.current
+    if (!slider) return
+    slider.scrollLeft += e.deltaY
   }
 
   const handleTouchStart = (e: React.TouchEvent) => {
     const slider = carouselContainerRef.current
     if (!slider) return
     isDown.current = true
+    isDragOccurring.current = false
     startX.current = e.touches[0].pageX - slider.offsetLeft
     scrollLeft.current = slider.scrollLeft
   }
@@ -281,6 +308,9 @@ export default function IIGProjectsPage() {
     if (!slider) return
     const x = e.touches[0].pageX - slider.offsetLeft
     const walk = (x - startX.current) * 2
+    if (Math.abs(x - startX.current) > 5) {
+      isDragOccurring.current = true
+    }
     slider.scrollLeft = scrollLeft.current - walk
   }
 
@@ -339,14 +369,27 @@ export default function IIGProjectsPage() {
       onTouchStart={handleHeroTouchStart}
       onTouchEnd={handleHeroTouchEnd}
     >
-      {/* Hero Background Image */}
-      <div 
-        className="hero-background" 
-        style={{ 
-          backgroundImage: bgImage ? `url(${bgImage})` : 'none',
-          opacity: bgOpacity
-        }}
-      />
+      {/* Hero Video or Image Display */}
+      {isCurrentMediaVideo ? (
+        <video 
+          key={activeMediaUrl}
+          src={activeMediaUrl}
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          className="hero-background w-full h-full object-cover fixed inset-0"
+          style={{ opacity: bgOpacity, pointerEvents: 'none' }}
+        />
+      ) : (
+        <div 
+          className="hero-background" 
+          style={{ 
+            backgroundImage: bgImage ? `url(${bgImage})` : 'none',
+            opacity: bgOpacity
+          }}
+        />
+      )}
       <div className="hero-overlay" />
 
       {/* Main Container */}
@@ -417,7 +460,7 @@ export default function IIGProjectsPage() {
                 <TrendingUp className="detail-icon" />
                 <span className="detail-label">ROI:</span>
                 <span className="detail-value">
-                  {activeProject.roi.includes('%') ? activeProject.roi : `${activeProject.roi}%`}
+                  {activeProject.roi?.includes('%') ? activeProject.roi : `${activeProject.roi}%`}
                 </span>
               </div>
 
@@ -436,7 +479,6 @@ export default function IIGProjectsPage() {
               const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappText)}`
 
               const handleContact = async () => {
-                // If we have a salesperson, log the click first then redirect
                 if (salesperson?.id) {
                   try {
                     const res = await fetch('/api/tracking/whatsapp', {
@@ -447,7 +489,6 @@ export default function IIGProjectsPage() {
                     const data = await res.json()
                     window.open(data.url || whatsappUrl, '_blank')
                   } catch {
-                    // Fallback: open directly if tracking fails
                     window.open(whatsappUrl, '_blank')
                   }
                 } else {
@@ -488,27 +529,32 @@ export default function IIGProjectsPage() {
               onMouseLeave={handleMouseLeaveOrUp}
               onMouseUp={handleMouseLeaveOrUp}
               onMouseMove={handleMouseMove}
+              onWheel={handleWheel}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleMouseLeaveOrUp}
               onTouchMove={handleTouchMove}
             >
               <div className="carousel-track">
-                {projectsData.map(project => (
+                {projectsList.map(project => (
                   <div 
                     key={project.id}
                     className="carousel-item-wrapper"
-                    onClick={() => selectProject(project.id)}
+                    onClick={() => {
+                      if (!isDragOccurring.current) {
+                        selectProject(project.id)
+                      }
+                    }}
                   >
                     <span className="carousel-label">{project.name}</span>
                     <div className={`carousel-item ${project.id === activeProjectId ? 'active' : ''}`}>
                       <img 
-                        src={`/${project.thumbnail}`} 
+                        src={project.thumbnail ? (project.thumbnail.startsWith('/') ? project.thumbnail : `/${project.thumbnail}`) : (project.images[0] ? (project.images[0].startsWith('/') ? project.images[0] : `/${project.images[0]}`) : '')} 
                         alt={project.name}
                         width={200}
                         height={112}
                         loading={project.id === activeProjectId ? 'eager' : 'lazy'}
                         decoding="async"
-                        style={{ contentVisibility: 'auto' }}
+                        style={{ contentVisibility: 'auto', objectFit: 'cover' }}
                       />
                     </div>
                   </div>
