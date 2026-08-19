@@ -14,8 +14,9 @@ export async function GET() {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
+  let dbProjects: any[] = []
   try {
-    const projects = await prisma.portfolioProject.findMany({
+    dbProjects = await prisma.portfolioProject.findMany({
       include: {
         media: {
           orderBy: { sortOrder: 'asc' }
@@ -23,41 +24,74 @@ export async function GET() {
       },
       orderBy: { sortOrder: 'asc' }
     })
-
-    if (projects && projects.length > 0) {
-      return NextResponse.json(projects)
-    }
   } catch (error: any) {
-    console.error('[Portfolio Projects GET Error]', error)
+    console.warn('[Portfolio Projects DB GET Warning]', error?.message || error)
   }
 
-  // Fallback to projectsData
-  const fallbackProjects = projectsData.map(p => ({
-    id: p.id,
-    name: p.name,
-    slug: p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    location: p.location || 'Tbilisi',
-    startingPriceText: p.startingPrice,
-    projectType: p.type,
-    paymentPlanText: p.paymentPlan,
-    sizeText: p.size,
-    roiText: p.roi,
-    completionText: p.completion,
-    description: null,
-    coverImageUrl: p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : null),
-    isPublished: true,
-    sortOrder: p.id,
-    media: p.images.map((img, idx) => ({
-      id: idx + 1,
-      portfolioProjectId: p.id,
-      type: 'IMAGE',
-      url: img.startsWith('/') ? img : `/${img}`,
-      name: `${p.name} image ${idx + 1}`,
-      sortOrder: idx
-    }))
-  }))
+  // Create a map of DB projects by ID / slug / name
+  const dbMap = new Map<string, any>()
+  for (const p of dbProjects) {
+    dbMap.set(String(p.id), p)
+    if (p.slug) dbMap.set(p.slug.toLowerCase(), p)
+    if (p.name) dbMap.set(p.name.toLowerCase(), p)
+  }
 
-  return NextResponse.json(fallbackProjects)
+  // Merge projectsData with DB records to guarantee ALL 16 projects are returned
+  const mergedProjects = projectsData.map(p => {
+    const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
+
+    if (dbMatch) {
+      return {
+        ...dbMatch,
+        name: dbMatch.name || p.name,
+        slug: dbMatch.slug || slug,
+        location: dbMatch.location || p.location || 'Tbilisi',
+        startingPriceText: dbMatch.startingPriceText || p.startingPrice,
+        projectType: dbMatch.projectType || p.type,
+        paymentPlanText: dbMatch.paymentPlanText || p.paymentPlan,
+        sizeText: dbMatch.sizeText || p.size,
+        roiText: dbMatch.roiText || p.roi,
+        completionText: dbMatch.completionText || p.completion,
+        coverImageUrl: dbMatch.coverImageUrl || (p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : null)),
+        media: (dbMatch.media && dbMatch.media.length > 0) ? dbMatch.media : p.images.map((img, idx) => ({
+          id: idx + 1,
+          portfolioProjectId: p.id,
+          type: 'IMAGE',
+          url: img.startsWith('/') ? img : `/${img}`,
+          name: `${p.name} image ${idx + 1}`,
+          sortOrder: idx
+        }))
+      }
+    }
+
+    return {
+      id: p.id,
+      name: p.name,
+      slug: slug,
+      location: p.location || 'Tbilisi',
+      startingPriceText: p.startingPrice,
+      projectType: p.type,
+      paymentPlanText: p.paymentPlan,
+      sizeText: p.size,
+      roiText: p.roi,
+      completionText: p.completion,
+      description: null,
+      coverImageUrl: p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : null),
+      isPublished: true,
+      sortOrder: p.id,
+      media: p.images.map((img, idx) => ({
+        id: idx + 1,
+        portfolioProjectId: p.id,
+        type: 'IMAGE',
+        url: img.startsWith('/') ? img : `/${img}`,
+        name: `${p.name} image ${idx + 1}`,
+        sortOrder: idx
+      }))
+    }
+  })
+
+  return NextResponse.json(mergedProjects)
 }
 
 export async function POST(request: Request) {

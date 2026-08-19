@@ -5,8 +5,9 @@ import { projectsData } from '@/app/iigprojects/data'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
+  let dbProjects: any[] = []
   try {
-    const projects = await prisma.portfolioProject.findMany({
+    dbProjects = await prisma.portfolioProject.findMany({
       where: {
         isPublished: true,
       },
@@ -21,56 +22,68 @@ export async function GET() {
         sortOrder: 'asc',
       },
     })
-
-    if (projects && projects.length > 0) {
-      const formattedProjects = projects.map(p => {
-        let mediaUrls: string[] = p.media.map(m => m.url)
-        if (mediaUrls.length === 0 && p.coverImageUrl) {
-          mediaUrls = [p.coverImageUrl]
-        }
-
-        return {
-          id: p.id,
-          name: p.name,
-          slug: p.slug || `project-${p.id}`,
-          location: p.location || 'Georgia',
-          startingPrice: p.startingPriceText || '-',
-          type: p.projectType || 'Apartments',
-          paymentPlan: p.paymentPlanText || '-',
-          size: p.sizeText || '-',
-          roi: p.roiText || '-',
-          completion: p.completionText || '-',
-          images: mediaUrls,
-          thumbnail: p.coverImageUrl || mediaUrls[0] || '',
-          mediaDetails: p.media.map(m => ({
-            url: m.url,
-            type: m.type,
-            name: m.name
-          }))
-        }
-      })
-
-      return NextResponse.json(formattedProjects)
-    }
   } catch (error: any) {
-    console.error('[iigprojects API Error]', error)
+    console.warn('[iigprojects DB GET Warning]', error?.message || error)
   }
 
-  // Fallback to static projectsData
-  const fallback = projectsData.map(p => ({
-    id: p.id,
-    name: p.name,
-    slug: p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    location: p.location,
-    startingPrice: p.startingPrice,
-    type: p.type,
-    paymentPlan: p.paymentPlan,
-    size: p.size,
-    roi: p.roi,
-    completion: p.completion,
-    images: p.images.map(img => img.startsWith('/') ? img : `/${img}`),
-    thumbnail: p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : '')
-  }))
+  // Create a map of DB projects by ID / slug / name
+  const dbMap = new Map<string, any>()
+  for (const p of dbProjects) {
+    dbMap.set(String(p.id), p)
+    if (p.slug) dbMap.set(p.slug.toLowerCase(), p)
+    if (p.name) dbMap.set(p.name.toLowerCase(), p)
+  }
 
-  return NextResponse.json(fallback)
+  const mergedProjects = projectsData.map(p => {
+    const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
+
+    if (dbMatch) {
+      let mediaUrls: string[] = dbMatch.media?.map((m: any) => m.url) || []
+      if (mediaUrls.length === 0 && dbMatch.coverImageUrl) {
+        mediaUrls = [dbMatch.coverImageUrl]
+      }
+      if (mediaUrls.length === 0) {
+        mediaUrls = p.images.map(img => img.startsWith('/') ? img : `/${img}`)
+      }
+
+      return {
+        id: dbMatch.id,
+        name: dbMatch.name || p.name,
+        slug: dbMatch.slug || slug,
+        location: dbMatch.location || p.location || 'Georgia',
+        startingPrice: dbMatch.startingPriceText || p.startingPrice,
+        type: dbMatch.projectType || p.type,
+        paymentPlan: dbMatch.paymentPlanText || p.paymentPlan,
+        size: dbMatch.sizeText || p.size,
+        roi: dbMatch.roiText || p.roi,
+        completion: dbMatch.completionText || p.completion,
+        images: mediaUrls,
+        thumbnail: dbMatch.coverImageUrl || mediaUrls[0] || '',
+        mediaDetails: (dbMatch.media || []).map((m: any) => ({
+          url: m.url,
+          type: m.type,
+          name: m.name
+        }))
+      }
+    }
+
+    const fallbackImages = p.images.map(img => img.startsWith('/') ? img : `/${img}`)
+    return {
+      id: p.id,
+      name: p.name,
+      slug: slug,
+      location: p.location,
+      startingPrice: p.startingPrice,
+      type: p.type,
+      paymentPlan: p.paymentPlan,
+      size: p.size,
+      roi: p.roi,
+      completion: p.completion,
+      images: fallbackImages,
+      thumbnail: p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : fallbackImages[0]
+    }
+  })
+
+  return NextResponse.json(mergedProjects)
 }
