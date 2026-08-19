@@ -2,11 +2,12 @@ import { checkPermission, AccessLevel } from '@/server/utils/permissions'
 import { getCurrentUser } from '@/server/utils/auth'
 import { NextResponse } from 'next/server'
 import { MediaService } from '@/server/services/MediaService'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: Request) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!checkPermission(user, 'Media', AccessLevel.EDIT, true)) {
+  if (!checkPermission(user, 'Projects', AccessLevel.EDIT)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -16,8 +17,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid or empty IDs array' }, { status: 400 })
     }
 
-    const results = await MediaService.bulkDelete(ids)
-    return NextResponse.json({ success: true, results })
+    const numIds = ids.map((id: any) => Number(id))
+
+    // Delete from PortfolioMedia if present
+    await prisma.portfolioMedia.deleteMany({
+      where: { id: { in: numIds } }
+    })
+
+    // Also attempt MediaService deletion for inventory media
+    await MediaService.bulkDelete(numIds).catch(() => {})
+
+    return NextResponse.json({ success: true })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

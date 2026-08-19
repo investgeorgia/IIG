@@ -2,7 +2,7 @@
 
 import { useState, use, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Loader2, Upload, Trash2, Edit3, Check, Star, Play, Image as ImageIcon, Building2, MapPin } from 'lucide-react'
+import { ArrowLeft, Loader2, Upload, Trash2, Edit3, Check, Star, Play, Building2, MapPin, ArrowUp, ArrowDown, CheckSquare, Square } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,9 +21,10 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
   const [activeTab, setActiveTab] = useState<'details' | 'media'>('details')
   const [editingMediaId, setEditingMediaId] = useState<number | null>(null)
   const [editingMediaName, setEditingMediaName] = useState('')
+  const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([])
 
   // Upload hook for tracking speed, progress bar, ETA modal
-  const { progressInfo, uploadFiles, cancelUpload } = useFileUpload()
+  const { progressInfo, uploadFiles, cancelUpload, resetProgress } = useFileUpload()
   const [isUploading, setIsUploading] = useState(false)
 
   // Fetch project details
@@ -104,6 +105,24 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
     }
   })
 
+  // Bulk delete media mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const res = await fetch('/api/cms/media/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      })
+      if (!res.ok) throw new Error('Failed to delete selected media')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio-project-media', id] })
+      setSelectedMediaIds([])
+      toast.success('Selected media deleted successfully')
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to delete media')
+  })
+
   // Rename media mutation
   const renameMediaMutation = useMutation({
     mutationFn: async ({ mediaId, name }: { mediaId: number; name: string }) => {
@@ -120,6 +139,53 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
       toast.success('File renamed')
     }
   })
+
+  // Reorder media mutation
+  const reorderMediaMutation = useMutation({
+    mutationFn: async (items: { id: number; sortOrder: number }[]) => {
+      await Promise.all(
+        items.map(item =>
+          fetch(`/api/cms/media/${item.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sortOrder: item.sortOrder })
+          })
+        )
+      )
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio-project-media', id] })
+    }
+  })
+
+  const moveMediaItem = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= mediaFiles.length) return
+
+    const items = [...mediaFiles]
+    const temp = items[index]
+    items[index] = items[newIndex]
+    items[newIndex] = temp
+
+    const updates = items.map((m, idx) => ({ id: m.id, sortOrder: idx }))
+    reorderMediaMutation.mutate(updates)
+  }
+
+  const toggleSelectMedia = (mediaId: number) => {
+    if (selectedMediaIds.includes(mediaId)) {
+      setSelectedMediaIds(selectedMediaIds.filter(i => i !== mediaId))
+    } else {
+      setSelectedMediaIds([...selectedMediaIds, mediaId])
+    }
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedMediaIds.length === mediaFiles.length) {
+      setSelectedMediaIds([])
+    } else {
+      setSelectedMediaIds(mediaFiles.map((m: any) => m.id))
+    }
+  }
 
   // Handle Media File Upload (Images & Videos)
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,7 +224,6 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
         toast.success(`${result.successful} file(s) uploaded successfully!`)
       }
     } finally {
-      setIsUploading(false)
       e.target.value = ''
     }
   }
@@ -178,23 +243,39 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
   const canEdit = hasPermission('Projects', 'EDIT')
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Upload Progress Modal */}
-      <FileUploadProgressModal
-        progressInfo={progressInfo}
-        onCancel={cancelUpload}
-      />
+      {(isUploading || progressInfo.isUploading || progressInfo.fileStates.length > 0) && (
+        <FileUploadProgressModal
+          progressInfo={progressInfo}
+          onCancel={() => {
+            cancelUpload()
+            setIsUploading(false)
+          }}
+          onClose={() => {
+            resetProgress()
+            setIsUploading(false)
+          }}
+          title={`Uploading files to ${project?.name || 'Project'}`}
+        />
+      )}
 
-      {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 text-sm text-neutral-500">
-        <Link href="/cms/project-portfolio" className="hover:text-neutral-900 transition-colors flex items-center gap-1">
-          <ArrowLeft className="w-4 h-4" /> Project Portfolio
-        </Link>
-        <span>/</span>
-        <span className="text-neutral-900 font-medium">{project?.name}</span>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 border-b pb-4">
+        <div className="flex items-center gap-3">
+          <Link href="/cms/project-portfolio">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="w-4 h-4" /> Back to Portfolio
+            </Button>
+          </Link>
+          <div className="h-4 w-px bg-neutral-200" />
+          <span className="text-sm font-semibold text-neutral-500">
+            Portfolio Showcase / {project?.name}
+          </span>
+        </div>
       </div>
 
-      {/* Header Banner */}
+      {/* Title & Status Banner */}
       <Card className="shadow-sm border-neutral-200">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -332,13 +413,9 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
 
               {canEdit && (
                 <div className="flex justify-end pt-4 border-t">
-                  <Button
-                    type="submit"
-                    disabled={updateProjectMutation.isPending}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
+                  <Button type="submit" disabled={updateProjectMutation.isPending} className="bg-red-600 hover:bg-red-700 text-white">
                     {updateProjectMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Save Specifications
+                    Save Display Specifications
                   </Button>
                 </div>
               )}
@@ -347,16 +424,13 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
         </Card>
       )}
 
-      {/* ─── TAB 2: MEDIA GALLERY & UPLOADER ─── */}
+      {/* ─── TAB 2: MEDIA GALLERY ─── */}
       {activeTab === 'media' && (
         <div className="space-y-6">
-          {/* Upload Dropzone */}
+          {/* File Uploader Card */}
           {canEdit && (
-            <Card className="shadow-sm border-dashed border-2 border-neutral-300 bg-neutral-50/50 hover:bg-neutral-50 transition-colors">
-              <CardContent className="p-8 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
-                  <Upload className="w-6 h-6" />
-                </div>
+            <Card className="shadow-sm border-neutral-200 border-dashed bg-neutral-50/50">
+              <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="font-semibold text-neutral-900">Upload Project Images &amp; Videos</h3>
                   <p className="text-xs text-neutral-500 mt-1">
@@ -386,11 +460,54 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
             </Card>
           )}
 
-          {/* Media Grid */}
+          {/* Media Grid Header & Bulk Toolbar */}
           <Card className="shadow-sm border-neutral-200">
-            <CardHeader className="border-b pb-4">
-              <CardTitle className="text-base font-bold">Uploaded Assets ({mediaFiles.length})</CardTitle>
+            <CardHeader className="border-b pb-4 flex flex-row items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-base font-bold">Uploaded Assets ({mediaFiles.length})</CardTitle>
+
+                {canEdit && mediaFiles.length > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={toggleSelectAll}
+                    className="text-xs gap-1.5"
+                  >
+                    {selectedMediaIds.length === mediaFiles.length ? (
+                      <>
+                        <CheckSquare className="w-3.5 h-3.5 text-red-600" /> Deselect All
+                      </>
+                    ) : (
+                      <>
+                        <Square className="w-3.5 h-3.5 text-neutral-400" /> Select All ({selectedMediaIds.length})
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+
+              {canEdit && selectedMediaIds.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    if (confirm(`Are you sure you want to delete ${selectedMediaIds.length} selected asset(s)?`)) {
+                      bulkDeleteMutation.mutate(selectedMediaIds)
+                    }
+                  }}
+                  disabled={bulkDeleteMutation.isPending}
+                  className="text-xs gap-1.5 bg-red-600 hover:bg-red-700"
+                >
+                  {bulkDeleteMutation.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  Delete Selected ({selectedMediaIds.length})
+                </Button>
+              )}
             </CardHeader>
+
             <CardContent className="p-6">
               {mediaLoading ? (
                 <div className="text-center py-12 text-neutral-400">Loading gallery...</div>
@@ -400,12 +517,18 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {mediaFiles.map((media: any) => {
+                  {mediaFiles.map((media: any, index: number) => {
                     const isVideo = media.type === 'VIDEO' || media.url?.endsWith('.mp4') || media.url?.endsWith('.webm')
                     const isCover = project?.coverImageUrl === media.url
+                    const isSelected = selectedMediaIds.includes(media.id)
 
                     return (
-                      <div key={media.id} className="group relative bg-neutral-900 rounded-xl overflow-hidden shadow-sm border border-neutral-200 flex flex-col">
+                      <div
+                        key={media.id}
+                        className={`group relative bg-neutral-900 rounded-xl overflow-hidden shadow-sm border transition-all flex flex-col ${
+                          isCover ? 'border-amber-400 ring-2 ring-amber-400/20' : isSelected ? 'border-red-500 ring-2 ring-red-500/20' : 'border-neutral-200'
+                        }`}
+                      >
                         {/* Media Preview */}
                         <div className="relative h-44 bg-neutral-900 overflow-hidden flex items-center justify-center">
                           {isVideo ? (
@@ -414,8 +537,26 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
                             <img src={media.url} alt={media.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                           )}
 
+                          {/* Checkbox Selection Overlay */}
+                          {canEdit && (
+                            <div
+                              onClick={() => toggleSelectMedia(media.id)}
+                              className="absolute top-2 left-2 cursor-pointer z-10"
+                            >
+                              {isSelected ? (
+                                <div className="w-5 h-5 bg-red-600 text-white rounded flex items-center justify-center shadow-md">
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                </div>
+                              ) : (
+                                <div className="w-5 h-5 bg-neutral-900/60 backdrop-blur-sm text-white rounded border border-white/40 hover:border-white flex items-center justify-center transition-colors">
+                                  <Square className="w-3.5 h-3.5 opacity-40" />
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           {/* Badges */}
-                          <div className="absolute top-2 left-2 flex gap-1">
+                          <div className="absolute top-2 right-2 flex gap-1 z-10">
                             {isVideo && (
                               <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-600 text-white flex items-center gap-1 shadow-sm">
                                 <Play className="w-3 h-3 fill-current" /> VIDEO
@@ -427,6 +568,30 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
                               </span>
                             )}
                           </div>
+
+                          {/* Reordering Overlay Controls */}
+                          {canEdit && (
+                            <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-neutral-900/80 backdrop-blur-sm p-1 rounded-lg border border-white/10 opacity-90 group-hover:opacity-100 transition-opacity z-10">
+                              <button
+                                type="button"
+                                disabled={index === 0}
+                                onClick={() => moveMediaItem(index, 'up')}
+                                className="p-1 rounded text-white/80 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10"
+                                title="Move Left / Up"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={index === mediaFiles.length - 1}
+                                onClick={() => moveMediaItem(index, 'down')}
+                                className="p-1 rounded text-white/80 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10"
+                                title="Move Right / Down"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {/* File details & actions */}
@@ -469,10 +634,16 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
                             {!isCover && !isVideo && canEdit && (
                               <button
                                 onClick={() => updateProjectMutation.mutate({ coverImageUrl: media.url })}
-                                className="text-[11px] font-medium text-amber-600 hover:underline flex items-center gap-1"
+                                className="text-[11px] font-semibold text-amber-600 hover:underline flex items-center gap-1"
                               >
-                                Set Cover
+                                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" /> Set as Thumbnail
                               </button>
+                            )}
+
+                            {isCover && (
+                              <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1">
+                                <Check className="w-3 h-3 text-amber-500" /> Active Cover
+                              </span>
                             )}
 
                             {canEdit && (
