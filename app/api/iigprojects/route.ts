@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { projectsData } from '@/app/iigprojects/data'
+import { getStoredMedia, getAllStoredMediaMap } from '@/lib/portfolio-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,54 +35,40 @@ export async function GET() {
     if (p.name) dbMap.set(p.name.toLowerCase(), p)
   }
 
+  const storedMap = getAllStoredMediaMap()
+
   const mergedProjects = projectsData.map(p => {
     const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
+    const storedItems = storedMap[p.id] || getStoredMedia(p.id)
 
-    if (dbMatch) {
-      let mediaUrls: string[] = dbMatch.media?.map((m: any) => m.url) || []
-      if (mediaUrls.length === 0 && dbMatch.coverImageUrl) {
-        mediaUrls = [dbMatch.coverImageUrl]
-      }
-      if (mediaUrls.length === 0) {
-        mediaUrls = p.images.map(img => img.startsWith('/') ? img : `/${img}`)
-      }
+    let mediaUrls: string[] = []
+    let mediaDetails: any[] = []
 
-      return {
-        id: dbMatch.id,
-        name: dbMatch.name || p.name,
-        slug: dbMatch.slug || slug,
-        location: dbMatch.location || p.location || 'Georgia',
-        startingPrice: dbMatch.startingPriceText || p.startingPrice,
-        type: dbMatch.projectType || p.type,
-        paymentPlan: dbMatch.paymentPlanText || p.paymentPlan,
-        size: dbMatch.sizeText || p.size,
-        roi: dbMatch.roiText || p.roi,
-        completion: dbMatch.completionText || p.completion,
-        images: mediaUrls,
-        thumbnail: dbMatch.coverImageUrl || mediaUrls[0] || '',
-        mediaDetails: (dbMatch.media || []).map((m: any) => ({
-          url: m.url,
-          type: m.type,
-          name: m.name
-        }))
-      }
+    if (dbMatch && dbMatch.media && dbMatch.media.length > 0) {
+      mediaUrls = dbMatch.media.map((m: any) => m.url)
+      mediaDetails = dbMatch.media.map((m: any) => ({ url: m.url, type: m.type, name: m.name }))
+    } else if (storedItems && storedItems.length > 0) {
+      mediaUrls = storedItems.map(m => m.url)
+      mediaDetails = storedItems.map(m => ({ url: m.url, type: m.type, name: m.name }))
     }
 
-    const fallbackImages = p.images.map(img => img.startsWith('/') ? img : `/${img}`)
+    const coverUrl = dbMatch?.coverImageUrl || mediaUrls[0] || ''
+
     return {
-      id: p.id,
-      name: p.name,
-      slug: slug,
-      location: p.location,
-      startingPrice: p.startingPrice,
-      type: p.type,
-      paymentPlan: p.paymentPlan,
-      size: p.size,
-      roi: p.roi,
-      completion: p.completion,
-      images: fallbackImages,
-      thumbnail: p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : fallbackImages[0]
+      id: dbMatch?.id || p.id,
+      name: dbMatch?.name || p.name,
+      slug: dbMatch?.slug || slug,
+      location: dbMatch?.location || p.location || 'Georgia',
+      startingPrice: dbMatch?.startingPriceText || p.startingPrice,
+      type: dbMatch?.projectType || p.type,
+      paymentPlan: dbMatch?.paymentPlanText || p.paymentPlan,
+      size: dbMatch?.sizeText || p.size,
+      roi: dbMatch?.roiText || p.roi,
+      completion: dbMatch?.completionText || p.completion,
+      images: mediaUrls,
+      thumbnail: coverUrl,
+      mediaDetails: mediaDetails
     }
   })
 

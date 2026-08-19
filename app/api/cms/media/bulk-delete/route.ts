@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/server/utils/auth'
 import { NextResponse } from 'next/server'
 import { MediaService } from '@/server/services/MediaService'
 import { prisma } from '@/lib/prisma'
+import { bulkDeleteStoredMedia } from '@/lib/portfolio-store'
 
 export async function POST(request: Request) {
   const user = await getCurrentUser()
@@ -19,10 +20,17 @@ export async function POST(request: Request) {
 
     const numIds = ids.map((id: any) => Number(id))
 
+    // Delete from disk store
+    bulkDeleteStoredMedia(numIds)
+
     // Delete from PortfolioMedia if present
-    await prisma.portfolioMedia.deleteMany({
-      where: { id: { in: numIds } }
-    })
+    try {
+      await prisma.portfolioMedia.deleteMany({
+        where: { id: { in: numIds } }
+      })
+    } catch (e) {
+      console.warn('[Bulk Delete DB Warning]', e)
+    }
 
     // Also attempt MediaService deletion for inventory media
     await MediaService.bulkDelete(numIds).catch(() => {})

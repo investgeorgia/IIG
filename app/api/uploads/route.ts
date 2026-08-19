@@ -11,6 +11,8 @@ export const runtime = 'nodejs'
 const ALLOWED_MIME_TYPES = [
   // Images
   'image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif',
+  // Videos
+  'video/mp4', 'video/webm', 'video/quicktime',
   // PDFs
   'application/pdf',
   // Presentations
@@ -26,6 +28,7 @@ const ALLOWED_MIME_TYPES = [
 
 const ALLOWED_EXTENSIONS = [
   '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg',
+  '.mp4', '.webm', '.mov',
   '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'
 ]
 
