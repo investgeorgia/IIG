@@ -36,7 +36,7 @@ export async function GET() {
     if (p.name) dbMap.set(p.name.toLowerCase(), p)
   }
 
-  // Merge projectsData with DB records cleanly
+  // Merge projectsData with DB records cleanly (without forcing hardcoded fallback media)
   const mergedProjects = projectsData.map(p => {
     const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
@@ -53,7 +53,7 @@ export async function GET() {
         sizeText: dbMatch.sizeText || p.size,
         roiText: dbMatch.roiText || p.roi,
         completionText: dbMatch.completionText || p.completion,
-        coverImageUrl: dbMatch.coverImageUrl || (p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : null)),
+        coverImageUrl: dbMatch.coverImageUrl || null,
         media: dbMatch.media || []
       }
     }
@@ -70,17 +70,10 @@ export async function GET() {
       roiText: p.roi,
       completionText: p.completion,
       description: null,
-      coverImageUrl: p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : null),
+      coverImageUrl: null,
       isPublished: true,
       sortOrder: p.id,
-      media: p.images.map((img, idx) => ({
-        id: idx + 1,
-        portfolioProjectId: p.id,
-        type: 'IMAGE',
-        url: img.startsWith('/') ? img : `/${img}`,
-        name: `${p.name} image ${idx + 1}`,
-        sortOrder: idx
-      }))
+      media: []
     }
   })
 

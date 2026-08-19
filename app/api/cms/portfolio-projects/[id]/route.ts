@@ -28,7 +28,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     console.error('[Portfolio Project GET Error]', error)
   }
 
-  // Fallback to static projectsData
+  // Fallback to static project metadata without fallback images
   const p = projectsData.find(x => x.id === id) || projectsData[0]
   const fallbackProject = {
     id: p.id,
@@ -42,17 +42,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     roiText: p.roi,
     completionText: p.completion,
     description: null,
-    coverImageUrl: p.thumbnail ? (p.thumbnail.startsWith('/') ? p.thumbnail : `/${p.thumbnail}`) : (p.images[0] ? (p.images[0].startsWith('/') ? p.images[0] : `/${p.images[0]}`) : null),
+    coverImageUrl: null,
     isPublished: true,
     sortOrder: p.id,
-    media: p.images.map((img, idx) => ({
-      id: idx + 1,
-      portfolioProjectId: p.id,
-      type: 'IMAGE',
-      url: img.startsWith('/') ? img : `/${img}`,
-      name: `${p.name} image ${idx + 1}`,
-      sortOrder: idx
-    }))
+    media: []
   }
 
   return NextResponse.json(fallbackProject)
