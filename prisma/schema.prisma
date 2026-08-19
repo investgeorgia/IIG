@@ -117,6 +117,42 @@ model Project {
   @@index([slug])
 }
 
+model PortfolioProject {
+  id                Int               @id @default(autoincrement())
+  name              String
+  slug              String            @unique
+  location          String            @default("Tbilisi")
+  startingPriceText String            @default("$100,000")
+  projectType       String            @default("Apartments")
+  paymentPlanText   String            @default("-")
+  sizeText          String            @default("From 50 m²")
+  roiText           String            @default("10%")
+  completionText    String            @default("Q4 2026")
+  description       String?           @db.Text
+  coverImageUrl     String?
+  isPublished       Boolean           @default(true)
+  sortOrder         Int               @default(0)
+  media             PortfolioMedia[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model PortfolioMedia {
+  id                 Int              @id @default(autoincrement())
+  portfolioProjectId Int
+  portfolioProject   PortfolioProject @relation(fields: [portfolioProjectId], references: [id], onDelete: Cascade)
+  type               MediaType        @default(IMAGE)
+  url                String
+  name               String?
+  size               Int?
+  mimeType           String?
+  sortOrder          Int              @default(0)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([portfolioProjectId])
+}
+
 
 enum UnitStatus {
   AVAILABLE

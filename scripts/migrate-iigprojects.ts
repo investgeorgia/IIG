@@ -14,22 +14,8 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-function parseNumericPrice(priceStr?: string): number | null {
-  if (!priceStr) return null
-  const cleaned = priceStr.replace(/[^0-9.]/g, '')
-  const val = parseFloat(cleaned)
-  return isNaN(val) ? null : val
-}
-
-function parseNumericRoi(roiStr?: string): number | null {
-  if (!roiStr) return null
-  const cleaned = roiStr.replace(/[^0-9.]/g, '')
-  const val = parseFloat(cleaned)
-  return isNaN(val) ? null : val
-}
-
 async function main() {
-  console.log('Starting /iigprojects migration and media transfer...')
+  console.log('Starting /iigprojects Portfolio migration and media transfer...')
 
   // 1. Determine media root directory
   const envPath = process.env.MEDIA_STORAGE_PATH
@@ -47,26 +33,12 @@ async function main() {
   console.log(`Media root path: ${mediaRoot}`)
   console.log(`URL base: ${urlBase}`)
 
-  // 2. Ensure default Developer exists
-  let developer = await prisma.developer.findFirst()
-
-  if (!developer) {
-    developer = await prisma.developer.create({
-      data: {
-        name: 'Invest Georgia',
-        description: 'Official Developer for Invest Georgia projects'
-      }
-    })
-  }
-
-  console.log(`Using Developer: ID ${developer.id} (${developer.name})`)
-
-  // 3. Migrate each project
+  // 2. Migrate each project into PortfolioProject & PortfolioMedia
   for (const p of projectsData) {
     const rawSlug = p.images[0] ? p.images[0].split('/')[1] : slugify(p.name)
     const slug = rawSlug || slugify(p.name)
 
-    console.log(`\nMigrating project: ${p.name} (slug: ${slug})`)
+    console.log(`\nMigrating Portfolio project: ${p.name} (slug: ${slug})`)
 
     const targetSubDir = path.join('iigproject', slug)
     const targetDir = path.join(mediaRoot, targetSubDir)
@@ -86,7 +58,7 @@ async function main() {
         const srcFile = path.join(sourceDir, file)
         const destFile = path.join(targetDir, file)
         
-        // Copy file
+        // Copy file if not existing
         fs.copyFileSync(srcFile, destFile)
 
         const fileUrl = `${urlBase}/iigproject/${slug}/${file}`
@@ -97,51 +69,45 @@ async function main() {
       console.warn(`Source folder not found: ${sourceDir}`)
     }
 
-    const coverUrl = migratedMediaUrls.find(u => u.endsWith('thumb.jpg')) || migratedMediaUrls[0] || null
+    const coverUrl = migratedMediaUrls.find(u => u.endsWith('thumb.jpg')) || migratedMediaUrls[0] || `${urlBase}/iigproject/${slug}/thumb.jpg`
 
-    // Upsert project in database
-    const project = await prisma.project.upsert({
+    // Upsert project in PortfolioProject table
+    const portfolioProject = await prisma.portfolioProject.upsert({
       where: { id: p.id },
       update: {
         name: p.name,
         slug: slug,
-        address: p.location,
-        city: p.location,
-        startingPrice: parseNumericPrice(p.startingPrice),
+        location: p.location || 'Tbilisi',
         startingPriceText: p.startingPrice,
         projectType: p.type,
         paymentPlanText: p.paymentPlan,
         sizeText: p.size,
         roiText: p.roi,
-        roi: parseNumericRoi(p.roi),
         completionText: p.completion,
         isPublished: true,
         coverImageUrl: coverUrl,
-        developerId: developer.id
+        sortOrder: p.id
       },
       create: {
         id: p.id,
         name: p.name,
         slug: slug,
-        address: p.location,
-        city: p.location,
-        startingPrice: parseNumericPrice(p.startingPrice),
+        location: p.location || 'Tbilisi',
         startingPriceText: p.startingPrice,
         projectType: p.type,
         paymentPlanText: p.paymentPlan,
         sizeText: p.size,
         roiText: p.roi,
-        roi: parseNumericRoi(p.roi),
         completionText: p.completion,
         isPublished: true,
         coverImageUrl: coverUrl,
-        developerId: developer.id
+        sortOrder: p.id
       }
     })
 
-    // Update media gallery entries in database
-    await prisma.media.deleteMany({
-      where: { projectId: project.id }
+    // Update media gallery entries in PortfolioMedia database table
+    await prisma.portfolioMedia.deleteMany({
+      where: { portfolioProjectId: portfolioProject.id }
     })
 
     const mediaToInsert = migratedMediaUrls
@@ -149,24 +115,24 @@ async function main() {
       .map((url, idx) => {
         const isVideo = url.endsWith('.mp4') || url.endsWith('.webm')
         return {
-          projectId: project.id,
+          portfolioProjectId: portfolioProject.id,
           type: isVideo ? ('VIDEO' as const) : ('IMAGE' as const),
           url: url,
-          name: `${project.name} asset ${idx + 1}`,
+          name: `${portfolioProject.name} image ${idx + 1}`,
           sortOrder: idx
         }
       })
 
     if (mediaToInsert.length > 0) {
-      await prisma.media.createMany({
+      await prisma.portfolioMedia.createMany({
         data: mediaToInsert
       })
     }
 
-    console.log(`Project ${project.name} (ID ${project.id}) saved with ${mediaToInsert.length} media records.`)
+    console.log(`Portfolio Project "${portfolioProject.name}" (ID ${portfolioProject.id}) saved with ${mediaToInsert.length} media records. Specs: Price ${p.startingPrice}, Type ${p.type}, Payment Plan ${p.paymentPlan}, Size ${p.size}, ROI ${p.roi}, Completion ${p.completion}`)
   }
 
-  console.log('\nMigration successfully completed!')
+  console.log('\nPortfolio Migration successfully completed!')
 }
 
 main()

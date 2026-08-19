@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const projects = await prisma.project.findMany({
+    const projects = await prisma.portfolioProject.findMany({
       where: {
         isPublished: true,
       },
@@ -17,7 +17,7 @@ export async function GET() {
         },
       },
       orderBy: {
-        id: 'asc',
+        sortOrder: 'asc',
       },
     })
 
@@ -32,12 +32,12 @@ export async function GET() {
         id: p.id,
         name: p.name,
         slug: p.slug || `project-${p.id}`,
-        location: p.city || p.address || 'Georgia',
-        startingPrice: p.startingPriceText || (p.startingPrice ? `$${Number(p.startingPrice).toLocaleString()}` : '-'),
+        location: p.location || 'Georgia',
+        startingPrice: p.startingPriceText || '-',
         type: p.projectType || 'Apartments',
         paymentPlan: p.paymentPlanText || '-',
         size: p.sizeText || '-',
-        roi: p.roiText || (p.roi ? `${p.roi}%` : '-'),
+        roi: p.roiText || '-',
         completion: p.completionText || '-',
         images: mediaUrls,
         thumbnail: p.coverImageUrl || mediaUrls[0] || '',

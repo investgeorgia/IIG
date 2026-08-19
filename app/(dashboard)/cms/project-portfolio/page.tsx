@@ -50,7 +50,7 @@ function ProjectPortfolioContent() {
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['portfolio-projects'],
     queryFn: async () => {
-      const res = await fetch('/api/cms/projects')
+      const res = await fetch('/api/cms/portfolio-projects')
       if (!res.ok) throw new Error('Failed to fetch projects')
       return res.json()
     },
@@ -63,24 +63,19 @@ function ProjectPortfolioContent() {
     return (
       (p.name || '').toLowerCase().includes(q) ||
       (p.slug || '').toLowerCase().includes(q) ||
-      (p.city || '').toLowerCase().includes(q) ||
+      (p.location || '').toLowerCase().includes(q) ||
       (p.projectType || '').toLowerCase().includes(q)
     )
   })
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const devId = form.developerId ? Number(form.developerId) : (developers[0]?.id || 1)
       const payload = {
         ...form,
-        developerId: devId,
-        startingPrice: form.startingPrice ? Number(form.startingPrice) : undefined,
-        roi: form.roi ? Number(form.roi) : undefined,
-        completionDate: form.completionDate ? form.completionDate : undefined,
-        address: form.address || form.city || 'Tbilisi',
+        location: form.city || form.address || 'Tbilisi',
         isPublished: form.isPublished
       }
-      const url = editingProjectId ? `/api/cms/projects/${editingProjectId}` : '/api/cms/projects'
+      const url = editingProjectId ? `/api/cms/portfolio-projects/${editingProjectId}` : '/api/cms/portfolio-projects'
       const method = editingProjectId ? 'PUT' : 'POST'
 
       const res = await fetch(url, {
@@ -94,9 +89,8 @@ function ProjectPortfolioContent() {
       }
       return res.json()
     },
-    onSuccess: (savedProject) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portfolio-projects'] })
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
       setForm({
         name: '', slug: '', developerId: '', address: '', city: 'Tbilisi', country: 'Georgia', status: 'PLANNING', completionDate: '', startingPrice: '', roi: '', projectType: 'Apartments', startingPriceText: '', paymentPlanText: '', sizeText: '', roiText: '', completionText: '', isPublished: true
       })
@@ -109,7 +103,7 @@ function ProjectPortfolioContent() {
 
   const togglePublishMutation = useMutation({
     mutationFn: async ({ id, isPublished }: { id: number; isPublished: boolean }) => {
-      const res = await fetch(`/api/cms/projects/${id}`, {
+      const res = await fetch(`/api/cms/portfolio-projects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !isPublished })
@@ -124,7 +118,7 @@ function ProjectPortfolioContent() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/cms/projects/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/cms/portfolio-projects/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete project')
     },
     onSuccess: () => {

@@ -30,7 +30,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
   const { data: project, isLoading: projectLoading } = useQuery({
     queryKey: ['portfolio-project', id],
     queryFn: async () => {
-      const res = await fetch(`/api/cms/projects/${id}`)
+      const res = await fetch(`/api/cms/portfolio-projects/${id}`)
       if (!res.ok) throw new Error('Failed to fetch project')
       return res.json()
     },
@@ -41,7 +41,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
   const { data: mediaFiles = [], isLoading: mediaLoading } = useQuery({
     queryKey: ['portfolio-project-media', id],
     queryFn: async () => {
-      const res = await fetch(`/api/cms/projects/${id}/media`)
+      const res = await fetch(`/api/cms/portfolio-projects/${id}/media`)
       if (!res.ok) throw new Error('Failed to fetch media')
       return res.json()
     },
@@ -56,7 +56,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
       setFormData({
         name: project.name || '',
         slug: project.slug || '',
-        city: project.city || 'Tbilisi',
+        city: project.location || project.city || 'Tbilisi',
         projectType: project.projectType || '',
         startingPriceText: project.startingPriceText || '',
         paymentPlanText: project.paymentPlanText || '',
@@ -73,7 +73,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
   // Update details mutation
   const updateProjectMutation = useMutation({
     mutationFn: async (payload: any) => {
-      const res = await fetch(`/api/cms/projects/${id}`, {
+      const res = await fetch(`/api/cms/portfolio-projects/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -137,7 +137,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
         onSingleSuccess: async (file, responseData) => {
           if (responseData && responseData.url) {
             const isVideo = file.type.startsWith('video/') || responseData.url.endsWith('.mp4') || responseData.url.endsWith('.webm')
-            await fetch(`/api/cms/projects/${id}/media`, {
+            await fetch(`/api/cms/portfolio-projects/${id}/media`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
