@@ -362,7 +362,7 @@ export const projectsData: Project[] = [
     name: "Kavataradze",
     location: "Tbilisi",
     startingPrice: "$140,000",
-    type: "Studio, 1 & 2 BR Apartments",
+    type: "2-4 Bedroom Apartments",
     paymentPlan: "-",
     size: "From 54.2 m²",
     roi: "12%",
