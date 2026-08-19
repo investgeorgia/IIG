@@ -261,7 +261,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
       {activeTab === 'details' && (
         <Card className="shadow-sm border-neutral-200">
           <CardHeader className="border-b pb-4">
-            <CardTitle className="text-base font-bold">Project Metadata &amp; Display Specifications</CardTitle>
+            <CardTitle className="text-base font-bold">Project Display Specifications</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <form
@@ -281,19 +281,11 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold">URL Slug (Folder Name)</Label>
+                  <Label className="text-xs font-semibold">Starting Price Display</Label>
                   <Input
-                    value={formData.slug || ''}
-                    onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                    placeholder="e.g. kavtaradze"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">City / Location</Label>
-                  <Input
-                    value={formData.city || ''}
-                    onChange={e => setFormData({ ...formData, city: e.target.value })}
-                    placeholder="e.g. Tbilisi"
+                    value={formData.startingPriceText || ''}
+                    onChange={e => setFormData({ ...formData, startingPriceText: e.target.value })}
+                    placeholder="e.g. $140,000"
                   />
                 </div>
                 <div className="space-y-1">
@@ -302,14 +294,6 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
                     value={formData.projectType || ''}
                     onChange={e => setFormData({ ...formData, projectType: e.target.value })}
                     placeholder="e.g. 2-4 Bedroom Apartments"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Starting Price Display</Label>
-                  <Input
-                    value={formData.startingPriceText || ''}
-                    onChange={e => setFormData({ ...formData, startingPriceText: e.target.value })}
-                    placeholder="e.g. $140,000"
                   />
                 </div>
                 <div className="space-y-1">
@@ -342,16 +326,6 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
                     value={formData.completionText || ''}
                     onChange={e => setFormData({ ...formData, completionText: e.target.value })}
                     placeholder="e.g. Q2 2027"
-                  />
-                </div>
-                <div className="space-y-1 md:col-span-3">
-                  <Label className="text-xs font-semibold">Description</Label>
-                  <textarea
-                    value={formData.description || ''}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    rows={4}
-                    className="flex w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500"
-                    placeholder="Full project description..."
                   />
                 </div>
               </div>
