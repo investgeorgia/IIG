@@ -356,5 +356,35 @@ export const projectsData: Project[] = [
       "media/oxy/6.jpg"
     ],
     thumbnail: "media/oxy/thumb.jpg"
+  },
+  {
+    id: 16,
+    name: "Kavataradze",
+    location: "Tbilisi",
+    startingPrice: "$140,000",
+    type: "Studio, 1 & 2 BR Apartments",
+    paymentPlan: "-",
+    size: "From 54.2 m²",
+    roi: "12%",
+    completion: "Q2 2027",
+    images: [
+      "media/kavtaradze/1.jpg",
+      "media/kavtaradze/2.jpg",
+      "media/kavtaradze/3.jpg",
+      "media/kavtaradze/4.jpg",
+      "media/kavtaradze/5.jpg",
+      "media/kavtaradze/6.jpg",
+      "media/kavtaradze/7.jpg",
+      "media/kavtaradze/8.jpg",
+      "media/kavtaradze/9.jpg",
+      "media/kavtaradze/10.jpg",
+      "media/kavtaradze/11.jpg",
+      "media/kavtaradze/12.jpg",
+      "media/kavtaradze/13.jpg",
+      "media/kavtaradze/14.jpg",
+      "media/kavtaradze/15.jpg"
+    ],
+    thumbnail: "media/kavtaradze/thumb.jpg"
   }
 ];
+
