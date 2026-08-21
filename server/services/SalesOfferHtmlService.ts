@@ -51,6 +51,7 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
 
   const showBuilding = visibleFields.includes('building') && snap.unit?.building
   const showRenovation = visibleFields.includes('renovationPrice') && snap.unit?.renovationPrice
+  const showRoi = visibleFields.includes('showRoi') || visibleFields.includes('roi')
 
   const headerHtml = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;">
@@ -185,16 +186,16 @@ export function generateSalesOfferHtml(proposal: any, baseUrl: string = ''): str
     <table style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead>
         <tr style="border-bottom:1.5px solid #1a1a1a;">
-          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:33%;">Selling Price USD</th>
-          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:33%;">Selling Price AED</th>
-          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:33%;">ROI</th>
+          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:${showRoi ? '33%' : '50%'};">Selling Price USD</th>
+          <th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:${showRoi ? '33%' : '50%'};">Selling Price AED</th>
+          ${showRoi ? '<th style="text-align:center;padding:8px 6px;font-weight:400;color:#666;width:33%;">ROI</th>' : ''}
         </tr>
       </thead>
       <tbody>
         <tr>
           <td style="text-align:center;padding:12px 6px;font-weight:500;">${formatNum(finalPriceUSD)}</td>
           <td style="text-align:center;padding:12px 6px;">${formatNum(finalPriceAED)}</td>
-          <td style="text-align:center;padding:12px 6px;">${snap.project.roi ? snap.project.roi + '%' : '—'}</td>
+          ${showRoi ? `<td style="text-align:center;padding:12px 6px;">${snap.project.roi ? snap.project.roi + '%' : '—'}</td>` : ''}
         </tr>
       </tbody>
     </table>

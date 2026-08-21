@@ -325,8 +325,6 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
         })
       : '—')
 
-  const roi = snap?.project?.roi ? `${snap.project.roi}% p.a.` : '—'
-
   const customPaymentPlan: { milestone: string; percentage: number; date: string }[] =
     snap?.customPaymentPlan && Array.isArray(snap.customPaymentPlan)
       ? snap.customPaymentPlan
@@ -371,6 +369,8 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
   const showClientName = visibleFields.includes('showClientName')
   const showClientMessage = visibleFields.includes('showClientMessage')
   const showConsultantFooter = visibleFields.includes('showConsultantFooter')
+  const showRoi = visibleFields.includes('showRoi') || visibleFields.includes('roi')
+  const roi = (showRoi && snap?.project?.roi) ? `${snap.project.roi}% p.a.` : '—'
 
   // --- Dynamic Customer Message Banner ---
   let customerMessageBanner = ''
@@ -552,6 +552,16 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
 
   // --- Substitute all placeholders ---
   let html = proposal.template.content
+
+  if (!showRoi) {
+    html = html
+      .replace(/<th[^>]*>\s*Est\.?\s*ROI\s*<\/th>/gi, '')
+      .replace(/<td[^>]*>\s*<span[^>]*>\s*\{\{roi\}\}\s*<\/span>\s*<\/td>/gi, '')
+      .replace(/<td[^>]*>\s*\{\{roi\}\}\s*<\/td>/gi, '')
+      .replace(/width:\s*36%/gi, 'width: 50%')
+  }
+
+  html = html
     // Core data
     .replace(/{{customerName}}/g, showClientName ? (proposal.customer?.name || '') : '')
     .replace(/{{customerMessage}}/g, proposal.customerMessage || '')
@@ -568,7 +578,7 @@ export function buildProposalHtml(proposal: any, baseUrl: string = ''): string {
     .replace(/{{completionDate}}/g, completionDate)
     .replace(/{{finalPriceUSD}}/g, `$${formatNum(finalPriceUSD)}`)
     .replace(/{{finalPriceAED}}/g, `AED ${formatNum(finalPriceAED)}`)
-    .replace(/{{roi}}/g, roi)
+    .replace(/{{roi}}/g, showRoi ? roi : '')
     .replace(/{{consultantName}}/g, consultantName)
     .replace(/{{consultantPhone}}/g, consultantPhone)
     .replace(/{{consultantEmail}}/g, consultantEmail)

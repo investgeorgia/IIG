@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!checkPermission(user, 'Projects', AccessLevel.VIEW)) {
+  if (!checkPermission(user, 'ProjectPortfolio', AccessLevel.VIEW)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -83,7 +83,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!checkPermission(user, 'Projects', AccessLevel.EDIT)) {
+  if (!checkPermission(user, 'ProjectPortfolio', AccessLevel.EDIT)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

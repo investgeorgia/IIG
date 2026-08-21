@@ -43,7 +43,7 @@ function ProjectPortfolioContent() {
   const { data: developers = [] } = useQuery({
     queryKey: ['developers'],
     queryFn: async () => (await fetch('/api/cms/developers')).json(),
-    enabled: hasPermission('Projects', 'VIEW')
+    enabled: hasPermission('ProjectPortfolio', 'VIEW')
   })
 
   // Fetch projects list
@@ -54,7 +54,7 @@ function ProjectPortfolioContent() {
       if (!res.ok) throw new Error('Failed to fetch projects')
       return res.json()
     },
-    enabled: hasPermission('Projects', 'VIEW')
+    enabled: hasPermission('ProjectPortfolio', 'VIEW')
   })
 
   const searchedProjects = projects.filter((p: any) => {
@@ -129,7 +129,7 @@ function ProjectPortfolioContent() {
 
   if (permissionsLoading) return <div className="p-8 text-center text-neutral-400">Loading permissions...</div>
 
-  if (!hasPermission('Projects', 'VIEW')) {
+  if (!hasPermission('ProjectPortfolio', 'VIEW')) {
     return (
       <div className="p-8 text-center text-red-600 font-medium">
         You do not have permission to access Project Portfolio.
@@ -137,7 +137,7 @@ function ProjectPortfolioContent() {
     )
   }
 
-  const canEdit = hasPermission('Projects', 'EDIT')
+  const canEdit = hasPermission('ProjectPortfolio', 'EDIT')
 
   return (
     <div className="space-y-6">

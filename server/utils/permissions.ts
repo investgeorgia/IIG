@@ -52,7 +52,8 @@ export function checkPermission(
     moduleName === 'Salespersons' ||
     moduleName === 'Analytics' ||
     moduleName === 'Templates' ||
-    moduleName === 'Pages'
+    moduleName === 'Pages' ||
+    moduleName === 'ProjectPortfolio'
   ) {
     // Only Admin can access these core modules unless explicitly overridden
     return false

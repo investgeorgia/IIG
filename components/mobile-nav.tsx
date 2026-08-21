@@ -74,7 +74,7 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
   const cmsNav = [
     { name: 'Developers', href: '/cms/developers', icon: Users, module: 'Developers' },
-    { name: 'Project Portfolio', href: '/cms/project-portfolio', icon: Building2, module: 'Projects' },
+    { name: 'Project Portfolio', href: '/cms/project-portfolio', icon: Building2, module: 'ProjectPortfolio' },
     { name: 'Projects', href: '/cms/projects', icon: LayoutDashboard, module: 'Projects' },
     { name: 'Templates', href: '/cms/templates', icon: FileCode, module: 'Templates' },
     { name: 'Amenities', href: '/cms/amenities', icon: Star, module: 'Amenities' },

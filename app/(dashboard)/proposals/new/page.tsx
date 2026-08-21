@@ -1001,6 +1001,18 @@ export default function CreateProposalPage() {
                       />
                       Show Sales Rep Footer
                     </label>
+                    <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={visibleFields.includes('showRoi')}
+                        onChange={e => {
+                          if (e.target.checked) setVisibleFields([...visibleFields, 'showRoi'])
+                          else setVisibleFields(visibleFields.filter(f => f !== 'showRoi'))
+                        }}
+                        className="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500"
+                      />
+                      Show ROI
+                    </label>
                   </div>
                 </div>
               <div className="space-y-1"><Label>Message to Customer</Label><textarea value={customerMessage} onChange={e => setCustomerMessage(e.target.value)} rows={3} placeholder="Dear [customer name], it is our pleasure to present this exclusive offer..." className="flex w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500" /></div>

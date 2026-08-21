@@ -35,7 +35,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
       if (!res.ok) throw new Error('Failed to fetch project')
       return res.json()
     },
-    enabled: hasPermission('Projects', 'VIEW')
+    enabled: hasPermission('ProjectPortfolio', 'VIEW')
   })
 
   // Fetch project media
@@ -46,7 +46,7 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
       if (!res.ok) throw new Error('Failed to fetch media')
       return res.json()
     },
-    enabled: hasPermission('Projects', 'VIEW')
+    enabled: hasPermission('ProjectPortfolio', 'VIEW')
   })
 
   // Form state
@@ -236,11 +236,11 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
     )
   }
 
-  if (!hasPermission('Projects', 'VIEW')) {
+  if (!hasPermission('ProjectPortfolio', 'VIEW')) {
     return <div className="p-8 text-center text-red-600">Unauthorized</div>
   }
 
-  const canEdit = hasPermission('Projects', 'EDIT')
+  const canEdit = hasPermission('ProjectPortfolio', 'EDIT')
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">

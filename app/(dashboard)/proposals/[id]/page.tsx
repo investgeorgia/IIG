@@ -489,6 +489,18 @@ export default function ProposalDetailsPage() {
                     />
                     Show Sales Rep Footer
                   </label>
+                  <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editVisibleFields.includes('showRoi')}
+                      onChange={e => {
+                        if (e.target.checked) setEditVisibleFields([...editVisibleFields, 'showRoi'])
+                        else setEditVisibleFields(editVisibleFields.filter(f => f !== 'showRoi'))
+                      }}
+                      className="w-4 h-4 text-red-600 rounded border-neutral-300 focus:ring-red-500"
+                    />
+                    Show ROI
+                  </label>
                 </div>
               </div>
 
