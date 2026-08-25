@@ -95,3 +95,30 @@ export function clearAllStoredMedia(): void {
     console.error('Failed to clear stored media:', e)
   }
 }
+
+export function reorderStoredMedia(portfolioProjectId: number, items: { id: number; sortOrder: number }[]): void {
+  try {
+    if (!fs.existsSync(STORE_PATH)) return
+    const data: Record<number, StoredMedia[]> = JSON.parse(fs.readFileSync(STORE_PATH, 'utf-8'))
+    const list = data[portfolioProjectId]
+    if (!list) return
+
+    const map = new Map<number, number>()
+    for (const item of items) {
+      map.set(Number(item.id), item.sortOrder)
+    }
+
+    for (const m of list) {
+      if (map.has(Number(m.id))) {
+        m.sortOrder = map.get(Number(m.id))!
+      }
+    }
+
+    list.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    data[portfolioProjectId] = list
+    fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf-8')
+  } catch (e) {
+    console.error('Failed to reorder stored media:', e)
+  }
+}
+

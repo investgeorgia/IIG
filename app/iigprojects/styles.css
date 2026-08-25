@@ -106,11 +106,20 @@
     align-items: flex-start;
 }
 
-/* Top-right project name */
-.portfolio-body .hero-project-name {
+/* Top-right header section & project name */
+.portfolio-body .top-right-header {
     position: absolute;
-    top: 40px;
+    top: 35px;
     right: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    z-index: 10;
+}
+
+.portfolio-body .hero-project-name {
+    position: static;
     font-size: 18px;
     font-weight: 600;
     letter-spacing: 1.5px;
@@ -120,6 +129,62 @@
     text-align: right;
     transition: opacity 0.4s ease;
     pointer-events: none;
+}
+
+/* VR 3D QR Code Card */
+.portfolio-body .vr-qr-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 8px 14px 8px 8px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.portfolio-body .vr-qr-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.portfolio-body .vr-qr-code-wrapper {
+    width: 44px;
+    height: 44px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.portfolio-body .vr-qr-text-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.portfolio-body .vr-qr-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #ffffff;
+}
+
+.portfolio-body .vr-qr-subtitle {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.65);
+    font-weight: 400;
+    margin-top: 1px;
 }
 
 .portfolio-body .logo {
@@ -434,17 +499,45 @@
         height: auto;
     }
 
-    .portfolio-body .hero-project-name {
+    .portfolio-body .top-right-header {
         position: absolute;
-        top: 12px;
+        top: 10px;
         right: 12px;
-        font-size: 13px;
-        letter-spacing: 0.8px;
-        z-index: 10;
+        gap: 6px;
         max-width: 55%;
+        z-index: 10;
+    }
+
+    .portfolio-body .hero-project-name {
+        position: static;
+        font-size: 12px;
+        letter-spacing: 0.6px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .portfolio-body .vr-qr-card {
+        padding: 4px 8px 4px 4px;
+        gap: 6px;
+        border-radius: 8px;
+    }
+
+    .portfolio-body .vr-qr-code-wrapper {
+        width: 28px;
+        height: 28px;
+        padding: 2px;
+        border-radius: 5px;
+    }
+
+    .portfolio-body .vr-qr-title {
+        font-size: 9px;
+        letter-spacing: 0.4px;
+    }
+
+    .portfolio-body .vr-qr-subtitle {
+        font-size: 7px;
     }
 
     .portfolio-body .nav-arrow {
@@ -798,6 +891,80 @@
     border-radius: 8px;
     font-size: 11px;
     color: rgba(255, 255, 255, 0.6);
+}
+
+/* Initial Fullscreen Preloader */
+.portfolio-body .initial-preloader {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: #0a0b0d;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+.portfolio-body .initial-preloader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.portfolio-body .preloader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    max-width: 320px;
+    width: 90%;
+    text-align: center;
+}
+
+.portfolio-body .preloader-logo {
+    width: 200px;
+    height: auto;
+    animation: preloaderPulse 2s infinite ease-in-out;
+}
+
+.portfolio-body .preloader-spinner-wrapper {
+    position: relative;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.portfolio-body .preloader-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ffffff 0%, #e11d48 100%);
+    border-radius: 99px;
+    transition: width 0.25s ease-out;
+}
+
+.portfolio-body .preloader-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+}
+
+.portfolio-body .preloader-percent {
+    font-weight: 700;
+    color: #ffffff;
+}
+
+@keyframes preloaderPulse {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.03); }
 }
 
 @keyframes fadeIn {

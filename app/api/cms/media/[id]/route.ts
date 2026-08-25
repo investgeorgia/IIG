@@ -8,23 +8,29 @@ import { deleteStoredMedia } from '@/lib/portfolio-store'
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!checkPermission(user, 'Projects', AccessLevel.EDIT)) {
+  if (!checkPermission(user, 'ProjectPortfolio', AccessLevel.EDIT) && !checkPermission(user, 'Projects', AccessLevel.EDIT)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   try {
     const id = Number((await params).id)
-    const { name } = await request.json()
+    const body = await request.json()
+    const { name, sortOrder } = body
+
+    const updateData: any = {}
+    if (name !== undefined) updateData.name = name
+    if (sortOrder !== undefined) updateData.sortOrder = Number(sortOrder)
+
     try {
       const updated = await prisma.portfolioMedia.update({
         where: { id },
-        data: { name }
+        data: updateData
       })
       return NextResponse.json(updated)
     } catch {
       const updated = await prisma.media.update({
         where: { id },
-        data: { name }
+        data: updateData
       })
       return NextResponse.json(updated)
     }

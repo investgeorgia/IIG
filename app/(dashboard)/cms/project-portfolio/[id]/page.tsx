@@ -143,19 +143,19 @@ export default function PortfolioProjectEditorPage({ params }: { params: Promise
   // Reorder media mutation
   const reorderMediaMutation = useMutation({
     mutationFn: async (items: { id: number; sortOrder: number }[]) => {
-      await Promise.all(
-        items.map(item =>
-          fetch(`/api/cms/media/${item.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sortOrder: item.sortOrder })
-          })
-        )
-      )
+      const res = await fetch(`/api/cms/portfolio-projects/${id}/media/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items })
+      })
+      if (!res.ok) throw new Error('Failed to reorder media')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['portfolio-project-media', id] })
-    }
+      queryClient.invalidateQueries({ queryKey: ['portfolio-project', id] })
+      toast.success('Media order updated!')
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update media order')
   })
 
   const moveMediaItem = (index: number, direction: 'up' | 'down') => {

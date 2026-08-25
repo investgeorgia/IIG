@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Eye, Loader2, Building2, MapPin, Calendar, Globe, Trash2, Edit3, Image as ImageIcon, Video } from 'lucide-react'
+import { Plus, Eye, Loader2, Building2, MapPin, Calendar, Globe, Trash2, Edit3, Image as ImageIcon, Video, ArrowUp, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -67,6 +67,35 @@ function ProjectPortfolioContent() {
       (p.projectType || '').toLowerCase().includes(q)
     )
   })
+
+  const reorderProjectsMutation = useMutation({
+    mutationFn: async (items: { id: number; sortOrder: number }[]) => {
+      const res = await fetch('/api/cms/portfolio-projects/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items })
+      })
+      if (!res.ok) throw new Error('Failed to reorder projects')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portfolio-projects'] })
+      toast.success('Project order updated!')
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update project order')
+  })
+
+  const moveProject = (index: number, direction: 'up' | 'down') => {
+    const targetList = [...projects]
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= targetList.length) return
+
+    const temp = targetList[index]
+    targetList[index] = targetList[newIndex]
+    targetList[newIndex] = temp
+
+    const updates = targetList.map((p, idx) => ({ id: p.id, sortOrder: idx }))
+    reorderProjectsMutation.mutate(updates)
+  }
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -315,33 +344,60 @@ function ProjectPortfolioContent() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {searchedProjects.map((project: any) => (
-            <Card key={project.id} className="shadow-sm hover:shadow-md transition-shadow border-neutral-200 overflow-hidden flex flex-col">
-              {/* Cover Image Header */}
-              <div className="relative h-48 bg-neutral-900 overflow-hidden group">
-                {project.coverImageUrl ? (
-                  <img
-                    src={project.coverImageUrl}
-                    alt={project.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-neutral-500 bg-neutral-100">
-                    <Building2 className="w-10 h-10 stroke-1" />
+          {searchedProjects.map((project: any, index: number) => {
+            const realIndex = projects.findIndex((p: any) => p.id === project.id)
+            return (
+              <Card key={project.id} className="shadow-sm hover:shadow-md transition-shadow border-neutral-200 overflow-hidden flex flex-col">
+                {/* Cover Image Header */}
+                <div className="relative h-48 bg-neutral-900 overflow-hidden group">
+                  {project.coverImageUrl ? (
+                    <img
+                      src={project.coverImageUrl}
+                      alt={project.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-neutral-500 bg-neutral-100">
+                      <Building2 className="w-10 h-10 stroke-1" />
+                    </div>
+                  )}
+
+                  {/* Top Left: Reorder Up / Down Buttons */}
+                  {canEdit && (
+                    <div className="absolute top-3 left-3 flex items-center gap-1 bg-neutral-900/80 backdrop-blur-sm p-1 rounded-lg border border-white/10 opacity-90 group-hover:opacity-100 transition-opacity z-10">
+                      <button
+                        type="button"
+                        disabled={realIndex <= 0 || reorderProjectsMutation.isPending}
+                        onClick={() => moveProject(realIndex, 'up')}
+                        className="p-1 rounded text-white/80 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10"
+                        title="Move Project Up"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={realIndex < 0 || realIndex >= projects.length - 1 || reorderProjectsMutation.isPending}
+                        onClick={() => moveProject(realIndex, 'down')}
+                        className="p-1 rounded text-white/80 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10"
+                        title="Move Project Down"
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Status Badge Overlay */}
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full shadow-sm ${
+                      project.isPublished ? 'bg-emerald-500 text-white' : 'bg-neutral-800/80 text-white backdrop-blur-sm'
+                    }`}>
+                      {project.isPublished ? 'Published' : 'Draft'}
+                    </span>
                   </div>
-                )}
-                {/* Status Badge Overlay */}
-                <div className="absolute top-3 right-3 flex items-center gap-2">
-                  <span className={`px-2.5 py-1 text-xs font-semibold rounded-full shadow-sm ${
-                    project.isPublished ? 'bg-emerald-500 text-white' : 'bg-neutral-800/80 text-white backdrop-blur-sm'
-                  }`}>
-                    {project.isPublished ? 'Published' : 'Draft'}
-                  </span>
+                  <div className="absolute bottom-3 left-3 bg-neutral-900/80 backdrop-blur-sm text-white px-2.5 py-1 rounded text-xs font-mono">
+                    /iigproject/{project.slug || project.id}
+                  </div>
                 </div>
-                <div className="absolute bottom-3 left-3 bg-neutral-900/80 backdrop-blur-sm text-white px-2.5 py-1 rounded text-xs font-mono">
-                  /iigproject/{project.slug || project.id}
-                </div>
-              </div>
 
               {/* Card Body */}
               <CardContent className="p-5 flex-1 flex flex-col justify-between space-y-4">
@@ -418,7 +474,7 @@ function ProjectPortfolioContent() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )})}
         </div>
       )}
     </div>

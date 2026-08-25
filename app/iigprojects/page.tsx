@@ -22,6 +22,9 @@ export default function IIGProjectsPage() {
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false)
   const [imageNameOpacity, setImageNameOpacity] = useState<number>(1)
 
+  const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true)
+  const [loadProgress, setLoadProgress] = useState<number>(0)
+
   // Salesperson referral system state
   const [salesperson, setSalesperson] = useState<any>(null)
   const [isInquiryOpen, setIsInquiryOpen] = useState(false)
@@ -29,29 +32,94 @@ export default function IIGProjectsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
-  // Fetch live published projects on mount
+  // Fetch dynamic projects, pre-cache all assets into browser memory & animate preloader screen
   useEffect(() => {
-    fetch('/api/iigprojects')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProjectsList(data)
-          setActiveProjectId(data[0].id)
-        }
-      })
-      .catch(err => console.error('Error fetching dynamic projects:', err))
-  }, [])
+    let isMounted = true
 
-  // Fetch active salesperson on mount
-  useEffect(() => {
-    fetch('/api/salesperson/current')
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          setSalesperson(data)
+    const loadAllDataAndAssets = async () => {
+      let fetchedProjects: Project[] = projectsData
+      try {
+        const res = await fetch('/api/iigprojects')
+        const data = await res.json()
+        if (Array.isArray(data) && data.length > 0) {
+          fetchedProjects = data
+          if (isMounted) {
+            setProjectsList(data)
+            setActiveProjectId(data[0].id)
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching dynamic projects:', err)
+      }
+
+      // Fetch salesperson in parallel
+      fetch('/api/salesperson/current')
+        .then(res => res.json())
+        .then(data => { if (data && isMounted) setSalesperson(data) })
+        .catch(err => console.error('Error fetching salesperson', err))
+
+      // Collect all image URLs across all projects to pre-decode into browser memory
+      const urlsToPreload: string[] = []
+      fetchedProjects.forEach(proj => {
+        if (proj.thumbnail) {
+          const formatted = proj.thumbnail.startsWith('/') ? proj.thumbnail : `/${proj.thumbnail}`
+          if (!urlsToPreload.includes(formatted)) urlsToPreload.push(formatted)
+        }
+        if (proj.images && proj.images.length > 0) {
+          proj.images.forEach(imgUrl => {
+            const formatted = imgUrl.startsWith('/') ? imgUrl : `/${imgUrl}`
+            if (!urlsToPreload.includes(formatted) && !formatted.endsWith('.mp4') && !formatted.endsWith('.webm')) {
+              urlsToPreload.push(formatted)
+            }
+          })
         }
       })
-      .catch(err => console.error('Error fetching salesperson', err))
+
+      if (urlsToPreload.length === 0) {
+        if (isMounted) {
+          setLoadProgress(100)
+          setTimeout(() => setIsInitialLoading(false), 300)
+        }
+        return
+      }
+
+      let loadedCount = 0
+      const totalCount = urlsToPreload.length
+
+      const updateProgress = () => {
+        loadedCount++
+        const percentage = Math.min(Math.round((loadedCount / totalCount) * 100), 100)
+        if (isMounted) setLoadProgress(percentage)
+
+        if (loadedCount >= totalCount) {
+          setTimeout(() => {
+            if (isMounted) setIsInitialLoading(false)
+          }, 300)
+        }
+      }
+
+      // Preload & pre-decode images directly into browser cache
+      urlsToPreload.forEach(url => {
+        const img = new Image()
+        img.onload = updateProgress
+        img.onerror = updateProgress
+        img.src = url
+      })
+
+      // Maximum safety timeout (3.5s max preloader duration)
+      setTimeout(() => {
+        if (isMounted) {
+          setLoadProgress(100)
+          setTimeout(() => setIsInitialLoading(false), 200)
+        }
+      }, 3500)
+    }
+
+    loadAllDataAndAssets()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // Track global pageview
@@ -81,93 +149,96 @@ export default function IIGProjectsPage() {
   const activeMediaUrl = activeProject?.images?.[activeImageIndex] || activeProject?.thumbnail || ''
   const isCurrentMediaVideo = activeMediaUrl?.endsWith('.mp4') || activeMediaUrl?.endsWith('.webm') || (activeProject as any)?.mediaDetails?.[activeImageIndex]?.type === 'VIDEO'
 
-  // Preloading image helper
-  const VERSION_TAG = 'v=1.1.0'
-  const appendVersion = (url: string) => {
-    if (!url) return url
-    if (url.includes('v=')) return url
-    return url + (url.includes('?') ? '&' : '?') + VERSION_TAG
-  }
+  // Check if project qualifies for VR 3D QR Code (Ortachala & Kavtaradze only)
+  const isVRProject = (() => {
+    if (!activeProject) return false
+    const name = (activeProject.name || '').toLowerCase()
+    const slug = ((activeProject as any).slug || '').toLowerCase()
+    return (
+      name.includes('ortachal') || slug.includes('ortachal') ||
+      name.includes('kavtaradze') || name.includes('kavataradze') || slug.includes('kavtaradze') || slug.includes('kavataradze')
+    )
+  })()
 
-  // Preload first image of other projects
+  // Auto-reset to first project after 3 minutes of inactivity
   useEffect(() => {
-    const preloadFirstImages = () => {
-      projectsList.forEach(project => {
-        if (project.id !== activeProjectId && project.images.length > 0) {
-          const img = new Image()
-          img.src = appendVersion(project.images[0])
+    let idleTimer: NodeJS.Timeout
+
+    const resetIdleTimer = () => {
+      clearTimeout(idleTimer)
+      idleTimer = setTimeout(() => {
+        if (projectsList && projectsList.length > 0) {
+          setActiveProjectId(projectsList[0].id)
+          setActiveImageIndex(0)
         }
-      })
+      }, 3 * 60 * 1000)
     }
-    const timer = setTimeout(preloadFirstImages, 1000)
-    return () => clearTimeout(timer)
-  }, [activeProjectId, projectsList])
 
-  // Handle active image loading and crossfade
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
+    events.forEach(event => window.addEventListener(event, resetIdleTimer, { passive: true }))
+
+    resetIdleTimer()
+
+    return () => {
+      clearTimeout(idleTimer)
+      events.forEach(event => window.removeEventListener(event, resetIdleTimer))
+    }
+  }, [projectsList])
+
+  // Normalize image URL helper
+  const appendVersion = (url: string) => url
+
+  // Preload next image of active project for instant carousel browsing
   useEffect(() => {
-    if (!activeProject || activeProject.images.length === 0) return
-
-    setIsTransitioning(true)
-    const originalUrl = activeProject.images[activeImageIndex] || activeProject.thumbnail
-    if (!originalUrl) {
-      setIsTransitioning(false)
-      return
+    if (!activeProject || !activeProject.images || activeProject.images.length <= 1) return
+    const nextIndex = (activeImageIndex + 1) % activeProject.images.length
+    const nextUrl = activeProject.images[nextIndex]
+    if (nextUrl && !nextUrl.endsWith('.mp4') && !nextUrl.endsWith('.webm')) {
+      const nextImg = new Image()
+      const formattedUrl = nextUrl.startsWith('/') ? nextUrl : `/${nextUrl}`
+      nextImg.src = formattedUrl
     }
+  }, [activeProjectId, activeImageIndex, activeProject])
 
-    const isVid = originalUrl.endsWith('.mp4') || originalUrl.endsWith('.webm') || (activeProject as any)?.mediaDetails?.[activeImageIndex]?.type === 'VIDEO'
+  // Handle active image loading & instant display
+  useEffect(() => {
+    if (!activeProject || !activeProject.images || activeProject.images.length === 0) return
+
+    const rawUrl = activeProject.images[activeImageIndex] || activeProject.thumbnail
+    if (!rawUrl) return
+
+    const formattedUrl = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
+    const isVid = formattedUrl.endsWith('.mp4') || formattedUrl.endsWith('.webm') || (activeProject as any)?.mediaDetails?.[activeImageIndex]?.type === 'VIDEO'
+
     if (isVid) {
-      setBgImage(originalUrl)
+      setBgImage(formattedUrl)
       setBgOpacity(1)
       setIsTransitioning(false)
       return
     }
     
-    // Check/Load Image with fallbacks (.jpg -> .png -> .jpeg)
+    // Fast non-blocking load
     const img = new Image()
-    
-    const loadWithFallback = (url: string, attempt: number = 0) => {
-      img.onload = () => {
-        setBgOpacity(0.3)
-        setTimeout(() => {
-          setBgImage(img.src)
-          setBgOpacity(1)
-          setTimeout(() => {
-            setIsTransitioning(false)
-          }, 150)
-        }, 150)
-      }
-
-      img.onerror = () => {
-        if (attempt === 0 && url.includes('.jpg')) {
-          const newUrl = url.replace('.jpg', '.png')
-          loadWithFallback(newUrl, 1)
-        } else if (attempt === 1 && url.includes('.png')) {
-          const newUrl = url.replace('.png', '.jpeg')
-          loadWithFallback(newUrl, 2)
-        } else {
-          setIsTransitioning(false)
-        }
-      }
-
-      img.src = appendVersion(url)
+    img.onload = () => {
+      setBgImage(formattedUrl)
+      setBgOpacity(1)
+      setIsTransitioning(false)
     }
-
-    loadWithFallback(originalUrl)
-
-    // Preload next image in sequence
-    if (activeProject.images.length > 1) {
-      const nextIndex = (activeImageIndex + 1) % activeProject.images.length
-      const nextUrl = activeProject.images[nextIndex]
-      if (nextUrl && !nextUrl.endsWith('.mp4') && !nextUrl.endsWith('.webm')) {
-        const nextImg = new Image()
-        nextImg.src = appendVersion(nextUrl)
+    img.onerror = () => {
+      // Fallback check if needed
+      if (formattedUrl.endsWith('.jpg')) {
+        setBgImage(formattedUrl.replace('.jpg', '.png'))
+      } else {
+        setBgImage(formattedUrl)
       }
+      setIsTransitioning(false)
     }
-
-  }, [activeProjectId, activeImageIndex])
+    img.src = formattedUrl
+  }, [activeProjectId, activeImageIndex, activeProject])
 
   // Dynamic mobile viewport height calculation
   const setMobileHeroHeight = () => {
+    if (typeof window === 'undefined') return
     if (window.innerWidth <= 768) {
       const panelHeight = bottomWrapperRef.current ? bottomWrapperRef.current.offsetHeight : 0
       const viewportHeight = window.innerHeight
@@ -180,38 +251,31 @@ export default function IIGProjectsPage() {
 
   useEffect(() => {
     setMobileHeroHeight()
-    window.addEventListener('resize', setMobileHeroHeight)
-    window.addEventListener('load', setMobileHeroHeight)
+    const handleResize = () => setMobileHeroHeight()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
-    const timer = setTimeout(setMobileHeroHeight, 100)
-
-    return () => {
-      window.removeEventListener('resize', setMobileHeroHeight)
-      window.removeEventListener('load', setMobileHeroHeight)
-      clearTimeout(timer)
-    }
+  useEffect(() => {
+    const timer = setTimeout(setMobileHeroHeight, 50)
+    return () => clearTimeout(timer)
   }, [activeProjectId])
 
-  // Navigation handlers
+  // Navigation handlers (non-blocking for fast interaction)
   const handlePrevImage = () => {
-    if (isTransitioning) return
+    if (!activeProject?.images?.length) return
     setActiveImageIndex(prev => (prev - 1 + activeProject.images.length) % activeProject.images.length)
   }
 
   const handleNextImage = () => {
-    if (isTransitioning) return
+    if (!activeProject?.images?.length) return
     setActiveImageIndex(prev => (prev + 1) % activeProject.images.length)
   }
 
   const selectProject = (id: number) => {
-    if (isTransitioning) return
     if (activeProjectId !== id) {
-      setImageNameOpacity(0)
-      setTimeout(() => {
-        setActiveProjectId(id)
-        setActiveImageIndex(0)
-        setImageNameOpacity(1)
-      }, 200)
+      setActiveProjectId(id)
+      setActiveImageIndex(0)
     }
   }
 
@@ -369,6 +433,31 @@ export default function IIGProjectsPage() {
       onTouchStart={handleHeroTouchStart}
       onTouchEnd={handleHeroTouchEnd}
     >
+      {/* Initial Fullscreen Preloader Overlay */}
+      {isInitialLoading && (
+        <div className={`initial-preloader ${loadProgress === 100 ? 'fade-out' : ''}`}>
+          <div className="preloader-content">
+            <img 
+              src="/logo.svg" 
+              alt="Invest Georgia UAE Logo" 
+              className="preloader-logo" 
+              width="200" 
+              height="60"
+            />
+            <div className="preloader-spinner-wrapper">
+              <div 
+                className="preloader-bar" 
+                style={{ width: `${loadProgress}%` }}
+              />
+            </div>
+            <div className="preloader-status">
+              <span className="preloader-text">Loading Portfolio Assets</span>
+              <span className="preloader-percent">{loadProgress}%</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Video or Image Display */}
       {isCurrentMediaVideo ? (
         <video 
@@ -416,12 +505,28 @@ export default function IIGProjectsPage() {
           </a>
         </header>
 
-        {/* Top Right: Active Project Name */}
-        <div 
-          className="hero-project-name"
-          style={{ opacity: imageNameOpacity }}
-        >
-          {activeProject.name}
+        {/* Top Right: Active Project Name & VR 3D QR Code */}
+        <div className="top-right-header">
+          <div 
+            className="hero-project-name"
+            style={{ opacity: imageNameOpacity }}
+          >
+            {activeProject.name}
+          </div>
+
+          {isVRProject && (
+            <div className="vr-qr-card" title="Scan to View in VR 3D">
+              <div className="vr-qr-code-wrapper">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M2 2H9V9H2V2ZM4 4H7V7H4V4ZM15 2H22V9H15V2ZM17 4H20V7H17V4ZM2 15H9V22H2V15ZM4 17H7V20H4V17ZM11 2H13V5H11V2ZM11 7H13V9H11V7ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM18 11H20V13H18V11ZM20 13H22V15H20V13ZM18 15H20V17H18V15ZM15 17H17V20H15V17ZM17 20H20V22H17V20ZM20 18H22V22H20V18ZM13 15H15V18H13V15ZM11 19H13V22H11V19ZM13 8H15V10H13V8ZM8 11H10V13H8V11ZM2 11H4V13H2V11ZM5 11H7V13H5V11ZM8 13H10V15H8V13Z" fill="#000000"/>
+                </svg>
+              </div>
+              <div className="vr-qr-text-group">
+                <span className="vr-qr-title">View in VR 3D</span>
+                <span className="vr-qr-subtitle">Scan QR Code</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom Layout Wrapper */}

@@ -37,10 +37,17 @@ export async function GET() {
 
   const storedMap = getAllStoredMediaMap()
 
-  const mergedProjects = projectsData.map(p => {
+  const processedProjectIds = new Set<number>()
+
+  const mergedProjects = projectsData.map((p, index) => {
     const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
-    const storedItems = storedMap[p.id] || getStoredMedia(p.id)
+    if (dbMatch) processedProjectIds.add(dbMatch.id)
+
+    let storedItems = storedMap[p.id] || getStoredMedia(p.id) || []
+    if (storedItems.length > 0) {
+      storedItems = [...storedItems].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    }
 
     let mediaUrls: string[] = []
     let mediaDetails: any[] = []
@@ -51,9 +58,11 @@ export async function GET() {
     } else if (storedItems && storedItems.length > 0) {
       mediaUrls = storedItems.map(m => m.url)
       mediaDetails = storedItems.map(m => ({ url: m.url, type: m.type, name: m.name }))
+    } else {
+      mediaUrls = p.images || []
     }
 
-    const coverUrl = dbMatch?.coverImageUrl || mediaUrls[0] || ''
+    const coverUrl = dbMatch?.coverImageUrl || mediaUrls[0] || p.thumbnail || ''
 
     return {
       id: dbMatch?.id || p.id,
@@ -66,11 +75,39 @@ export async function GET() {
       size: dbMatch?.sizeText || p.size,
       roi: dbMatch?.roiText || p.roi,
       completion: dbMatch?.completionText || p.completion,
+      sortOrder: dbMatch?.sortOrder !== undefined && dbMatch?.sortOrder !== null ? dbMatch.sortOrder : index,
       images: mediaUrls,
       thumbnail: coverUrl,
       mediaDetails: mediaDetails
     }
   })
+
+  // Append extra published DB projects not in static data
+  for (const dbProj of dbProjects) {
+    if (!processedProjectIds.has(dbProj.id)) {
+      const mediaUrls = (dbProj.media || []).map((m: any) => m.url)
+      const mediaDetails = (dbProj.media || []).map((m: any) => ({ url: m.url, type: m.type, name: m.name }))
+      mergedProjects.push({
+        id: dbProj.id,
+        name: dbProj.name,
+        slug: dbProj.slug,
+        location: dbProj.location || 'Georgia',
+        startingPrice: dbProj.startingPriceText || '$100,000',
+        type: dbProj.projectType || 'Apartments',
+        paymentPlan: dbProj.paymentPlanText || '-',
+        size: dbProj.sizeText || 'From 50 m²',
+        roi: dbProj.roiText || '10%',
+        completion: dbProj.completionText || 'Q4 2026',
+        sortOrder: dbProj.sortOrder ?? 999,
+        images: mediaUrls,
+        thumbnail: dbProj.coverImageUrl || mediaUrls[0] || '',
+        mediaDetails: mediaDetails
+      })
+    }
+  }
+
+  // Sort strictly by sortOrder ascending
+  mergedProjects.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 
   return NextResponse.json(mergedProjects)
 }
