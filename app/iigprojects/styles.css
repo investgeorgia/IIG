@@ -131,18 +131,20 @@
     pointer-events: none;
 }
 
-/* VR 3D QR Code Card */
+/* VR 3D QR Code Card (QR code on top, text below) */
 .portfolio-body .vr-qr-card {
     display: flex;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
     gap: 10px;
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 8px 14px 8px 8px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+    border-radius: 16px;
+    padding: 12px 14px;
+    box-shadow: 0 10px 36px 0 rgba(0, 0, 0, 0.45);
     transition: all 0.3s ease;
     cursor: pointer;
     text-decoration: none;
@@ -150,41 +152,43 @@
 
 .portfolio-body .vr-qr-card:hover {
     background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.35);
     transform: translateY(-2px);
 }
 
 .portfolio-body .vr-qr-code-wrapper {
-    width: 44px;
-    height: 44px;
+    width: 90px;
+    height: 90px;
     background: #ffffff;
-    border-radius: 8px;
-    padding: 4px;
+    border-radius: 10px;
+    padding: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 .portfolio-body .vr-qr-text-group {
     display: flex;
     flex-direction: column;
-    text-align: left;
+    align-items: center;
+    text-align: center;
 }
 
 .portfolio-body .vr-qr-title {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
     color: #ffffff;
 }
 
 .portfolio-body .vr-qr-subtitle {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.65);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
     font-weight: 400;
-    margin-top: 1px;
+    margin-top: 2px;
 }
 
 .portfolio-body .logo {
@@ -519,25 +523,25 @@
     }
 
     .portfolio-body .vr-qr-card {
-        padding: 4px 8px 4px 4px;
+        padding: 8px 10px;
         gap: 6px;
-        border-radius: 8px;
+        border-radius: 12px;
     }
 
     .portfolio-body .vr-qr-code-wrapper {
-        width: 28px;
-        height: 28px;
-        padding: 2px;
-        border-radius: 5px;
+        width: 60px;
+        height: 60px;
+        padding: 4px;
+        border-radius: 8px;
     }
 
     .portfolio-body .vr-qr-title {
-        font-size: 9px;
-        letter-spacing: 0.4px;
+        font-size: 10px;
+        letter-spacing: 0.5px;
     }
 
     .portfolio-body .vr-qr-subtitle {
-        font-size: 7px;
+        font-size: 8px;
     }
 
     .portfolio-body .nav-arrow {

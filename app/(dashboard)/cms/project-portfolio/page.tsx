@@ -93,6 +93,9 @@ function ProjectPortfolioContent() {
     targetList[index] = targetList[newIndex]
     targetList[newIndex] = temp
 
+    // Optimistically update UI list immediately
+    queryClient.setQueryData(['portfolio-projects'], targetList)
+
     const updates = targetList.map((p, idx) => ({ id: p.id, sortOrder: idx }))
     reorderProjectsMutation.mutate(updates)
   }

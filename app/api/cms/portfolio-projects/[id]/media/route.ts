@@ -43,6 +43,30 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const body = await request.json()
     const { type, url, name, size, mimeType } = body
 
+    const { projectsData } = await import('@/app/iigprojects/data')
+    const staticP = projectsData.find(x => x.id === portfolioProjectId)
+
+    // Ensure parent PortfolioProject exists in DB before creating media
+    try {
+      await prisma.portfolioProject.upsert({
+        where: { id: portfolioProjectId },
+        update: {},
+        create: {
+          id: portfolioProjectId,
+          name: staticP?.name || `Project ${portfolioProjectId}`,
+          slug: staticP?.images[0] ? staticP.images[0].split('/')[1] : `project-${portfolioProjectId}`,
+          startingPriceText: staticP?.startingPrice || '$100,000',
+          projectType: staticP?.type || 'Apartments',
+          paymentPlanText: staticP?.paymentPlan || '-',
+          sizeText: staticP?.size || 'From 50 m²',
+          roiText: staticP?.roi || '10%',
+          completionText: staticP?.completion || 'Q4 2026'
+        }
+      })
+    } catch (e) {
+      console.warn('[Portfolio Project Auto-Upsert Warning]', e)
+    }
+
     const generatedId = Date.now() + Math.floor(Math.random() * 1000)
 
     let createdMedia: any = {

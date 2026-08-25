@@ -58,7 +58,12 @@ export async function GET() {
     } else if (storedItems && storedItems.length > 0) {
       mediaUrls = storedItems.map(m => m.url)
       mediaDetails = storedItems.map(m => ({ url: m.url, type: m.type, name: m.name }))
+    } else if (dbMatch) {
+      // Managed project in DB with no media uploaded yet
+      mediaUrls = []
+      mediaDetails = []
     } else {
+      // Unmanaged static fallback project
       mediaUrls = p.images || []
     }
 

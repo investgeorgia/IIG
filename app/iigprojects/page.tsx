@@ -517,7 +517,7 @@ export default function IIGProjectsPage() {
           {isVRProject && (
             <div className="vr-qr-card" title="Scan to View in VR 3D">
               <div className="vr-qr-code-wrapper">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                <svg width="76" height="76" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
                   <path fillRule="evenodd" clipRule="evenodd" d="M2 2H9V9H2V2ZM4 4H7V7H4V4ZM15 2H22V9H15V2ZM17 4H20V7H17V4ZM2 15H9V22H2V15ZM4 17H7V20H4V17ZM11 2H13V5H11V2ZM11 7H13V9H11V7ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM18 11H20V13H18V11ZM20 13H22V15H20V13ZM18 15H20V17H18V15ZM15 17H17V20H15V17ZM17 20H20V22H17V20ZM20 18H22V22H20V18ZM13 15H15V18H13V15ZM11 19H13V22H11V19ZM13 8H15V10H13V8ZM8 11H10V13H8V11ZM2 11H4V13H2V11ZM5 11H7V13H5V11ZM8 13H10V15H8V13Z" fill="#000000"/>
                 </svg>
               </div>

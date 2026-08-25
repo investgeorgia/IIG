@@ -36,10 +36,13 @@ export async function GET() {
     if (p.name) dbMap.set(p.name.toLowerCase(), p)
   }
 
-  // Merge projectsData with DB records for specs, but ZERO out synthetic media fallbacks
-  const mergedProjects = projectsData.map(p => {
+  // Merge projectsData with DB records for specs, preserving DB sortOrder
+  const processedIds = new Set<number>()
+
+  const mergedProjects = projectsData.map((p, index) => {
     const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
+    if (dbMatch) processedIds.add(dbMatch.id)
 
     if (dbMatch) {
       return {
@@ -54,6 +57,7 @@ export async function GET() {
         roiText: dbMatch.roiText || p.roi,
         completionText: dbMatch.completionText || p.completion,
         coverImageUrl: dbMatch.coverImageUrl || null,
+        sortOrder: dbMatch.sortOrder !== undefined && dbMatch.sortOrder !== null ? dbMatch.sortOrder : index,
         media: dbMatch.media || []
       }
     }
@@ -72,10 +76,20 @@ export async function GET() {
       description: null,
       coverImageUrl: null,
       isPublished: true,
-      sortOrder: p.id,
+      sortOrder: index,
       media: []
     }
   })
+
+  // Append any DB projects not in static projectsData
+  for (const dbProj of dbProjects) {
+    if (!processedIds.has(dbProj.id)) {
+      mergedProjects.push(dbProj)
+    }
+  }
+
+  // Sort strictly by sortOrder ascending
+  mergedProjects.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 
   return NextResponse.json(mergedProjects)
 }
