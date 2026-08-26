@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +17,45 @@ export async function POST(request: Request) {
     }
     if (!role || (role !== 'investor' && role !== 'broker')) {
       return NextResponse.json({ error: 'Role must be either investor or broker' }, { status: 400 })
+    }
+
+    const cleanEmail = email.trim().toLowerCase()
+    const cleanPhone = phone.trim()
+
+    // Check if form has already been submitted with this email or phone number
+    try {
+      const existingSubmission = await prisma.customer.findFirst({
+        where: {
+          OR: [
+            { email: { equals: cleanEmail } },
+            { phone: { equals: cleanPhone } }
+          ]
+        }
+      })
+
+      if (existingSubmission) {
+        return NextResponse.json(
+          { error: 'Form already submitted with this email address or phone number.' },
+          { status: 400 }
+        )
+      }
+    } catch (dbCheckErr) {
+      console.warn('Database check skipped or unavailable:', dbCheckErr)
+    }
+
+    // Record submission in database to prevent future duplicates
+    try {
+      await prisma.customer.create({
+        data: {
+          name: name.trim(),
+          email: cleanEmail,
+          phone: cleanPhone,
+          source: 'IPS 2026 Registration',
+          notes: `Role: ${role}, Contact Mode: ${preferredContactMode || country || 'N/A'}, Language: ${language || 'English'}`
+        }
+      })
+    } catch (dbSaveErr) {
+      console.warn('Could not save customer record:', dbSaveErr)
     }
 
     const webhookUrl = process.env.BITRIX24_WEBHOOK_URL

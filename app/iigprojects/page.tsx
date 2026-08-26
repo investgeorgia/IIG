@@ -487,23 +487,6 @@ export default function IIGProjectsPage() {
     }
   }
 
-  const handleClearCacheAndReload = async () => {
-    try {
-      if (typeof window !== 'undefined') {
-        if ('caches' in window) {
-          const cacheKeys = await caches.keys()
-          await Promise.all(cacheKeys.map(key => caches.delete(key)))
-        }
-        if (window.localStorage) localStorage.clear()
-        if (window.sessionStorage) sessionStorage.clear()
-      }
-    } catch (e) {
-      console.error('Error clearing cache:', e)
-    }
-    const cleanUrl = window.location.origin + window.location.pathname + '?reload=' + Date.now()
-    window.location.href = cleanUrl
-  }
-
   // Fetch dynamic projects, pre-cache all assets into browser memory & animate preloader screen
   useEffect(() => {
     let isMounted = true
@@ -1095,38 +1078,7 @@ export default function IIGProjectsPage() {
         </div>
       </main>
 
-      {/* Clear Cache & Reload Footer Button */}
-      <div 
-        style={{
-          position: 'fixed',
-          bottom: '8px',
-          right: '12px',
-          zIndex: 99,
-          pointerEvents: 'auto',
-          opacity: 0.65,
-          transition: 'opacity 0.2s ease'
-        }}
-        onMouseEnter={(e) => { e.currentTarget.style.opacity = '1' }}
-        onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.65' }}
-      >
-        <button
-          onClick={handleClearCacheAndReload}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'rgba(255, 255, 255, 0.75)',
-            fontSize: '10px',
-            fontFamily: 'inherit',
-            cursor: 'pointer',
-            textDecoration: 'underline',
-            letterSpacing: '0.4px',
-            padding: '2px 4px'
-          }}
-          title="Clear cached data and force reload updated page"
-        >
-          Clear Cache & Reload
-        </button>
-      </div>
+
 
       {/* IPS Registration Form Modal Popup (For visitors without agent referral link) */}
       {isInquiryOpen && (
