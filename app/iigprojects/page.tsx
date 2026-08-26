@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react'
+import { Cormorant_Garamond } from 'next/font/google'
+import { toast } from 'sonner'
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -11,9 +13,228 @@ import {
   TrendingUp, 
   Clock,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2,
+  ArrowRight,
+  UserCheck,
+  Mail,
+  RefreshCw,
+  X,
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react'
 import { projectsData, Project } from './data'
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+})
+
+// Comprehensive country calling codes and names
+const COUNTRY_LIST = [
+  { code: '+971', name: 'United Arab Emirates', flag: '🇦🇪' },
+  { code: '+966', name: 'Saudi Arabia', flag: '🇸🇦' },
+  { code: '+973', name: 'Bahrain', flag: '🇧🇭' },
+  { code: '+968', name: 'Oman', flag: '🇴🇲' },
+  { code: '+974', name: 'Qatar', flag: '🇶🇦' },
+  { code: '+965', name: 'Kuwait', flag: '🇰🇼' },
+  { code: '+1', name: 'United States', flag: '🇺🇸' },
+  { code: '+1', name: 'Canada', flag: '🇨🇦' },
+  { code: '+44', name: 'United Kingdom', flag: '🇬🇧' },
+  { code: '+995', name: 'Georgia', flag: '🇬🇪' },
+  { code: '+91', name: 'India', flag: '🇮🇳' },
+  { code: '+92', name: 'Pakistan', flag: '🇵🇰' },
+  { code: '+20', name: 'Egypt', flag: '🇪🇬' },
+  { code: '+961', name: 'Lebanon', flag: '🇱🇧' },
+  { code: '+962', name: 'Jordan', flag: '🇯🇴' },
+  { code: '+90', name: 'Turkey', flag: '🇹🇷' },
+  { code: '+33', name: 'France', flag: '🇫🇷' },
+  { code: '+49', name: 'Germany', flag: '🇩🇪' },
+  { code: '+39', name: 'Italy', flag: '🇮🇹' },
+  { code: '+34', name: 'Spain', flag: '🇪🇸' },
+  { code: '+7', name: 'Russia', flag: '🇷🇺' },
+  { code: '+86', name: 'China', flag: '🇨🇳' },
+  { code: '+81', name: 'Japan', flag: '🇯🇵' },
+  { code: '+61', name: 'Australia', flag: '🇦🇺' },
+  { code: '+65', name: 'Singapore', flag: '🇸🇬' },
+  { code: '+27', name: 'South Africa', flag: '🇿🇦' },
+  { code: '+31', name: 'Netherlands', flag: '🇳🇱' },
+  { code: '+41', name: 'Switzerland', flag: '🇨🇭' },
+  { code: '+46', name: 'Sweden', flag: '🇸🇪' },
+  { code: '+351', name: 'Portugal', flag: '🇵🇹' },
+  { code: '+32', name: 'Belgium', flag: '🇧🇪' },
+  { code: '+43', name: 'Austria', flag: '🇦🇹' },
+  { code: '+30', name: 'Greece', flag: '🇬🇷' },
+  { code: '+353', name: 'Ireland', flag: '🇮🇪' },
+  { code: '+47', name: 'Norway', flag: '🇳🇴' },
+  { code: '+45', name: 'Denmark', flag: '🇩🇰' },
+  { code: '+358', name: 'Finland', flag: '🇫🇮' },
+  { code: '+420', name: 'Czech Republic', flag: '🇨🇿' },
+  { code: '+36', name: 'Hungary', flag: '🇭🇺' },
+  { code: '+48', name: 'Poland', flag: '🇵🇱' },
+  { code: '+40', name: 'Romania', flag: '🇷🇴' },
+  { code: '+380', name: 'Ukraine', flag: '🇺🇦' },
+  { code: '+60', name: 'Malaysia', flag: '🇲🇾' },
+  { code: '+66', name: 'Thailand', flag: '🇹🇭' },
+  { code: '+62', name: 'Indonesia', flag: '🇮🇩' },
+  { code: '+63', name: 'Philippines', flag: '🇵🇭' },
+  { code: '+84', name: 'Vietnam', flag: '🇻🇳' },
+  { code: '+82', name: 'South Korea', flag: '🇰🇷' },
+  { code: '+64', name: 'New Zealand', flag: '🇳🇿' },
+  { code: '+55', name: 'Brazil', flag: '🇧🇷' },
+  { code: '+54', name: 'Argentina', flag: '🇦🇷' },
+  { code: '+57', name: 'Colombia', flag: '🇨🇴' },
+  { code: '+56', name: 'Chile', flag: '🇨🇱' },
+  { code: '+52', name: 'Mexico', flag: '🇲🇽' },
+  { code: '+212', name: 'Morocco', flag: '🇲🇦' },
+  { code: '+216', name: 'Tunisia', flag: '🇹🇳' },
+  { code: '+213', name: 'Algeria', flag: '🇩🇿' },
+  { code: '+218', name: 'Libya', flag: '🇱🇾' },
+  { code: '+249', name: 'Sudan', flag: '🇸🇩' },
+  { code: '+967', name: 'Yemen', flag: '🇾🇪' },
+  { code: '+963', name: 'Syria', flag: '🇸🇾' },
+  { code: '+964', name: 'Iraq', flag: '🇮🇶' },
+  { code: '+98', name: 'Iran', flag: '🇮🇷' },
+  { code: '+77', name: 'Kazakhstan', flag: '🇰🇿' },
+  { code: '+998', name: 'Uzbekistan', flag: '🇺🇿' },
+  { code: '+994', name: 'Azerbaijan', flag: '🇦🇿' },
+  { code: '+374', name: 'Armenia', flag: '🇦🇲' },
+  { code: '+996', name: 'Kyrgyzstan', flag: '🇰🇬' },
+  { code: '+992', name: 'Tajikistan', flag: '🇹🇯' },
+  { code: '+993', name: 'Turkmenistan', flag: '🇹🇲' },
+  { code: '+94', name: 'Sri Lanka', flag: '🇱🇰' },
+  { code: '+880', name: 'Bangladesh', flag: '🇧🇩' },
+  { code: '+977', name: 'Nepal', flag: '🇳🇵' },
+  { code: '+251', name: 'Ethiopia', flag: '🇪🇹' },
+  { code: '+233', name: 'Ghana', flag: '🇬🇭' },
+  { code: '+255', name: 'Tanzania', flag: '🇹ℤ' },
+  { code: '+256', name: 'Uganda', flag: '🇺🇬' },
+  { code: '+263', name: 'Zimbabwe', flag: '🇿🇼' },
+  { code: '+244', name: 'Angola', flag: '🇦🇴' },
+  { code: '+225', name: 'Ivory Coast', flag: '🇨🇮' },
+  { code: '+221', name: 'Senegal', flag: '🇸🇳' },
+]
+
+interface DropdownItem {
+  code: string
+  name: string
+  flag: string
+}
+
+const validateEmail = (emailStr: string): { valid: boolean; error?: string } => {
+  const trimmed = emailStr.trim().toLowerCase()
+  if (!trimmed) return { valid: false, error: 'Email address is required' }
+  const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/
+  if (!emailRegex.test(trimmed)) {
+    return { valid: false, error: 'Please enter a valid email address (e.g. name@domain.com)' }
+  }
+  const [localPart, domainPart] = trimmed.split('@')
+  const spamPrefixes = ['xyz', 'test', 'asdf', 'abc', 'fake', '123', 'admin', 'user', 'sample', 'demo', 'qwerty', 'temp', 'null', 'undefined', 'aaa', 'bbb', 'ccc', 'xxx', 'yyy', 'zzz']
+  if (spamPrefixes.includes(localPart) || localPart.length < 2) {
+    return { valid: false, error: 'Please enter a valid personal or business email address' }
+  }
+  const invalidDomains = ['test.com', 'example.com', 'invalid.com', 'fake.com', 'domain.com', 'temp.com', 'mailinator.com', 'yopmail.com', 'gamil.com', 'gmaill.com', 'hotmial.com']
+  if (invalidDomains.includes(domainPart)) {
+    return { valid: false, error: 'Please enter a valid email domain name' }
+  }
+  return { valid: true }
+}
+
+function SearchableDropdown({
+  items,
+  value,
+  onChange,
+  placeholder,
+  displayFormat,
+  matchKey,
+  disabled,
+}: {
+  items: DropdownItem[]
+  value: string
+  onChange: (item: DropdownItem) => void
+  placeholder: string
+  displayFormat: (item: DropdownItem) => string
+  matchKey: 'code' | 'name'
+  disabled?: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const selectedItem = items.find((item) => item[matchKey] === value)
+  const filteredItems = items.filter(
+    (item) =>
+      item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.code.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <div ref={dropdownRef} className="relative w-full">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full text-left bg-slate-50 hover:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none flex justify-between items-center cursor-pointer select-none"
+      >
+        <span className="truncate">
+          {selectedItem ? displayFormat(selectedItem) : placeholder}
+        </span>
+        <span className="text-slate-400 text-xs ml-1">▼</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="p-2 border-b border-slate-100">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+              className="w-full bg-slate-50 text-slate-900 border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:border-zinc-500 font-normal"
+              autoFocus
+            />
+          </div>
+          <ul className="max-h-60 overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item) => (
+                <li key={item.name + '-' + item.code}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onChange(item)
+                      setIsOpen(false)
+                      setSearch('')
+                    }}
+                    className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <span className="text-sm shrink-0">{item.flag}</span>
+                    <span className="truncate font-medium">{item.name}</span>
+                    <span className="text-slate-400 ml-auto shrink-0 text-[11px]">{item.code}</span>
+                  </button>
+                </li>
+              ))
+            ) : (
+              <li className="px-4 py-3 text-xs text-slate-400 text-center">
+                No results found
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function IIGProjectsPage() {
   const [projectsList, setProjectsList] = useState<Project[]>(projectsData)
@@ -35,9 +256,236 @@ export default function IIGProjectsPage() {
   // Salesperson referral system state
   const [salesperson, setSalesperson] = useState<any>(null)
   const [isInquiryOpen, setIsInquiryOpen] = useState(false)
-  const [inquiryForm, setInquiryForm] = useState({ name: '', email: '', phone: '', notes: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  // IPS Contact Form state
+  const [formName, setFormName] = useState('')
+  const [formEmail, setFormEmail] = useState('')
+  const [formCountryCode, setFormCountryCode] = useState('+971')
+  const [formPhone, setFormPhone] = useState('')
+  const [formPreferredContactMode, setFormPreferredContactMode] = useState('WhatsApp')
+  const [formLanguage, setFormLanguage] = useState('English')
+  const [formRole, setFormRole] = useState('investor')
+
+  // Email OTP verification state
+  const [isEmailVerified, setIsEmailVerified] = useState(false)
+  const [isSendingOtp, setIsSendingOtp] = useState(false)
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
+  const [showOtpModal, setShowOtpModal] = useState(false)
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', ''])
+  const [resendTimer, setResendTimer] = useState(60)
+  const [canResend, setCanResend] = useState(false)
+  const [failedAttempts, setFailedAttempts] = useState(0)
+
+  const otpInputRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null)
+  ]
+
+  // OTP Resend Countdown Timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout
+    if (showOtpModal && resendTimer > 0) {
+      timer = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            setCanResend(true)
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    return () => clearInterval(timer)
+  }, [showOtpModal, resendTimer])
+
+  // OTP Handlers
+  const sendOtpCode = async (targetEmail?: string) => {
+    const emailToSend = targetEmail || formEmail.trim().toLowerCase()
+
+    const emailCheck = validateEmail(emailToSend)
+    if (!emailCheck.valid) {
+      toast.error(emailCheck.error || 'Please enter a valid email address')
+      return
+    }
+
+    setIsSendingOtp(true)
+    try {
+      const response = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: emailToSend, type: 'email' })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send verification code')
+      }
+
+      toast.success(data.message || `Verification code sent to ${emailToSend}`)
+      setShowOtpModal(true)
+      setOtpDigits(['', '', '', ''])
+      setFailedAttempts(0)
+      setResendTimer(60)
+      setCanResend(false)
+
+      setTimeout(() => {
+        otpInputRefs[0].current?.focus()
+      }, 100)
+
+    } catch (err: any) {
+      toast.error(err.message || 'Could not send verification code')
+    } finally {
+      setIsSendingOtp(false)
+    }
+  }
+
+  const verifyOtpCode = async () => {
+    const code = otpDigits.join('')
+    if (code.length !== 4) {
+      toast.error('Please enter the complete 4-digit code')
+      return
+    }
+
+    setIsVerifyingOtp(true)
+    const targetEmail = formEmail.trim().toLowerCase()
+
+    try {
+      const verifyRes = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: targetEmail, code })
+      })
+
+      const verifyData = await verifyRes.json()
+
+      if (!verifyRes.ok) {
+        const attempts = (failedAttempts + 1)
+        setFailedAttempts(attempts)
+        throw new Error(verifyData.error || 'Incorrect verification code')
+      }
+
+      // Verification Success!
+      setIsEmailVerified(true)
+      setShowOtpModal(false)
+      toast.success('Email address verified successfully!')
+
+    } catch (err: any) {
+      toast.error(err.message || 'Verification failed')
+    } finally {
+      setIsVerifyingOtp(false)
+    }
+  }
+
+  const handleVerifyEmailClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    sendOtpCode()
+  }
+
+  const handleOtpDigitChange = (index: number, value: string) => {
+    const cleanValue = value.replace(/[^0-9]/g, '')
+    const newDigits = [...otpDigits]
+    newDigits[index] = cleanValue.slice(-1)
+    setOtpDigits(newDigits)
+
+    if (cleanValue && index < 3) {
+      otpInputRefs[index + 1].current?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpInputRefs[index - 1].current?.focus()
+    }
+  }
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4)
+    if (pasted) {
+      const digits = pasted.split('')
+      const newDigits = ['', '', '', '']
+      digits.forEach((d, i) => { if (i < 4) newDigits[i] = d })
+      setOtpDigits(newDigits)
+      if (digits.length === 4) {
+        otpInputRefs[3].current?.focus()
+      } else if (digits.length > 0) {
+        otpInputRefs[Math.min(digits.length, 3)].current?.focus()
+      }
+    }
+  }
+
+  // Handle final IPS registration submit (Posting directly to Bitrix24 via /api/ips-registration)
+  const handleFinalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!formName.trim()) {
+      toast.error('Please enter your full name')
+      return
+    }
+
+    const emailCheck = validateEmail(formEmail)
+    if (!emailCheck.valid) {
+      toast.error(emailCheck.error || 'Please enter a valid email address')
+      return
+    }
+
+    if (!formPhone.trim()) {
+      toast.error('Please enter your phone number')
+      return
+    }
+
+    if (!isEmailVerified) {
+      toast.error('Please click "Verify Email" to verify your email address before submitting.')
+      return
+    }
+
+    setIsSubmitting(true)
+    const fullPhone = `${formCountryCode} ${formPhone.trim()}`
+
+    try {
+      const response = await fetch('/api/ips-registration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formName,
+          email: formEmail,
+          phone: fullPhone,
+          preferredContactMode: formPreferredContactMode,
+          language: formLanguage,
+          role: formRole
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong')
+      }
+
+      toast.success(data.message || 'Registration successful!')
+      setSubmitSuccess(true)
+
+      // Reset form
+      setFormName('')
+      setFormEmail('')
+      setFormCountryCode('+971')
+      setFormPhone('')
+      setFormPreferredContactMode('WhatsApp')
+      setFormLanguage('English')
+      setFormRole('investor')
+      setIsEmailVerified(false)
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to submit registration')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const handleClearCacheAndReload = async () => {
     try {
@@ -76,7 +524,6 @@ export default function IIGProjectsPage() {
           if (isMounted) {
             setProjectsList(data)
             setActiveProjectId(data[0].id)
-            // Update background to reflect first image from CMS data (not hardcoded static data)
             const firstImg = data[0].images?.[0] || data[0].thumbnail || ''
             if (firstImg) {
               const formatted = firstImg.startsWith('/') ? firstImg : `/${firstImg}`
@@ -134,7 +581,6 @@ export default function IIGProjectsPage() {
         }
       }
 
-      // Preload & pre-decode images directly into browser cache
       urlsToPreload.forEach(url => {
         const img = new Image()
         img.onload = updateProgress
@@ -142,7 +588,6 @@ export default function IIGProjectsPage() {
         img.src = url
       })
 
-      // Maximum safety timeout (3.5s max preloader duration)
       setTimeout(() => {
         if (isMounted) {
           setLoadProgress(100)
@@ -221,9 +666,6 @@ export default function IIGProjectsPage() {
     }
   }, [projectsList])
 
-  // Normalize image URL helper
-  const appendVersion = (url: string) => url
-
   // Preload next image of active project for instant carousel browsing
   useEffect(() => {
     if (!activeProject || !activeProject.images || activeProject.images.length <= 1) return
@@ -246,257 +688,183 @@ export default function IIGProjectsPage() {
     const formattedUrl = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
     const isVid = formattedUrl.endsWith('.mp4') || formattedUrl.endsWith('.webm') || (activeProject as any)?.mediaDetails?.[activeImageIndex]?.type === 'VIDEO'
 
-    // Set background image state immediately for instant rendering without waiting for onload
     setBgImage(formattedUrl)
-    setBgOpacity(1)
-    setIsTransitioning(false)
 
-    if (isVid) return
+    if (isVid) {
+      setBgOpacity(1)
+      setIsTransitioning(false)
+      return
+    }
 
-    // Preload image object into browser memory
     const img = new Image()
     img.src = formattedUrl
-  }, [activeProjectId, activeImageIndex, activeProject])
 
-  // Dynamic mobile viewport height calculation
-  const setMobileHeroHeight = () => {
-    if (typeof window === 'undefined') return
-    if (window.innerWidth <= 768) {
-      const panelHeight = bottomWrapperRef.current ? bottomWrapperRef.current.offsetHeight : 0
-      const viewportHeight = window.innerHeight
-      const heroHeight = Math.max(viewportHeight - panelHeight, 120)
-      document.documentElement.style.setProperty('--hero-visible-height', `${heroHeight}px`)
+    if (img.complete) {
+      setBgOpacity(1)
+      setIsTransitioning(false)
     } else {
-      document.documentElement.style.setProperty('--hero-visible-height', '100dvh')
+      setBgOpacity(0.4)
+      setIsTransitioning(true)
+
+      img.onload = () => {
+        setBgOpacity(1)
+        setIsTransitioning(false)
+      }
+      img.onerror = () => {
+        setBgOpacity(1)
+        setIsTransitioning(false)
+      }
     }
+  }, [activeImageIndex, activeProjectId, activeProject])
+
+  // Select project handler
+  const selectProject = (id: number) => {
+    if (id === activeProjectId) return
+
+    setImageNameOpacity(0)
+    setBgOpacity(0.3)
+    setIsTransitioning(true)
+
+    setTimeout(() => {
+      setActiveProjectId(id)
+      setActiveImageIndex(0)
+
+      setTimeout(() => {
+        setImageNameOpacity(1)
+      }, 50)
+    }, 200)
   }
 
-  useEffect(() => {
-    setMobileHeroHeight()
-    const handleResize = () => setMobileHeroHeight()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  useEffect(() => {
-    const timer = setTimeout(setMobileHeroHeight, 50)
-    return () => clearTimeout(timer)
-  }, [activeProjectId])
-
-  // Navigation handlers (non-blocking for fast interaction)
+  // Prev / Next image navigation
   const handlePrevImage = () => {
-    if (!activeProject?.images?.length) return
-    setActiveImageIndex(prev => (prev - 1 + activeProject.images.length) % activeProject.images.length)
+    if (!activeProject || !activeProject.images || activeProject.images.length <= 1) return
+    setActiveImageIndex(prev => (prev === 0 ? activeProject.images.length - 1 : prev - 1))
   }
 
   const handleNextImage = () => {
-    if (!activeProject?.images?.length) return
-    setActiveImageIndex(prev => (prev + 1) % activeProject.images.length)
+    if (!activeProject || !activeProject.images || activeProject.images.length <= 1) return
+    setActiveImageIndex(prev => (prev === activeProject.images.length - 1 ? 0 : prev + 1))
   }
 
-  const selectProject = (id: number) => {
-    if (activeProjectId !== id) {
-      setActiveProjectId(id)
-      setActiveImageIndex(0)
-    }
+  // Scroll thumbnails carousel
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    if (!carouselContainerRef.current) return
+    const scrollAmount = direction === 'left' ? -280 : 280
+    carouselContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
   }
 
-  const openInquiry = () => {
-    setInquiryForm({
-      name: '',
-      email: '',
-      phone: '',
-      notes: `I'm interested in the ${activeProject.name} project.`
-    })
-    setSubmitSuccess(false)
-    setIsInquiryOpen(true)
-  }
-
-  const handleInquirySubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!inquiryForm.name) return
-
-    setIsSubmitting(true)
-    try {
-      const res = await fetch('/api/public/inquiry', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...inquiryForm,
-          salesperson_id: salesperson ? salesperson.id : null
-        })
-      })
-      if (!res.ok) throw new Error('Failed to submit inquiry')
-      setSubmitSuccess(true)
-      setInquiryForm({ name: '', email: '', phone: '', notes: '' })
-      setTimeout(() => setIsInquiryOpen(false), 2000)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  // Draggable & Mouse Wheel carousel scrolling behavior
-  const isDown = useRef(false)
+  // Drag to scroll carousel logic
+  const isDragging = useRef(false)
   const isDragOccurring = useRef(false)
   const startX = useRef(0)
   const scrollLeft = useRef(0)
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    const slider = carouselContainerRef.current
-    if (!slider) return
-    isDown.current = true
+    if (!carouselContainerRef.current) return
+    isDragging.current = true
     isDragOccurring.current = false
-    slider.classList.add('active')
-    startX.current = e.pageX - slider.offsetLeft
-    scrollLeft.current = slider.scrollLeft
+    startX.current = e.pageX - carouselContainerRef.current.offsetLeft
+    scrollLeft.current = carouselContainerRef.current.scrollLeft
   }
 
   const handleMouseLeaveOrUp = () => {
-    const slider = carouselContainerRef.current
-    if (!slider) return
-    isDown.current = false
-    slider.classList.remove('active')
+    isDragging.current = false
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDown.current) return
-    e.preventDefault()
-    const slider = carouselContainerRef.current
-    if (!slider) return
-    const x = e.pageX - slider.offsetLeft
-    const walk = (x - startX.current) * 2
-    if (Math.abs(x - startX.current) > 5) {
+    if (!isDragging.current || !carouselContainerRef.current) return
+    const x = e.pageX - carouselContainerRef.current.offsetLeft
+    const walk = (x - startX.current) * 1.5
+    if (Math.abs(walk) > 5) {
       isDragOccurring.current = true
     }
-    slider.scrollLeft = scrollLeft.current - walk
+    carouselContainerRef.current.scrollLeft = scrollLeft.current - walk
   }
 
+  // Wheel horizontal scroll
   const handleWheel = (e: React.WheelEvent) => {
-    const slider = carouselContainerRef.current
-    if (!slider) return
-    slider.scrollLeft += e.deltaY
+    if (!carouselContainerRef.current) return
+    if (e.deltaY !== 0) {
+      carouselContainerRef.current.scrollLeft += e.deltaY
+    }
   }
 
+  // Touch handlers for full page swipe navigation
   const handleTouchStart = (e: React.TouchEvent) => {
-    const slider = carouselContainerRef.current
-    if (!slider) return
-    isDown.current = true
-    isDragOccurring.current = false
-    startX.current = e.touches[0].pageX - slider.offsetLeft
-    scrollLeft.current = slider.scrollLeft
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDown.current) return
-    const slider = carouselContainerRef.current
-    if (!slider) return
-    const x = e.touches[0].pageX - slider.offsetLeft
-    const walk = (x - startX.current) * 2
-    if (Math.abs(x - startX.current) > 5) {
-      isDragOccurring.current = true
-    }
-    slider.scrollLeft = scrollLeft.current - walk
-  }
-
-  // Carousel arrow scrolling
-  const scrollCarousel = (direction: 'left' | 'right') => {
-    const slider = carouselContainerRef.current
-    if (slider) {
-      const scrollAmount = direction === 'left' ? -200 : 200
-      slider.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-    }
-  }
-
-  // Swipe gesture handlers on the main view
-  const handleHeroTouchStart = (e: React.TouchEvent) => {
-    if ((e.target as HTMLElement).closest('.carousel-container')) return
     touchStartX.current = e.touches[0].clientX
     touchStartY.current = e.touches[0].clientY
   }
 
-  const handleHeroTouchEnd = (e: React.TouchEvent) => {
-    if ((e.target as HTMLElement).closest('.carousel-container')) return
-    const endX = e.changedTouches[0].clientX
-    const endY = e.changedTouches[0].clientY
-    
-    const deltaX = endX - touchStartX.current
-    const deltaY = endY - touchStartY.current
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartX.current || !touchStartY.current) return
 
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) >= minSwipeDistance) {
-      if (deltaX < 0) {
-        handleNextImage()
-      } else {
-        handlePrevImage()
+    const currentX = e.touches[0].clientX
+    const currentY = e.touches[0].clientY
+
+    const diffX = touchStartX.current - currentX
+    const diffY = touchStartY.current - currentY
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+      if (Math.abs(diffX) > minSwipeDistance) {
+        if (diffX > 0) {
+          handleNextImage()
+        } else {
+          handlePrevImage()
+        }
+        touchStartX.current = 0
+        touchStartY.current = 0
       }
     }
   }
 
-  // Auto-scroll carousel to keep active item in view
-  useEffect(() => {
-    const activeItem = carouselContainerRef.current?.querySelector('.carousel-item.active') as HTMLElement
-    const slider = carouselContainerRef.current
-    if (activeItem && slider) {
-      const sliderRect = slider.getBoundingClientRect()
-      const itemRect = activeItem.getBoundingClientRect()
-      if (itemRect.left < sliderRect.left || itemRect.right > sliderRect.right) {
-        slider.scrollTo({
-          left: activeItem.offsetLeft - slider.offsetWidth / 2 + activeItem.offsetWidth / 2,
-          behavior: 'smooth'
-        })
-      }
-    }
-  }, [activeProjectId])
-
   return (
     <div 
-      className="portfolio-body"
-      onTouchStart={handleHeroTouchStart}
-      onTouchEnd={handleHeroTouchEnd}
+      className="portfolio-body text-white select-none overflow-hidden relative w-full h-screen font-sans"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
     >
-      {/* Initial Fullscreen Preloader Overlay */}
+      {/* Preloader Overlay */}
       {isInitialLoading && (
-        <div className={`initial-preloader ${loadProgress === 100 ? 'fade-out' : ''}`}>
-          <div className="preloader-content">
+        <div className="fixed inset-0 z-50 bg-[#0a0f18] flex flex-col items-center justify-center transition-opacity duration-500">
+          <div className="flex flex-col items-center max-w-sm w-full px-6 text-center">
             <img 
               src="/logo.svg" 
               alt="Invest Georgia UAE Logo" 
-              className="preloader-logo" 
-              width="200" 
-              height="60"
+              className="w-48 h-auto mb-8 animate-pulse"
             />
-            <div className="preloader-spinner-wrapper">
+            
+            <div className="w-full bg-white/10 rounded-full h-1.5 mb-4 overflow-hidden p-0.5 border border-white/10">
               <div 
-                className="preloader-bar" 
+                className="bg-gradient-to-r from-[#ca2d39] via-red-500 to-[#ca2d39] h-full rounded-full transition-all duration-200 ease-out shadow-[0_0_12px_rgba(202,45,57,0.8)]"
                 style={{ width: `${loadProgress}%` }}
               />
             </div>
-            <div className="preloader-status">
-              <span className="preloader-text">Loading Portfolio Assets</span>
-              <span className="preloader-percent">{loadProgress}%</span>
+            
+            <div className="flex items-center justify-between w-full text-[11px] uppercase tracking-widest text-white/60 font-medium">
+              <span>Loading Portfolio</span>
+              <span>{loadProgress}%</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Hero Video or Image Display */}
+      {/* Hero Background Media */}
       {isCurrentMediaVideo ? (
-        <video 
-          key={activeMediaUrl}
-          src={activeMediaUrl}
-          autoPlay 
-          loop 
-          muted 
+        <video
+          key={bgImage}
+          src={bgImage}
+          autoPlay
+          loop
+          muted
           playsInline
-          className="hero-background w-full h-full object-cover fixed inset-0"
-          style={{ opacity: bgOpacity, pointerEvents: 'none' }}
+          className="hero-bg object-cover"
+          style={{ opacity: bgOpacity }}
         />
       ) : (
         <div 
-          className="hero-background" 
+          className="hero-bg"
           style={{ 
-            backgroundImage: bgImage ? `url("${encodeURI(bgImage)}")` : 'none',
+            backgroundImage: bgImage ? `url("${bgImage}")` : 'none',
             opacity: bgOpacity
           }}
         />
@@ -550,32 +918,27 @@ export default function IIGProjectsPage() {
                   {(activeProject.name.toLowerCase().includes('ortachal') || (activeProject as any)?.slug?.toLowerCase()?.includes('ortachal')) ? (
                     <img 
                       src="/media/qr/ortachala-vr-qr.png" 
-                      alt="Ortachala Scan to bring the project to life QR Code" 
-                      className="w-full h-full object-contain rounded"
-                    />
-                  ) : (activeProject.name.toLowerCase().includes('kavtaradze') || activeProject.name.toLowerCase().includes('kavataradze') || (activeProject as any)?.slug?.toLowerCase()?.includes('kavtaradze') || (activeProject as any)?.slug?.toLowerCase()?.includes('kavataradze')) ? (
-                    <img 
-                      src="/media/qr/kavtaradze-vr-qr.png" 
-                      alt="Kavtaradze Scan to bring the project to life QR Code" 
-                      className="w-full h-full object-contain rounded"
+                      alt="Ortachala VR 3D QR Code"
+                      className="w-full h-full object-contain"
                     />
                   ) : (
-                    <svg width="76" height="76" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                      <path fillRule="evenodd" clipRule="evenodd" d="M2 2H9V9H2V2ZM4 4H7V7H4V4ZM15 2H22V9H15V2ZM17 4H20V7H17V4ZM2 15H9V22H2V15ZM4 17H7V20H4V17ZM11 2H13V5H11V2ZM11 7H13V9H11V7ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM18 11H20V13H18V11ZM20 13H22V15H20V13ZM18 15H20V17H18V15ZM15 17H17V20H15V17ZM17 20H20V22H17V20ZM20 18H22V22H20V18ZM13 15H15V18H13V15ZM11 19H13V22H11V19ZM13 8H15V10H13V8ZM8 11H10V13H8V11ZM2 11H4V13H2V11ZM5 11H7V13H5V11ZM8 13H10V15H8V13Z" fill="#000000"/>
-                    </svg>
+                    <img 
+                      src="/media/qr/kavtaradze-vr-qr.png" 
+                      alt="Kavtaradze VR 3D QR Code"
+                      className="w-full h-full object-contain"
+                    />
                   )}
                 </div>
                 <div className="vr-qr-text-group">
                   <span className="vr-qr-title">
-                    Scan to bring the<br />
-                    project to life
+                    Scan to bring the<br />project to life
                   </span>
                 </div>
               </div>
             )}
 
             {/* Property Details Card */}
-            <section className="property-details-card" id="property-details">
+            <section className="property-details-card">
               <h2 className="prop-title">{activeProject.name}</h2>
 
               <div className="details-grid">
@@ -630,6 +993,7 @@ export default function IIGProjectsPage() {
                 const handleContact = async (e: React.MouseEvent) => {
                   e.preventDefault()
                   if (salesperson?.id) {
+                    // Agent Referral Link active! Open WhatsApp directly with tracking
                     try {
                       const res = await fetch('/api/tracking/whatsapp', {
                         method: 'POST',
@@ -646,7 +1010,9 @@ export default function IIGProjectsPage() {
                       window.open(whatsappUrl, '_blank')
                     }
                   } else {
-                    window.open(whatsappUrl, '_blank')
+                    // Direct visitor without referral link! Open IPS Contact Form Modal
+                    setSubmitSuccess(false)
+                    setIsInquiryOpen(true)
                   }
                 }
 
@@ -718,8 +1084,6 @@ export default function IIGProjectsPage() {
                         width={200}
                         height={112}
                         loading={project.id === activeProjectId ? 'eager' : 'lazy'}
-                        decoding="async"
-                        style={{ contentVisibility: 'auto', objectFit: 'cover' }}
                       />
                     </div>
                   </div>
@@ -731,104 +1095,398 @@ export default function IIGProjectsPage() {
         </div>
       </main>
 
-      {/* Small Clear Cache & Reload Text (Bottom Right Corner) */}
-      <div className="clear-cache-wrapper">
-        <button 
+      {/* Clear Cache & Reload Footer Button */}
+      <div 
+        style={{
+          position: 'fixed',
+          bottom: '8px',
+          right: '12px',
+          zIndex: 99,
+          pointerEvents: 'auto',
+          opacity: 0.65,
+          transition: 'opacity 0.2s ease'
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.opacity = '1' }}
+        onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.65' }}
+      >
+        <button
           onClick={handleClearCacheAndReload}
-          className="clear-cache-link"
-          title="Purge local browser cache and force hard reload from server"
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'rgba(255, 255, 255, 0.75)',
+            fontSize: '10px',
+            fontFamily: 'inherit',
+            cursor: 'pointer',
+            textDecoration: 'underline',
+            letterSpacing: '0.4px',
+            padding: '2px 4px'
+          }}
+          title="Clear cached data and force reload updated page"
         >
           Clear Cache & Reload
         </button>
       </div>
 
-      {/* Inquiry Modal */}
+      {/* IPS Registration Form Modal Popup (For visitors without agent referral link) */}
       {isInquiryOpen && (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setIsInquiryOpen(false) }}>
-          <div className="modal-content">
-            <div className="modal-header">
-              <span className="modal-title">Register Your Interest</span>
-              <button className="close-btn" onClick={() => setIsInquiryOpen(false)}>×</button>
-            </div>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150 overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-white border border-slate-200 shadow-2xl rounded-2xl p-6 sm:p-8 my-8 text-slate-900">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsInquiryOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors p-2 cursor-pointer z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
             {submitSuccess ? (
-              <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                <div style={{ fontSize: '40px', marginBottom: '12px' }}>✓</div>
-                <p style={{ fontWeight: 600, fontSize: '16px' }}>Thank you!</p>
-                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', marginTop: '6px' }}>
-                  We'll be in touch with you soon.
+              <div className="flex flex-col items-center justify-center text-center py-8">
+                <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-5 shadow-xs">
+                  <UserCheck className="w-8 h-8" />
+                </div>
+                
+                <h2 className={`${cormorant.className} text-3xl font-bold text-slate-900 mb-3 tracking-wide`}>
+                  Registration Received
+                </h2>
+                
+                <p className="text-slate-600 text-xs sm:text-sm max-w-sm leading-relaxed font-normal mb-6">
+                  Thank you for registering with <strong>Invest Georgia UAE</strong>. Our team will get in touch with you shortly.
                 </p>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setSubmitSuccess(false)
+                      setIsEmailVerified(false)
+                    }}
+                    className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase transition-colors shadow-sm cursor-pointer"
+                  >
+                    Submit Another
+                  </button>
+                  <button
+                    onClick={() => setIsInquiryOpen(false)}
+                    className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             ) : (
-              <form onSubmit={handleInquirySubmit}>
-                {salesperson && (
-                  <div className="salesperson-badge">
-                    {salesperson.profileImage ? (
-                      <img src={salesperson.profileImage} alt={salesperson.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12 }}>
-                        {salesperson.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <span>Your dedicated contact: <strong>{salesperson.name}</strong></span>
+              <div className="w-full">
+                {/* Form Header */}
+                <div className="mb-5">
+                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#ca2d39] font-bold mb-1 block">
+                    Invest Georgia UAE
+                  </span>
+                  <h2 className={`${cormorant.className} text-2xl sm:text-3xl font-bold tracking-wide text-slate-900`}>
+                    Register Your Interest
+                  </h2>
+                  {activeProject && (
+                    <p className="text-slate-500 text-xs mt-1">
+                      Inquiring about: <strong className="text-slate-800">{activeProject.name}</strong>
+                    </p>
+                  )}
+                </div>
+
+                {/* Form Fields */}
+                <form onSubmit={handleFinalSubmit} className="space-y-4">
+                  
+                  {/* Name Input */}
+                  <div className="space-y-1">
+                    <label htmlFor="modal-name" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Full Name <span className="text-slate-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="modal-name"
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      placeholder="Enter your full name"
+                      disabled={isSubmitting}
+                      className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400"
+                      required
+                    />
                   </div>
-                )}
 
-                <div className="form-group" style={{ marginTop: salesperson ? '16px' : '0' }}>
-                  <label className="form-label">Full Name *</label>
-                  <input
-                    className="form-input"
-                    type="text"
-                    placeholder="Your full name"
-                    value={inquiryForm.name}
-                    onChange={e => setInquiryForm(prev => ({ ...prev, name: e.target.value }))}
-                    required
-                  />
-                </div>
+                  {/* Email Input with Inline Verification */}
+                  <div className="space-y-1">
+                    <label htmlFor="modal-email" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Email Address <span className="text-slate-400">*</span>
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="email"
+                        id="modal-email"
+                        value={formEmail}
+                        onChange={(e) => {
+                          setFormEmail(e.target.value)
+                          setIsEmailVerified(false)
+                        }}
+                        placeholder="name@domain.com"
+                        disabled={isSubmitting}
+                        className="flex-1 bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400 min-w-0"
+                        required
+                      />
+                      {isEmailVerified ? (
+                        <div className="shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleVerifyEmailClick}
+                          disabled={isSendingOtp || !formEmail.trim()}
+                          className="shrink-0 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5 text-[#ca2d39]" />}
+                          <span>Verify Email</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-                <div className="form-group">
-                  <label className="form-label">Phone Number</label>
-                  <input
-                    className="form-input"
-                    type="tel"
-                    placeholder="+971 50 000 0000"
-                    value={inquiryForm.phone}
-                    onChange={e => setInquiryForm(prev => ({ ...prev, phone: e.target.value }))}
-                  />
-                </div>
+                  {/* Phone / WhatsApp Input */}
+                  <div className="space-y-1">
+                    <label htmlFor="modal-phone" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Phone / WhatsApp Number <span className="text-slate-400">*</span>
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <div className="w-[105px] shrink-0">
+                        <SearchableDropdown
+                          items={COUNTRY_LIST}
+                          value={formCountryCode}
+                          onChange={(item) => setFormCountryCode(item.code)}
+                          placeholder="+971"
+                          displayFormat={(item) => `${item.flag} ${item.code}`}
+                          matchKey="code"
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <input
+                        type="tel"
+                        id="modal-phone"
+                        pattern="[0-9]*"
+                        value={formPhone}
+                        onChange={(e) => setFormPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder="50 123 4567"
+                        disabled={isSubmitting}
+                        className="flex-1 bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400 min-w-0"
+                        required
+                      />
+                    </div>
+                  </div>
 
-                <div className="form-group">
-                  <label className="form-label">Email Address</label>
-                  <input
-                    className="form-input"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={inquiryForm.email}
-                    onChange={e => setInquiryForm(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
+                  {/* Preferred Mode of Contact Dropdown */}
+                  <div className="space-y-1">
+                    <label htmlFor="modal-preferredContactMode" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Preferred Mode of Contact <span className="text-slate-400">*</span>
+                    </label>
+                    <div className="relative w-full">
+                      <select
+                        id="modal-preferredContactMode"
+                        value={formPreferredContactMode}
+                        onChange={(e) => setFormPreferredContactMode(e.target.value)}
+                        disabled={isSubmitting}
+                        className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="WhatsApp" className="bg-white text-slate-900">WhatsApp</option>
+                        <option value="Call" className="bg-white text-slate-900">Call</option>
+                        <option value="Email" className="bg-white text-slate-900">Email</option>
+                      </select>
+                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
+                        ▼
+                      </div>
+                    </div>
+                  </div>
 
-                <div className="form-group">
-                  <label className="form-label">Message</label>
-                  <textarea
-                    className="form-input"
-                    rows={3}
-                    placeholder="Your message..."
-                    value={inquiryForm.notes}
-                    onChange={e => setInquiryForm(prev => ({ ...prev, notes: e.target.value }))}
-                    style={{ resize: 'none' }}
-                  />
-                </div>
+                  {/* Preferred Language Dropdown */}
+                  <div className="space-y-1">
+                    <label htmlFor="modal-language" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      Preferred Language <span className="text-slate-400">*</span>
+                    </label>
+                    <div className="relative w-full">
+                      <select
+                        id="modal-language"
+                        value={formLanguage}
+                        onChange={(e) => setFormLanguage(e.target.value)}
+                        disabled={isSubmitting}
+                        className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none appearance-none cursor-pointer"
+                      >
+                        <option value="English" className="bg-white text-slate-900">English</option>
+                        <option value="Arabic" className="bg-white text-slate-900">Arabic</option>
+                        <option value="Hindi" className="bg-white text-slate-900">Hindi</option>
+                        <option value="Other" className="bg-white text-slate-900">Other</option>
+                      </select>
+                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
+                        ▼
+                      </div>
+                    </div>
+                  </div>
 
-                <button
-                  type="submit"
-                  className="submit-btn"
-                  disabled={isSubmitting || !inquiryForm.name}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Send Inquiry'}
-                </button>
-              </form>
+                  {/* Role Selection */}
+                  <div className="space-y-2 pt-1">
+                    <label className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
+                      I am a: <span className="text-slate-400">*</span>
+                    </label>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Investor Option */}
+                      <button
+                        type="button"
+                        onClick={() => setFormRole('investor')}
+                        disabled={isSubmitting}
+                        className={`relative py-2.5 px-3 rounded-xl border text-left transition-all duration-150 flex items-center justify-between cursor-pointer ${
+                          formRole === 'investor'
+                            ? 'bg-slate-900 border-slate-900 text-white font-semibold shadow-xs'
+                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        <span className="text-xs uppercase tracking-wider">Investor</span>
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                          formRole === 'investor' ? 'border-[#ca2d39] bg-[#ca2d39]' : 'border-slate-300 bg-white'
+                        }`}>
+                          {formRole === 'investor' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                      </button>
+
+                      {/* Broker Option */}
+                      <button
+                        type="button"
+                        onClick={() => setFormRole('broker')}
+                        disabled={isSubmitting}
+                        className={`relative py-2.5 px-3 rounded-xl border text-left transition-all duration-150 flex items-center justify-between cursor-pointer ${
+                          formRole === 'broker'
+                            ? 'bg-slate-900 border-slate-900 text-white font-semibold shadow-xs'
+                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        <span className="text-xs uppercase tracking-wider truncate">Broker / Agent</span>
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                          formRole === 'broker' ? 'border-[#ca2d39] bg-[#ca2d39]' : 'border-slate-300 bg-white'
+                        }`}>
+                          {formRole === 'broker' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Primary Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-3.5 rounded-xl transition-all ${
+                      isEmailVerified
+                        ? 'bg-[#ca2d39] hover:bg-[#b02530] text-white cursor-pointer shadow-md'
+                        : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300/60'
+                    }`}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Processing Registration...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Submit Registration</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+
+                </form>
+              </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* EMAIL OTP VERIFICATION MODAL */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden text-slate-900">
+            <button
+              onClick={() => setShowOtpModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors p-2 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-2xl border bg-slate-50 border-slate-200 text-[#ca2d39] flex items-center justify-center mb-3 shadow-xs">
+                <Mail className="w-7 h-7" />
+              </div>
+
+              <span className="text-[10px] uppercase tracking-widest text-[#ca2d39] font-bold mb-1">
+                Invest Georgia UAE
+              </span>
+
+              <h3 className={`${cormorant.className} text-2xl font-bold text-slate-900 mb-2`}>
+                Email Verification Code
+              </h3>
+
+              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-xs mb-6">
+                Enter the 4-digit code sent to your email address <span className="font-bold text-slate-900">{formEmail}</span>
+              </p>
+
+              <div className="flex gap-3 justify-center mb-6" onPaste={handleOtpPaste}>
+                {otpDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={otpInputRefs[idx]}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    disabled={isVerifyingOtp || isSendingOtp}
+                    className="w-12 h-14 text-center text-xl font-bold text-slate-900 bg-slate-50 border border-slate-200 focus:border-zinc-500 rounded-xl outline-none transition-colors shadow-xs"
+                  />
+                ))}
+              </div>
+
+              {failedAttempts > 0 && (
+                <div className="w-full bg-amber-50 border border-amber-200 text-amber-800 rounded-xl py-2 px-3 text-xs mb-4 text-center font-medium">
+                  ⚠️ {5 - failedAttempts} attempt{5 - failedAttempts === 1 ? '' : 's'} remaining.
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => verifyOtpCode()}
+                disabled={isVerifyingOtp || isSendingOtp || otpDigits.some(d => d === '')}
+                className="w-full py-3 bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 mb-4 cursor-pointer shadow-md"
+              >
+                {isVerifyingOtp ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Verifying Code...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Verify Email Address</span>
+                  </>
+                )}
+              </button>
+
+              <div className="flex flex-col gap-2 items-center text-xs text-slate-500">
+                {canResend ? (
+                  <button
+                    type="button"
+                    onClick={() => sendOtpCode()}
+                    disabled={isSendingOtp}
+                    className="text-slate-900 hover:underline inline-flex items-center gap-1 font-semibold cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-[#ca2d39]" /> Resend Code
+                  </button>
+                ) : (
+                  <span>Resend code in {resendTimer}s</span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
