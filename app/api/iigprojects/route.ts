@@ -119,5 +119,11 @@ export async function GET() {
   // Sort strictly by sortOrder ascending
   mergedProjects.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 
-  return NextResponse.json(mergedProjects)
+  return NextResponse.json(mergedProjects, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    }
+  })
 }

@@ -1028,6 +1028,35 @@
     visibility: hidden;
 }
 
+/* Small Clear Cache / Force Reload Link (Bottom Right) */
+.portfolio-body .clear-cache-wrapper {
+    position: fixed;
+    bottom: 8px;
+    right: 14px;
+    z-index: 100000;
+    pointer-events: auto;
+}
+
+.portfolio-body .clear-cache-link {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    background: transparent;
+    border: none;
+    padding: 2px 6px;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    border-radius: 4px;
+}
+
+.portfolio-body .clear-cache-link:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

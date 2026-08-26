@@ -39,6 +39,23 @@ export default function IIGProjectsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
+  const handleClearCacheAndReload = async () => {
+    try {
+      if (typeof window !== 'undefined') {
+        if ('caches' in window) {
+          const cacheKeys = await caches.keys()
+          await Promise.all(cacheKeys.map(key => caches.delete(key)))
+        }
+        if (window.localStorage) localStorage.clear()
+        if (window.sessionStorage) sessionStorage.clear()
+      }
+    } catch (e) {
+      console.error('Error clearing cache:', e)
+    }
+    const cleanUrl = window.location.origin + window.location.pathname + '?reload=' + Date.now()
+    window.location.href = cleanUrl
+  }
+
   // Fetch dynamic projects, pre-cache all assets into browser memory & animate preloader screen
   useEffect(() => {
     let isMounted = true
@@ -46,7 +63,13 @@ export default function IIGProjectsPage() {
     const loadAllDataAndAssets = async () => {
       let fetchedProjects: Project[] = projectsData
       try {
-        const res = await fetch('/api/iigprojects')
+        const res = await fetch(`/api/iigprojects?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        })
         const data = await res.json()
         if (Array.isArray(data) && data.length > 0) {
           fetchedProjects = data
@@ -707,6 +730,17 @@ export default function IIGProjectsPage() {
           </button>
         </div>
       )}
+
+      {/* Small Clear Cache & Reload Text (Bottom Right Corner) */}
+      <div className="clear-cache-wrapper">
+        <button 
+          onClick={handleClearCacheAndReload}
+          className="clear-cache-link"
+          title="Purge local browser cache and force hard reload from server"
+        >
+          Clear Cache & Reload
+        </button>
+      </div>
 
       {/* Inquiry Modal */}
       {isInquiryOpen && (
