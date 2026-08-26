@@ -23,15 +23,8 @@ export const projectsData: Project[] = [
     size: "From 48.2 m²",
     roi: "10%",
     completion: "Q2 2028",
-    images: [
-      "/uploads/iigproject/ortachala/1.jpg",
-      "/uploads/iigproject/ortachala/2.jpg",
-      "/uploads/iigproject/ortachala/3.jpg",
-      "/uploads/iigproject/ortachala/4.jpg",
-      "/uploads/iigproject/ortachala/5.jpg",
-      "/uploads/iigproject/ortachala/6.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/ortachala/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 2,
@@ -43,12 +36,8 @@ export const projectsData: Project[] = [
     size: "From 600+ m²",
     roi: "10",
     completion: "Q4 2026",
-    images: [
-      "/uploads/iigproject/lisi/1.jpg",
-      "/uploads/iigproject/lisi/2.jpg",
-      "/uploads/iigproject/lisi/3.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/lisi/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 3,
@@ -60,10 +49,8 @@ export const projectsData: Project[] = [
     size: "From 600+ m²",
     roi: "10",
     completion: "Q4 2026",
-    images: [
-      "/uploads/iigproject/shindisi/1.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/shindisi/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 4,
@@ -75,15 +62,8 @@ export const projectsData: Project[] = [
     size: "From 36 m²",
     roi: "12%",
     completion: "Q4 2027",
-    images: [
-      "/uploads/iigproject/oval/1.jpg",
-      "/uploads/iigproject/oval/2.jpg",
-      "/uploads/iigproject/oval/3.jpg",
-      "/uploads/iigproject/oval/4.jpg",
-      "/uploads/iigproject/oval/5.jpg",
-      "/uploads/iigproject/oval/6.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/oval/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 5,
@@ -95,17 +75,8 @@ export const projectsData: Project[] = [
     size: "From 32 m²",
     roi: "10%",
     completion: "Q2 2028",
-    images: [
-      "/uploads/iigproject/parallel/1.jpg",
-      "/uploads/iigproject/parallel/2.jpg",
-      "/uploads/iigproject/parallel/3.jpg",
-      "/uploads/iigproject/parallel/4.jpg",
-      "/uploads/iigproject/parallel/5.jpg",
-      "/uploads/iigproject/parallel/6.jpg",
-      "/uploads/iigproject/parallel/7.jpg",
-      "/uploads/iigproject/parallel/8.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/parallel/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 6,
@@ -117,18 +88,8 @@ export const projectsData: Project[] = [
     size: "From 51 m²",
     roi: "12%",
     completion: "Q4 2027",
-    images: [
-      "/uploads/iigproject/cube/1.jpg",
-      "/uploads/iigproject/cube/2.jpg",
-      "/uploads/iigproject/cube/3.jpg",
-      "/uploads/iigproject/cube/4.jpg",
-      "/uploads/iigproject/cube/5.jpg",
-      "/uploads/iigproject/cube/6.jpg",
-      "/uploads/iigproject/cube/7.jpg",
-      "/uploads/iigproject/cube/8.jpg",
-      "/uploads/iigproject/cube/9.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/cube/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 7,
@@ -140,22 +101,8 @@ export const projectsData: Project[] = [
     size: "From 27.5 m²",
     roi: "14%",
     completion: "Q3 2028",
-    images: [
-      "/uploads/iigproject/forest-beach/1.jpg",
-      "/uploads/iigproject/forest-beach/2.jpg",
-      "/uploads/iigproject/forest-beach/4.jpg",
-      "/uploads/iigproject/forest-beach/5.jpg",
-      "/uploads/iigproject/forest-beach/6.jpg",
-      "/uploads/iigproject/forest-beach/7.jpg",
-      "/uploads/iigproject/forest-beach/8.jpg",
-      "/uploads/iigproject/forest-beach/9.jpg",
-      "/uploads/iigproject/forest-beach/10.jpg",
-      "/uploads/iigproject/forest-beach/11.jpg",
-      "/uploads/iigproject/forest-beach/12.jpg",
-      "/uploads/iigproject/forest-beach/13.jpg",
-      "/uploads/iigproject/forest-beach/14.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/forest-beach/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 8,
@@ -167,15 +114,8 @@ export const projectsData: Project[] = [
     size: "From 43.7 m²",
     roi: "12%",
     completion: "Q1 2027",
-    images: [
-      "/uploads/iigproject/krtsanisi-resort/1.jpg",
-      "/uploads/iigproject/krtsanisi-resort/2.jpg",
-      "/uploads/iigproject/krtsanisi-resort/3.jpg",
-      "/uploads/iigproject/krtsanisi-resort/4.jpg",
-      "/uploads/iigproject/krtsanisi-resort/5.jpg",
-      "/uploads/iigproject/krtsanisi-resort/6.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/krtsanisi-resort/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 9,
@@ -187,16 +127,8 @@ export const projectsData: Project[] = [
     size: "From 34.11 m²",
     roi: "12%",
     completion: "Q4 2028",
-    images: [
-      "/uploads/iigproject/hisni/1.jpg",
-      "/uploads/iigproject/hisni/2.jpg",
-      "/uploads/iigproject/hisni/3.jpg",
-      "/uploads/iigproject/hisni/4.jpg",
-      "/uploads/iigproject/hisni/5.jpg",
-      "/uploads/iigproject/hisni/6.jpg",
-      "/uploads/iigproject/hisni/7.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/hisni/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 10,
@@ -208,21 +140,8 @@ export const projectsData: Project[] = [
     size: "From 34.11 m²",
     roi: "12%",
     completion: "Q4 2026",
-    images: [
-      "/uploads/iigproject/sakeni/1.jpg",
-      "/uploads/iigproject/sakeni/2.jpg",
-      "/uploads/iigproject/sakeni/3.jpg",
-      "/uploads/iigproject/sakeni/4.jpg",
-      "/uploads/iigproject/sakeni/5.jpg",
-      "/uploads/iigproject/sakeni/6.jpg",
-      "/uploads/iigproject/sakeni/7.jpg",
-      "/uploads/iigproject/sakeni/8.jpg",
-      "/uploads/iigproject/sakeni/9.jpg",
-      "/uploads/iigproject/sakeni/10.jpg",
-      "/uploads/iigproject/sakeni/11.jpg",
-      "/uploads/iigproject/sakeni/12.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/sakeni/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 11,
@@ -234,15 +153,8 @@ export const projectsData: Project[] = [
     size: "From 38.26 m²",
     roi: "12%",
     completion: "Q4 2029",
-    images: [
-      "/uploads/iigproject/gardani/1.jpg",
-      "/uploads/iigproject/gardani/2.jpg",
-      "/uploads/iigproject/gardani/3.jpg",
-      "/uploads/iigproject/gardani/4.jpg",
-      "/uploads/iigproject/gardani/5.jpg",
-      "/uploads/iigproject/gardani/6.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/gardani/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 12,
@@ -254,16 +166,8 @@ export const projectsData: Project[] = [
     size: "From 31.1 m²",
     roi: "14%",
     completion: "Ready",
-    images: [
-      "/uploads/iigproject/neo/1.jpg",
-      "/uploads/iigproject/neo/2.jpg",
-      "/uploads/iigproject/neo/3.jpg",
-      "/uploads/iigproject/neo/4.jpg",
-      "/uploads/iigproject/neo/5.jpg",
-      "/uploads/iigproject/neo/6.jpg",
-      "/uploads/iigproject/neo/7.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/neo/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 13,
@@ -275,24 +179,8 @@ export const projectsData: Project[] = [
     size: "From 49.10 m²",
     roi: "10%",
     completion: "Ready",
-    images: [
-      "/uploads/iigproject/marina-club/1.jpg",
-      "/uploads/iigproject/marina-club/2.jpg",
-      "/uploads/iigproject/marina-club/3.jpg",
-      "/uploads/iigproject/marina-club/4.jpg",
-      "/uploads/iigproject/marina-club/5.jpg",
-      "/uploads/iigproject/marina-club/6.jpg",
-      "/uploads/iigproject/marina-club/7.jpg",
-      "/uploads/iigproject/marina-club/8.jpg",
-      "/uploads/iigproject/marina-club/9.jpg",
-      "/uploads/iigproject/marina-club/10.jpg",
-      "/uploads/iigproject/marina-club/11.jpg",
-      "/uploads/iigproject/marina-club/12.jpg",
-      "/uploads/iigproject/marina-club/13.jpg",
-      "/uploads/iigproject/marina-club/14.jpg",
-      "/uploads/iigproject/marina-club/15.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/marina-club/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 14,
@@ -304,38 +192,8 @@ export const projectsData: Project[] = [
     size: "From 218 m²",
     roi: "10%",
     completion: "Ready",
-    images: [
-      "/uploads/iigproject/green-gardens/1.jpg",
-      "/uploads/iigproject/green-gardens/2.jpg",
-      "/uploads/iigproject/green-gardens/3.jpg",
-      "/uploads/iigproject/green-gardens/4.jpg",
-      "/uploads/iigproject/green-gardens/5.jpg",
-      "/uploads/iigproject/green-gardens/7.jpg",
-      "/uploads/iigproject/green-gardens/8.jpg",
-      "/uploads/iigproject/green-gardens/9.jpg",
-      "/uploads/iigproject/green-gardens/10.jpg",
-      "/uploads/iigproject/green-gardens/11.jpg",
-      "/uploads/iigproject/green-gardens/12.jpg",
-      "/uploads/iigproject/green-gardens/13.jpg",
-      "/uploads/iigproject/green-gardens/14.jpg",
-      "/uploads/iigproject/green-gardens/15.jpg",
-      "/uploads/iigproject/green-gardens/16.jpg",
-      "/uploads/iigproject/green-gardens/17.jpg",
-      "/uploads/iigproject/green-gardens/18.jpg",
-      "/uploads/iigproject/green-gardens/19.jpg",
-      "/uploads/iigproject/green-gardens/20.jpg",
-      "/uploads/iigproject/green-gardens/21.jpg",
-      "/uploads/iigproject/green-gardens/22.jpg",
-      "/uploads/iigproject/green-gardens/23.jpg",
-      "/uploads/iigproject/green-gardens/24.jpg",
-      "/uploads/iigproject/green-gardens/25.jpg",
-      "/uploads/iigproject/green-gardens/26.jpg",
-      "/uploads/iigproject/green-gardens/27.jpg",
-      "/uploads/iigproject/green-gardens/28.jpg",
-      "/uploads/iigproject/green-gardens/29.jpg",
-      "/uploads/iigproject/green-gardens/30.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/green-gardens/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 15,
@@ -347,15 +205,8 @@ export const projectsData: Project[] = [
     size: "From 30.08 m²",
     roi: "10%",
     completion: "December 2028",
-    images: [
-      "/uploads/iigproject/oxy/1.jpg",
-      "/uploads/iigproject/oxy/2.jpg",
-      "/uploads/iigproject/oxy/3.jpg",
-      "/uploads/iigproject/oxy/4.jpg",
-      "/uploads/iigproject/oxy/5.jpg",
-      "/uploads/iigproject/oxy/6.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/oxy/thumb.jpg"
+    images: [],
+    thumbnail: ""
   },
   {
     id: 16,
@@ -367,24 +218,8 @@ export const projectsData: Project[] = [
     size: "From 54.2 m²",
     roi: "12%",
     completion: "Q2 2027",
-    images: [
-      "/uploads/iigproject/kavtaradze/1.jpg",
-      "/uploads/iigproject/kavtaradze/2.jpg",
-      "/uploads/iigproject/kavtaradze/3.jpg",
-      "/uploads/iigproject/kavtaradze/4.jpg",
-      "/uploads/iigproject/kavtaradze/5.jpg",
-      "/uploads/iigproject/kavtaradze/6.jpg",
-      "/uploads/iigproject/kavtaradze/7.jpg",
-      "/uploads/iigproject/kavtaradze/8.jpg",
-      "/uploads/iigproject/kavtaradze/9.jpg",
-      "/uploads/iigproject/kavtaradze/10.jpg",
-      "/uploads/iigproject/kavtaradze/11.jpg",
-      "/uploads/iigproject/kavtaradze/12.jpg",
-      "/uploads/iigproject/kavtaradze/13.jpg",
-      "/uploads/iigproject/kavtaradze/14.jpg",
-      "/uploads/iigproject/kavtaradze/15.jpg"
-    ],
-    thumbnail: "/uploads/iigproject/kavtaradze/thumb.jpg"
+    images: [],
+    thumbnail: ""
   }
 ];
 

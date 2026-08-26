@@ -20,8 +20,8 @@ export default function IIGProjectsPage() {
   const [activeProjectId, setActiveProjectId] = useState<number>(projectsData[0].id)
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0)
   
-  const initialDefaultImg = projectsData[0].images[0]
-  const initialFormattedImg = initialDefaultImg.startsWith('/') ? initialDefaultImg : `/${initialDefaultImg}`
+  const initialDefaultImg = projectsData[0]?.images?.[0] || projectsData[0]?.thumbnail || ''
+  const initialFormattedImg = initialDefaultImg ? (initialDefaultImg.startsWith('/') ? initialDefaultImg : `/${initialDefaultImg}`) : ''
   const [bgImage, setBgImage] = useState<string>(initialFormattedImg)
   const [bgOpacity, setBgOpacity] = useState<number>(1)
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false)
@@ -545,12 +545,18 @@ export default function IIGProjectsPage() {
             
             {/* VR 3D QR Code Card (Positioned Above Details Card) */}
             {isVRProject && (
-              <div className="vr-qr-card" title="Scan to View in VR 3D">
+              <div className="vr-qr-card" title="Scan to bring the project to life">
                 <div className="vr-qr-code-wrapper">
                   {(activeProject.name.toLowerCase().includes('ortachal') || (activeProject as any)?.slug?.toLowerCase()?.includes('ortachal')) ? (
                     <img 
                       src="/media/qr/ortachala-vr-qr.png" 
-                      alt="Ortachala View in VR 3D QR Code" 
+                      alt="Ortachala Scan to bring the project to life QR Code" 
+                      className="w-full h-full object-contain rounded"
+                    />
+                  ) : (activeProject.name.toLowerCase().includes('kavtaradze') || activeProject.name.toLowerCase().includes('kavataradze') || (activeProject as any)?.slug?.toLowerCase()?.includes('kavtaradze') || (activeProject as any)?.slug?.toLowerCase()?.includes('kavataradze')) ? (
+                    <img 
+                      src="/media/qr/kavtaradze-vr-qr.png" 
+                      alt="Kavtaradze Scan to bring the project to life QR Code" 
                       className="w-full h-full object-contain rounded"
                     />
                   ) : (
@@ -560,8 +566,7 @@ export default function IIGProjectsPage() {
                   )}
                 </div>
                 <div className="vr-qr-text-group">
-                  <span className="vr-qr-title">View in VR 3D</span>
-                  <span className="vr-qr-subtitle">Scan QR Code</span>
+                  <span className="vr-qr-title">Scan to bring the project to life</span>
                 </div>
               </div>
             )}

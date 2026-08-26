@@ -69,11 +69,13 @@ export async function GET() {
       mediaUrls = [formatUrl(dbMatch.coverImageUrl)]
       mediaDetails = [{ url: formatUrl(dbMatch.coverImageUrl), type: 'IMAGE', name: 'Cover Image' }]
     } else {
-      mediaUrls = (p.images || []).map(formatUrl)
-      mediaDetails = (p.images || []).map((url: string) => ({ url: formatUrl(url), type: 'IMAGE', name: p.name }))
+      const validImages = (p.images || []).filter(img => !img.includes('/uploads/iigproject/'))
+      mediaUrls = validImages.map(formatUrl)
+      mediaDetails = validImages.map((url: string) => ({ url: formatUrl(url), type: 'IMAGE', name: p.name }))
     }
 
-    const coverUrl = formatUrl(dbMatch?.coverImageUrl || mediaUrls[0] || p.thumbnail || '')
+    const cleanPThumb = p.thumbnail && !p.thumbnail.includes('/uploads/iigproject/') ? p.thumbnail : ''
+    const coverUrl = formatUrl(dbMatch?.coverImageUrl || mediaUrls[0] || cleanPThumb)
 
     return {
       id: dbMatch?.id || p.id,
