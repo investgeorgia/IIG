@@ -179,11 +179,12 @@
 }
 
 .portfolio-body .vr-qr-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     color: #ffffff;
+    line-height: 1.35;
 }
 
 .portfolio-body .vr-qr-subtitle {
@@ -544,25 +545,7 @@
     }
 
     .portfolio-body .vr-qr-card {
-        padding: 8px 10px;
-        gap: 6px;
-        border-radius: 12px;
-    }
-
-    .portfolio-body .vr-qr-code-wrapper {
-        width: 60px;
-        height: 60px;
-        padding: 4px;
-        border-radius: 8px;
-    }
-
-    .portfolio-body .vr-qr-title {
-        font-size: 10px;
-        letter-spacing: 0.5px;
-    }
-
-    .portfolio-body .vr-qr-subtitle {
-        font-size: 8px;
+        display: none !important;
     }
 
     .portfolio-body .nav-arrow {

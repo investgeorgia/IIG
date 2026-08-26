@@ -566,7 +566,10 @@ export default function IIGProjectsPage() {
                   )}
                 </div>
                 <div className="vr-qr-text-group">
-                  <span className="vr-qr-title">Scan to bring the project to life</span>
+                  <span className="vr-qr-title">
+                    Scan to bring the<br />
+                    project to life
+                  </span>
                 </div>
               </div>
             )}

@@ -2,8 +2,42 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { projectsData } from '@/app/iigprojects/data'
 import { getStoredMedia, getAllStoredMediaMap } from '@/lib/portfolio-store'
+import fs from 'fs'
+import path from 'path'
 
 export const dynamic = 'force-dynamic'
+
+function getDiskImagesForSlug(slug: string): string[] {
+  if (!slug) return []
+  const cleanSlug = slug.toLowerCase().trim()
+  const candidates = [
+    path.join(process.cwd(), 'public', 'media', 'iigproject', cleanSlug),
+    path.join(process.cwd(), 'public', 'uploads', 'iigproject', cleanSlug),
+    path.join(process.cwd(), 'public', 'uploads', cleanSlug),
+  ]
+
+  for (const dir of candidates) {
+    if (fs.existsSync(dir)) {
+      try {
+        const files = fs.readdirSync(dir)
+          .filter(f => /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i.test(f))
+          .sort((a, b) => {
+            const numA = parseInt(a, 10)
+            const numB = parseInt(b, 10)
+            if (!isNaN(numA) && !isNaN(numB)) return numA - numB
+            return a.localeCompare(b)
+          })
+        if (files.length > 0) {
+          const relBase = dir.includes(path.join('public', 'media')) ? '/media/iigproject/' + cleanSlug : '/uploads/iigproject/' + cleanSlug
+          return files.map(f => `${relBase}/${f}`)
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+  return []
+}
 
 export async function GET() {
   let dbProjects: any[] = []
@@ -36,7 +70,6 @@ export async function GET() {
   }
 
   const storedMap = getAllStoredMediaMap()
-
   const processedProjectIds = new Set<number>()
 
   const formatUrl = (url: string) => {
@@ -46,7 +79,6 @@ export async function GET() {
   }
 
   const mergedProjects = projectsData.map((p, index) => {
-    // Derive slug from project name (reliable) — do NOT use images[0] path since it depends on path format
     const slug = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
     const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
     if (dbMatch) processedProjectIds.add(dbMatch.id)
@@ -69,13 +101,16 @@ export async function GET() {
       mediaUrls = [formatUrl(dbMatch.coverImageUrl)]
       mediaDetails = [{ url: formatUrl(dbMatch.coverImageUrl), type: 'IMAGE', name: 'Cover Image' }]
     } else {
-      const validImages = (p.images || []).filter(img => !img.includes('/uploads/iigproject/'))
-      mediaUrls = validImages.map(formatUrl)
-      mediaDetails = validImages.map((url: string) => ({ url: formatUrl(url), type: 'IMAGE', name: p.name }))
+      const diskImgs = getDiskImagesForSlug(dbMatch?.slug || slug)
+      mediaUrls = diskImgs.map(formatUrl)
+      mediaDetails = diskImgs.map(url => ({
+        url: formatUrl(url),
+        type: url.endsWith('.mp4') || url.endsWith('.webm') ? 'VIDEO' : 'IMAGE',
+        name: p.name
+      }))
     }
 
-    const cleanPThumb = p.thumbnail && !p.thumbnail.includes('/uploads/iigproject/') ? p.thumbnail : ''
-    const coverUrl = formatUrl(dbMatch?.coverImageUrl || mediaUrls[0] || cleanPThumb)
+    const coverUrl = formatUrl(dbMatch?.coverImageUrl || mediaUrls[0] || '')
 
     return {
       id: dbMatch?.id || p.id,
@@ -98,8 +133,21 @@ export async function GET() {
   // Append extra published DB projects not in static data
   for (const dbProj of dbProjects) {
     if (!processedProjectIds.has(dbProj.id)) {
-      const mediaUrls = (dbProj.media || []).map((m: any) => formatUrl(m.url))
-      const mediaDetails = (dbProj.media || []).map((m: any) => ({ url: formatUrl(m.url), type: m.type, name: m.name }))
+      let mediaUrls = (dbProj.media || []).map((m: any) => formatUrl(m.url))
+      let mediaDetails = (dbProj.media || []).map((m: any) => ({ url: formatUrl(m.url), type: m.type, name: m.name }))
+
+      if (mediaUrls.length === 0 && dbProj.slug) {
+        const diskImgs = getDiskImagesForSlug(dbProj.slug)
+        if (diskImgs.length > 0) {
+          mediaUrls = diskImgs.map(formatUrl)
+          mediaDetails = diskImgs.map(url => ({
+            url: formatUrl(url),
+            type: url.endsWith('.mp4') || url.endsWith('.webm') ? 'VIDEO' : 'IMAGE',
+            name: dbProj.name
+          }))
+        }
+      }
+
       mergedProjects.push({
         id: dbProj.id,
         name: dbProj.name,
