@@ -505,7 +505,7 @@ export default function IIGProjectsPage() {
           </a>
         </header>
 
-        {/* Top Right: Active Project Name & VR 3D QR Code */}
+        {/* Top Right: Active Project Name */}
         <div className="top-right-header">
           <div 
             className="hero-project-name"
@@ -513,105 +513,125 @@ export default function IIGProjectsPage() {
           >
             {activeProject.name}
           </div>
-
-          {isVRProject && (
-            <div className="vr-qr-card" title="Scan to View in VR 3D">
-              <div className="vr-qr-code-wrapper">
-                <svg width="76" height="76" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                  <path fillRule="evenodd" clipRule="evenodd" d="M2 2H9V9H2V2ZM4 4H7V7H4V4ZM15 2H22V9H15V2ZM17 4H20V7H17V4ZM2 15H9V22H2V15ZM4 17H7V20H4V17ZM11 2H13V5H11V2ZM11 7H13V9H11V7ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM18 11H20V13H18V11ZM20 13H22V15H20V13ZM18 15H20V17H18V15ZM15 17H17V20H15V17ZM17 20H20V22H17V20ZM20 18H22V22H20V18ZM13 15H15V18H13V15ZM11 19H13V22H11V19ZM13 8H15V10H13V8ZM8 11H10V13H8V11ZM2 11H4V13H2V11ZM5 11H7V13H5V11ZM8 13H10V15H8V13Z" fill="#000000"/>
-                </svg>
-              </div>
-              <div className="vr-qr-text-group">
-                <span className="vr-qr-title">View in VR 3D</span>
-                <span className="vr-qr-subtitle">Scan QR Code</span>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Bottom Layout Wrapper */}
         <div className="bottom-wrapper" ref={bottomWrapperRef}>
 
-          {/* Left Side: Property Details Card */}
-          <section className="property-details-card" id="property-details">
-            <h2 className="prop-title">{activeProject.name}</h2>
+          {/* Left Column: VR QR Code + Property Details Card */}
+          <div className="left-details-column">
+            
+            {/* VR 3D QR Code Card (Positioned Above Details Card) */}
+            {isVRProject && (
+              <div className="vr-qr-card" title="Scan to View in VR 3D">
+                <div className="vr-qr-code-wrapper">
+                  {(activeProject.name.toLowerCase().includes('ortachal') || (activeProject as any)?.slug?.toLowerCase()?.includes('ortachal')) ? (
+                    <img 
+                      src="/media/qr/ortachala-vr-qr.png" 
+                      alt="Ortachala View in VR 3D QR Code" 
+                      className="w-full h-full object-contain rounded"
+                    />
+                  ) : (
+                    <svg width="76" height="76" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                      <path fillRule="evenodd" clipRule="evenodd" d="M2 2H9V9H2V2ZM4 4H7V7H4V4ZM15 2H22V9H15V2ZM17 4H20V7H17V4ZM2 15H9V22H2V15ZM4 17H7V20H4V17ZM11 2H13V5H11V2ZM11 7H13V9H11V7ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM18 11H20V13H18V11ZM20 13H22V15H20V13ZM18 15H20V17H18V15ZM15 17H17V20H15V17ZM17 20H20V22H17V20ZM20 18H22V22H20V18ZM13 15H15V18H13V15ZM11 19H13V22H11V19ZM13 8H15V10H13V8ZM8 11H10V13H8V11ZM2 11H4V13H2V11ZM5 11H7V13H5V11ZM8 13H10V15H8V13Z" fill="#000000"/>
+                    </svg>
+                  )}
+                </div>
+                <div className="vr-qr-text-group">
+                  <span className="vr-qr-title">View in VR 3D</span>
+                  <span className="vr-qr-subtitle">Scan QR Code</span>
+                </div>
+              </div>
+            )}
 
-            <div className="details-grid">
-              <div className="detail-item">
-                <CircleDollarSign className="detail-icon" />
-                <span className="detail-label">Starting Price:</span>
-                <span className="detail-value highlight">{activeProject.startingPrice}</span>
+            {/* Property Details Card */}
+            <section className="property-details-card" id="property-details">
+              <h2 className="prop-title">{activeProject.name}</h2>
+
+              <div className="details-grid">
+                <div className="detail-item">
+                  <CircleDollarSign className="detail-icon" />
+                  <span className="detail-label">Starting Price:</span>
+                  <span className="detail-value highlight">{activeProject.startingPrice}</span>
+                </div>
+
+                <div className="detail-item">
+                  <Home className="detail-icon" />
+                  <span className="detail-label">Type:</span>
+                  <span className="detail-value">{activeProject.type}</span>
+                </div>
+
+                <div className="detail-item">
+                  <Calendar className="detail-icon" />
+                  <span className="detail-label">Payment Plan:</span>
+                  <span className="detail-value highlight">{activeProject.paymentPlan}</span>
+                </div>
+
+                <div className="detail-item">
+                  <Maximize className="detail-icon" />
+                  <span className="detail-label">Size:</span>
+                  <span className="detail-value">{activeProject.size}</span>
+                </div>
+
+                <div className="detail-item">
+                  <TrendingUp className="detail-icon" />
+                  <span className="detail-label">ROI:</span>
+                  <span className="detail-value">
+                    {activeProject.roi?.includes('%') ? activeProject.roi : `${activeProject.roi}%`}
+                  </span>
+                </div>
+
+                <div className="detail-item">
+                  <Clock className="detail-icon" />
+                  <span className="detail-label">Completion:</span>
+                  <span className="detail-value">{activeProject.completion}</span>
+                </div>
               </div>
 
-              <div className="detail-item">
-                <Home className="detail-icon" />
-                <span className="detail-label">Type:</span>
-                <span className="detail-value">{activeProject.type}</span>
-              </div>
+              {/* Inquiry / WhatsApp CTA */}
+              {(() => {
+                const phone = salesperson?.phone || salesperson?.whatsappPhone || '+995599000000'
+                const cleanPhone = phone.replace(/[^\d+]/g, '')
+                const message = encodeURIComponent(
+                  `Hello ${salesperson?.name || 'Invest Georgia Team'}, I am interested in ${activeProject.name} (${activeProject.type}, Starting Price: ${activeProject.startingPrice}).`
+                )
+                const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`
 
-              <div className="detail-item">
-                <Calendar className="detail-icon" />
-                <span className="detail-label">Payment Plan:</span>
-                <span className="detail-value highlight">{activeProject.paymentPlan}</span>
-              </div>
-
-              <div className="detail-item">
-                <Maximize className="detail-icon" />
-                <span className="detail-label">Size:</span>
-                <span className="detail-value">{activeProject.size}</span>
-              </div>
-
-              <div className="detail-item">
-                <TrendingUp className="detail-icon" />
-                <span className="detail-label">ROI:</span>
-                <span className="detail-value">
-                  {activeProject.roi?.includes('%') ? activeProject.roi : `${activeProject.roi}%`}
-                </span>
-              </div>
-
-              <div className="detail-item">
-                <Clock className="detail-icon" />
-                <span className="detail-label">Completion:</span>
-                <span className="detail-value highlight">{activeProject.completion}</span>
-              </div>
-            </div>
-
-            {(() => {
-              const whatsappPhone = salesperson ? salesperson.phone : '97145477804'
-              const whatsappText = salesperson 
-                ? `Hi ${salesperson.name}, I'm interested in the ${activeProject.name} project.`
-                : `Hi, I'm interested in the ${activeProject.name} project.`
-              const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappText)}`
-
-              const handleContact = async () => {
-                if (salesperson?.id) {
-                  try {
-                    const res = await fetch('/api/tracking/whatsapp', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ salespersonId: salesperson.id, whatsappUrl }),
-                    })
-                    const data = await res.json()
-                    window.open(data.url || whatsappUrl, '_blank')
-                  } catch {
+                const handleContact = async (e: React.MouseEvent) => {
+                  e.preventDefault()
+                  if (salesperson?.id) {
+                    try {
+                      const res = await fetch('/api/tracking/whatsapp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          salespersonId: salesperson.id,
+                          projectName: activeProject.name,
+                          source: 'iigprojects_card'
+                        })
+                      })
+                      const data = await res.json()
+                      window.open(data.url || whatsappUrl, '_blank')
+                    } catch {
+                      window.open(whatsappUrl, '_blank')
+                    }
+                  } else {
                     window.open(whatsappUrl, '_blank')
                   }
-                } else {
-                  window.open(whatsappUrl, '_blank')
                 }
-              }
 
-              return (
-                <button
-                  onClick={handleContact}
-                  className="contact-btn"
-                >
-                  Contact Now
-                </button>
-              )
-            })()}
+                return (
+                  <button
+                    onClick={handleContact}
+                    className="contact-btn"
+                  >
+                    Contact Now
+                  </button>
+                )
+              })()}
 
-          </section>
+            </section>
+          </div>
 
           {/* Right Side: Projects Carousel */}
           <section className="projects-section">
