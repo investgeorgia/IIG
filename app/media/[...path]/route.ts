@@ -40,12 +40,20 @@ export async function GET(
       baseDir = path.join(process.cwd(), 'public', 'media')
     }
 
-    const filePath = path.resolve(baseDir, ...pathArray)
-    const resolvedBase = path.resolve(baseDir)
+    let filePath = path.resolve(baseDir, ...pathArray)
 
-    // Security check to prevent directory traversal
-    if (!filePath.startsWith(resolvedBase + path.sep) && filePath !== resolvedBase) {
-      return new NextResponse('Forbidden', { status: 403 })
+    if (!existsSync(filePath)) {
+      const candidates = [
+        path.join(process.cwd(), 'public', 'uploads', 'iigproject', ...pathArray),
+        path.join(process.cwd(), 'public', 'uploads', ...pathArray),
+        path.join(process.cwd(), 'public', 'media', ...pathArray),
+      ]
+      for (const candidate of candidates) {
+        if (existsSync(candidate)) {
+          filePath = candidate
+          break
+        }
+      }
     }
 
     if (!existsSync(filePath)) {

@@ -84,11 +84,13 @@
 }
 
 .portfolio-body .nav-left {
-    left: 30px;
+    left: 20px;
+    z-index: 100;
 }
 
 .portfolio-body .nav-right {
-    right: 30px;
+    right: 20px;
+    z-index: 100;
 }
 
 /* Main Container Layout */
@@ -157,8 +159,8 @@
 }
 
 .portfolio-body .vr-qr-code-wrapper {
-    width: 90px;
-    height: 90px;
+    width: 110px;
+    height: 110px;
     background: #ffffff;
     border-radius: 10px;
     padding: 6px;
@@ -223,6 +225,7 @@
     align-items: flex-start;
     gap: 14px;
     width: 340px;
+    margin-left: 30px;
     flex-shrink: 0;
     z-index: 10;
 }
@@ -1023,13 +1026,15 @@
     z-index: 10000;
 }
 
-.portfolio-body .bottom-wrapper {
-    transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
+.portfolio-body .carousel-container {
+    transition: opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, visibility 0.4s ease;
+    max-height: 300px;
 }
 
-.portfolio-body .bottom-wrapper.ui-hidden {
+.portfolio-body .carousel-container.ui-hidden {
     opacity: 0;
-    transform: translateY(50px);
+    transform: translateY(30px);
+    max-height: 0;
     pointer-events: none;
     visibility: hidden;
 }

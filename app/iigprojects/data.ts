@@ -24,14 +24,14 @@ export const projectsData: Project[] = [
     roi: "10%",
     completion: "Q2 2028",
     images: [
-      "/media/ortachala/1.jpg",
-      "/media/ortachala/2.jpg",
-      "/media/ortachala/3.jpg",
-      "/media/ortachala/4.jpg",
-      "/media/ortachala/5.jpg",
-      "/media/ortachala/6.jpg"
+      "/uploads/iigproject/ortachala/1.jpg",
+      "/uploads/iigproject/ortachala/2.jpg",
+      "/uploads/iigproject/ortachala/3.jpg",
+      "/uploads/iigproject/ortachala/4.jpg",
+      "/uploads/iigproject/ortachala/5.jpg",
+      "/uploads/iigproject/ortachala/6.jpg"
     ],
-    thumbnail: "/media/ortachala/thumb.jpg"
+    thumbnail: "/uploads/iigproject/ortachala/thumb.jpg"
   },
   {
     id: 2,
@@ -44,11 +44,11 @@ export const projectsData: Project[] = [
     roi: "10",
     completion: "Q4 2026",
     images: [
-      "/media/lisi/1.jpg",
-      "/media/lisi/2.jpg",
-      "/media/lisi/3.jpg"
+      "/uploads/iigproject/lisi/1.jpg",
+      "/uploads/iigproject/lisi/2.jpg",
+      "/uploads/iigproject/lisi/3.jpg"
     ],
-    thumbnail: "/media/lisi/thumb.jpg"
+    thumbnail: "/uploads/iigproject/lisi/thumb.jpg"
   },
   {
     id: 3,
@@ -61,9 +61,9 @@ export const projectsData: Project[] = [
     roi: "10",
     completion: "Q4 2026",
     images: [
-      "/media/shindisi/1.jpg"
+      "/uploads/iigproject/shindisi/1.jpg"
     ],
-    thumbnail: "/media/shindisi/thumb.jpg"
+    thumbnail: "/uploads/iigproject/shindisi/thumb.jpg"
   },
   {
     id: 4,
@@ -76,14 +76,14 @@ export const projectsData: Project[] = [
     roi: "12%",
     completion: "Q4 2027",
     images: [
-      "/media/oval/1.jpg",
-      "/media/oval/2.jpg",
-      "/media/oval/3.jpg",
-      "/media/oval/4.jpg",
-      "/media/oval/5.jpg",
-      "/media/oval/6.jpg"
+      "/uploads/iigproject/oval/1.jpg",
+      "/uploads/iigproject/oval/2.jpg",
+      "/uploads/iigproject/oval/3.jpg",
+      "/uploads/iigproject/oval/4.jpg",
+      "/uploads/iigproject/oval/5.jpg",
+      "/uploads/iigproject/oval/6.jpg"
     ],
-    thumbnail: "/media/oval/thumb.jpg"
+    thumbnail: "/uploads/iigproject/oval/thumb.jpg"
   },
   {
     id: 5,
@@ -96,16 +96,16 @@ export const projectsData: Project[] = [
     roi: "10%",
     completion: "Q2 2028",
     images: [
-      "/media/parallel/1.jpg",
-      "/media/parallel/2.jpg",
-      "/media/parallel/3.jpg",
-      "/media/parallel/4.jpg",
-      "/media/parallel/5.jpg",
-      "/media/parallel/6.jpg",
-      "/media/parallel/7.jpg",
-      "/media/parallel/8.jpg"
+      "/uploads/iigproject/parallel/1.jpg",
+      "/uploads/iigproject/parallel/2.jpg",
+      "/uploads/iigproject/parallel/3.jpg",
+      "/uploads/iigproject/parallel/4.jpg",
+      "/uploads/iigproject/parallel/5.jpg",
+      "/uploads/iigproject/parallel/6.jpg",
+      "/uploads/iigproject/parallel/7.jpg",
+      "/uploads/iigproject/parallel/8.jpg"
     ],
-    thumbnail: "/media/parallel/thumb.jpg"
+    thumbnail: "/uploads/iigproject/parallel/thumb.jpg"
   },
   {
     id: 6,
@@ -118,17 +118,17 @@ export const projectsData: Project[] = [
     roi: "12%",
     completion: "Q4 2027",
     images: [
-      "/media/cube/1.jpg",
-      "/media/cube/2.jpg",
-      "/media/cube/3.jpg",
-      "/media/cube/4.jpg",
-      "/media/cube/5.jpg",
-      "/media/cube/6.jpg",
-      "/media/cube/7.jpg",
-      "/media/cube/8.jpg",
-      "/media/cube/9.jpg"
+      "/uploads/iigproject/cube/1.jpg",
+      "/uploads/iigproject/cube/2.jpg",
+      "/uploads/iigproject/cube/3.jpg",
+      "/uploads/iigproject/cube/4.jpg",
+      "/uploads/iigproject/cube/5.jpg",
+      "/uploads/iigproject/cube/6.jpg",
+      "/uploads/iigproject/cube/7.jpg",
+      "/uploads/iigproject/cube/8.jpg",
+      "/uploads/iigproject/cube/9.jpg"
     ],
-    thumbnail: "/media/cube/thumb.jpg"
+    thumbnail: "/uploads/iigproject/cube/thumb.jpg"
   },
   {
     id: 7,
@@ -141,21 +141,21 @@ export const projectsData: Project[] = [
     roi: "14%",
     completion: "Q3 2028",
     images: [
-      "/media/forest-beach/1.jpg",
-      "/media/forest-beach/2.jpg",
-      "/media/forest-beach/4.jpg",
-      "/media/forest-beach/5.jpg",
-      "/media/forest-beach/6.jpg",
-      "/media/forest-beach/7.jpg",
-      "/media/forest-beach/8.jpg",
-      "/media/forest-beach/9.jpg",
-      "/media/forest-beach/10.jpg",
-      "/media/forest-beach/11.jpg",
-      "/media/forest-beach/12.jpg",
-      "/media/forest-beach/13.jpg",
-      "/media/forest-beach/14.jpg"
+      "/uploads/iigproject/forest-beach/1.jpg",
+      "/uploads/iigproject/forest-beach/2.jpg",
+      "/uploads/iigproject/forest-beach/4.jpg",
+      "/uploads/iigproject/forest-beach/5.jpg",
+      "/uploads/iigproject/forest-beach/6.jpg",
+      "/uploads/iigproject/forest-beach/7.jpg",
+      "/uploads/iigproject/forest-beach/8.jpg",
+      "/uploads/iigproject/forest-beach/9.jpg",
+      "/uploads/iigproject/forest-beach/10.jpg",
+      "/uploads/iigproject/forest-beach/11.jpg",
+      "/uploads/iigproject/forest-beach/12.jpg",
+      "/uploads/iigproject/forest-beach/13.jpg",
+      "/uploads/iigproject/forest-beach/14.jpg"
     ],
-    thumbnail: "/media/forest-beach/thumb.jpg"
+    thumbnail: "/uploads/iigproject/forest-beach/thumb.jpg"
   },
   {
     id: 8,
@@ -168,14 +168,14 @@ export const projectsData: Project[] = [
     roi: "12%",
     completion: "Q1 2027",
     images: [
-      "/media/krtsanisi-resort/1.jpg",
-      "/media/krtsanisi-resort/2.jpg",
-      "/media/krtsanisi-resort/3.jpg",
-      "/media/krtsanisi-resort/4.jpg",
-      "/media/krtsanisi-resort/5.jpg",
-      "/media/krtsanisi-resort/6.jpg"
+      "/uploads/iigproject/krtsanisi-resort/1.jpg",
+      "/uploads/iigproject/krtsanisi-resort/2.jpg",
+      "/uploads/iigproject/krtsanisi-resort/3.jpg",
+      "/uploads/iigproject/krtsanisi-resort/4.jpg",
+      "/uploads/iigproject/krtsanisi-resort/5.jpg",
+      "/uploads/iigproject/krtsanisi-resort/6.jpg"
     ],
-    thumbnail: "/media/krtsanisi-resort/thumb.jpg"
+    thumbnail: "/uploads/iigproject/krtsanisi-resort/thumb.jpg"
   },
   {
     id: 9,
@@ -188,15 +188,15 @@ export const projectsData: Project[] = [
     roi: "12%",
     completion: "Q4 2028",
     images: [
-      "/media/hisni/1.jpg",
-      "/media/hisni/2.jpg",
-      "/media/hisni/3.jpg",
-      "/media/hisni/4.jpg",
-      "/media/hisni/5.jpg",
-      "/media/hisni/6.jpg",
-      "/media/hisni/7.jpg"
+      "/uploads/iigproject/hisni/1.jpg",
+      "/uploads/iigproject/hisni/2.jpg",
+      "/uploads/iigproject/hisni/3.jpg",
+      "/uploads/iigproject/hisni/4.jpg",
+      "/uploads/iigproject/hisni/5.jpg",
+      "/uploads/iigproject/hisni/6.jpg",
+      "/uploads/iigproject/hisni/7.jpg"
     ],
-    thumbnail: "/media/hisni/thumb.jpg"
+    thumbnail: "/uploads/iigproject/hisni/thumb.jpg"
   },
   {
     id: 10,
@@ -209,20 +209,20 @@ export const projectsData: Project[] = [
     roi: "12%",
     completion: "Q4 2026",
     images: [
-      "/media/sakeni/1.jpg",
-      "/media/sakeni/2.jpg",
-      "/media/sakeni/3.jpg",
-      "/media/sakeni/4.jpg",
-      "/media/sakeni/5.jpg",
-      "/media/sakeni/6.jpg",
-      "/media/sakeni/7.jpg",
-      "/media/sakeni/8.jpg",
-      "/media/sakeni/9.jpg",
-      "/media/sakeni/10.jpg",
-      "/media/sakeni/11.jpg",
-      "/media/sakeni/12.jpg"
+      "/uploads/iigproject/sakeni/1.jpg",
+      "/uploads/iigproject/sakeni/2.jpg",
+      "/uploads/iigproject/sakeni/3.jpg",
+      "/uploads/iigproject/sakeni/4.jpg",
+      "/uploads/iigproject/sakeni/5.jpg",
+      "/uploads/iigproject/sakeni/6.jpg",
+      "/uploads/iigproject/sakeni/7.jpg",
+      "/uploads/iigproject/sakeni/8.jpg",
+      "/uploads/iigproject/sakeni/9.jpg",
+      "/uploads/iigproject/sakeni/10.jpg",
+      "/uploads/iigproject/sakeni/11.jpg",
+      "/uploads/iigproject/sakeni/12.jpg"
     ],
-    thumbnail: "/media/sakeni/thumb.jpg"
+    thumbnail: "/uploads/iigproject/sakeni/thumb.jpg"
   },
   {
     id: 11,
@@ -235,14 +235,14 @@ export const projectsData: Project[] = [
     roi: "12%",
     completion: "Q4 2029",
     images: [
-      "/media/gardani/1.jpg",
-      "/media/gardani/2.jpg",
-      "/media/gardani/3.jpg",
-      "/media/gardani/4.jpg",
-      "/media/gardani/5.jpg",
-      "/media/gardani/6.jpg"
+      "/uploads/iigproject/gardani/1.jpg",
+      "/uploads/iigproject/gardani/2.jpg",
+      "/uploads/iigproject/gardani/3.jpg",
+      "/uploads/iigproject/gardani/4.jpg",
+      "/uploads/iigproject/gardani/5.jpg",
+      "/uploads/iigproject/gardani/6.jpg"
     ],
-    thumbnail: "/media/gardani/thumb.jpg"
+    thumbnail: "/uploads/iigproject/gardani/thumb.jpg"
   },
   {
     id: 12,
@@ -255,15 +255,15 @@ export const projectsData: Project[] = [
     roi: "14%",
     completion: "Ready",
     images: [
-      "/media/neo/1.jpg",
-      "/media/neo/2.jpg",
-      "/media/neo/3.jpg",
-      "/media/neo/4.jpg",
-      "/media/neo/5.jpg",
-      "/media/neo/6.jpg",
-      "/media/neo/7.jpg"
+      "/uploads/iigproject/neo/1.jpg",
+      "/uploads/iigproject/neo/2.jpg",
+      "/uploads/iigproject/neo/3.jpg",
+      "/uploads/iigproject/neo/4.jpg",
+      "/uploads/iigproject/neo/5.jpg",
+      "/uploads/iigproject/neo/6.jpg",
+      "/uploads/iigproject/neo/7.jpg"
     ],
-    thumbnail: "/media/neo/thumb.jpg"
+    thumbnail: "/uploads/iigproject/neo/thumb.jpg"
   },
   {
     id: 13,
@@ -276,23 +276,23 @@ export const projectsData: Project[] = [
     roi: "10%",
     completion: "Ready",
     images: [
-      "/media/marina-club/1.jpg",
-      "/media/marina-club/2.jpg",
-      "/media/marina-club/3.jpg",
-      "/media/marina-club/4.jpg",
-      "/media/marina-club/5.jpg",
-      "/media/marina-club/6.jpg",
-      "/media/marina-club/7.jpg",
-      "/media/marina-club/8.jpg",
-      "/media/marina-club/9.jpg",
-      "/media/marina-club/10.jpg",
-      "/media/marina-club/11.jpg",
-      "/media/marina-club/12.jpg",
-      "/media/marina-club/13.jpg",
-      "/media/marina-club/14.jpg",
-      "/media/marina-club/15.jpg"
+      "/uploads/iigproject/marina-club/1.jpg",
+      "/uploads/iigproject/marina-club/2.jpg",
+      "/uploads/iigproject/marina-club/3.jpg",
+      "/uploads/iigproject/marina-club/4.jpg",
+      "/uploads/iigproject/marina-club/5.jpg",
+      "/uploads/iigproject/marina-club/6.jpg",
+      "/uploads/iigproject/marina-club/7.jpg",
+      "/uploads/iigproject/marina-club/8.jpg",
+      "/uploads/iigproject/marina-club/9.jpg",
+      "/uploads/iigproject/marina-club/10.jpg",
+      "/uploads/iigproject/marina-club/11.jpg",
+      "/uploads/iigproject/marina-club/12.jpg",
+      "/uploads/iigproject/marina-club/13.jpg",
+      "/uploads/iigproject/marina-club/14.jpg",
+      "/uploads/iigproject/marina-club/15.jpg"
     ],
-    thumbnail: "/media/marina-club/thumb.jpg"
+    thumbnail: "/uploads/iigproject/marina-club/thumb.jpg"
   },
   {
     id: 14,
@@ -305,37 +305,37 @@ export const projectsData: Project[] = [
     roi: "10%",
     completion: "Ready",
     images: [
-      "/media/green-gardens/1.jpg",
-      "/media/green-gardens/2.jpg",
-      "/media/green-gardens/3.jpg",
-      "/media/green-gardens/4.jpg",
-      "/media/green-gardens/5.jpg",
-      "/media/green-gardens/7.jpg",
-      "/media/green-gardens/8.jpg",
-      "/media/green-gardens/9.jpg",
-      "/media/green-gardens/10.jpg",
-      "/media/green-gardens/11.jpg",
-      "/media/green-gardens/12.jpg",
-      "/media/green-gardens/13.jpg",
-      "/media/green-gardens/14.jpg",
-      "/media/green-gardens/15.jpg",
-      "/media/green-gardens/16.jpg",
-      "/media/green-gardens/17.jpg",
-      "/media/green-gardens/18.jpg",
-      "/media/green-gardens/19.jpg",
-      "/media/green-gardens/20.jpg",
-      "/media/green-gardens/21.jpg",
-      "/media/green-gardens/22.jpg",
-      "/media/green-gardens/23.jpg",
-      "/media/green-gardens/24.jpg",
-      "/media/green-gardens/25.jpg",
-      "/media/green-gardens/26.jpg",
-      "/media/green-gardens/27.jpg",
-      "/media/green-gardens/28.jpg",
-      "/media/green-gardens/29.jpg",
-      "/media/green-gardens/30.jpg"
+      "/uploads/iigproject/green-gardens/1.jpg",
+      "/uploads/iigproject/green-gardens/2.jpg",
+      "/uploads/iigproject/green-gardens/3.jpg",
+      "/uploads/iigproject/green-gardens/4.jpg",
+      "/uploads/iigproject/green-gardens/5.jpg",
+      "/uploads/iigproject/green-gardens/7.jpg",
+      "/uploads/iigproject/green-gardens/8.jpg",
+      "/uploads/iigproject/green-gardens/9.jpg",
+      "/uploads/iigproject/green-gardens/10.jpg",
+      "/uploads/iigproject/green-gardens/11.jpg",
+      "/uploads/iigproject/green-gardens/12.jpg",
+      "/uploads/iigproject/green-gardens/13.jpg",
+      "/uploads/iigproject/green-gardens/14.jpg",
+      "/uploads/iigproject/green-gardens/15.jpg",
+      "/uploads/iigproject/green-gardens/16.jpg",
+      "/uploads/iigproject/green-gardens/17.jpg",
+      "/uploads/iigproject/green-gardens/18.jpg",
+      "/uploads/iigproject/green-gardens/19.jpg",
+      "/uploads/iigproject/green-gardens/20.jpg",
+      "/uploads/iigproject/green-gardens/21.jpg",
+      "/uploads/iigproject/green-gardens/22.jpg",
+      "/uploads/iigproject/green-gardens/23.jpg",
+      "/uploads/iigproject/green-gardens/24.jpg",
+      "/uploads/iigproject/green-gardens/25.jpg",
+      "/uploads/iigproject/green-gardens/26.jpg",
+      "/uploads/iigproject/green-gardens/27.jpg",
+      "/uploads/iigproject/green-gardens/28.jpg",
+      "/uploads/iigproject/green-gardens/29.jpg",
+      "/uploads/iigproject/green-gardens/30.jpg"
     ],
-    thumbnail: "/media/green-gardens/thumb.jpg"
+    thumbnail: "/uploads/iigproject/green-gardens/thumb.jpg"
   },
   {
     id: 15,
@@ -348,14 +348,14 @@ export const projectsData: Project[] = [
     roi: "10%",
     completion: "December 2028",
     images: [
-      "/media/oxy/1.jpg",
-      "/media/oxy/2.jpg",
-      "/media/oxy/3.jpg",
-      "/media/oxy/4.jpg",
-      "/media/oxy/5.jpg",
-      "/media/oxy/6.jpg"
+      "/uploads/iigproject/oxy/1.jpg",
+      "/uploads/iigproject/oxy/2.jpg",
+      "/uploads/iigproject/oxy/3.jpg",
+      "/uploads/iigproject/oxy/4.jpg",
+      "/uploads/iigproject/oxy/5.jpg",
+      "/uploads/iigproject/oxy/6.jpg"
     ],
-    thumbnail: "/media/oxy/thumb.jpg"
+    thumbnail: "/uploads/iigproject/oxy/thumb.jpg"
   },
   {
     id: 16,
@@ -368,23 +368,23 @@ export const projectsData: Project[] = [
     roi: "12%",
     completion: "Q2 2027",
     images: [
-      "/media/kavtaradze/1.jpg",
-      "/media/kavtaradze/2.jpg",
-      "/media/kavtaradze/3.jpg",
-      "/media/kavtaradze/4.jpg",
-      "/media/kavtaradze/5.jpg",
-      "/media/kavtaradze/6.jpg",
-      "/media/kavtaradze/7.jpg",
-      "/media/kavtaradze/8.jpg",
-      "/media/kavtaradze/9.jpg",
-      "/media/kavtaradze/10.jpg",
-      "/media/kavtaradze/11.jpg",
-      "/media/kavtaradze/12.jpg",
-      "/media/kavtaradze/13.jpg",
-      "/media/kavtaradze/14.jpg",
-      "/media/kavtaradze/15.jpg"
+      "/uploads/iigproject/kavtaradze/1.jpg",
+      "/uploads/iigproject/kavtaradze/2.jpg",
+      "/uploads/iigproject/kavtaradze/3.jpg",
+      "/uploads/iigproject/kavtaradze/4.jpg",
+      "/uploads/iigproject/kavtaradze/5.jpg",
+      "/uploads/iigproject/kavtaradze/6.jpg",
+      "/uploads/iigproject/kavtaradze/7.jpg",
+      "/uploads/iigproject/kavtaradze/8.jpg",
+      "/uploads/iigproject/kavtaradze/9.jpg",
+      "/uploads/iigproject/kavtaradze/10.jpg",
+      "/uploads/iigproject/kavtaradze/11.jpg",
+      "/uploads/iigproject/kavtaradze/12.jpg",
+      "/uploads/iigproject/kavtaradze/13.jpg",
+      "/uploads/iigproject/kavtaradze/14.jpg",
+      "/uploads/iigproject/kavtaradze/15.jpg"
     ],
-    thumbnail: "/media/kavtaradze/thumb.jpg"
+    thumbnail: "/uploads/iigproject/kavtaradze/thumb.jpg"
   }
 ];
 

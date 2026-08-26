@@ -532,7 +532,7 @@ export default function IIGProjectsPage() {
         </div>
 
         {/* Bottom Layout Wrapper */}
-        <div className={`bottom-wrapper ${isUIHidden ? 'ui-hidden' : ''}`} ref={bottomWrapperRef}>
+        <div className="bottom-wrapper" ref={bottomWrapperRef}>
 
           {/* Left Column: VR QR Code + Property Details Card */}
           <div className="left-details-column">
@@ -657,7 +657,7 @@ export default function IIGProjectsPage() {
                 <button 
                   className="ui-toggle-btn"
                   onClick={() => setIsUIHidden(!isUIHidden)}
-                  title={isUIHidden ? "Show Thumbnails & Details" : "Hide Thumbnails (Full Image View)"}
+                  title={isUIHidden ? "Show Thumbnails" : "Hide Thumbnails"}
                 >
                   {isUIHidden ? <Eye size={14} /> : <EyeOff size={14} />}
                   <span>{isUIHidden ? "Show Thumbnails" : "Hide Thumbnails"}</span>
@@ -674,7 +674,7 @@ export default function IIGProjectsPage() {
             </div>
             
             <div 
-              className="carousel-container"
+              className={`carousel-container ${isUIHidden ? 'ui-hidden' : ''}`}
               ref={carouselContainerRef}
               onMouseDown={handleMouseDown}
               onMouseLeave={handleMouseLeaveOrUp}
