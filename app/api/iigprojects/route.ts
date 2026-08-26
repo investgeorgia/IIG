@@ -64,10 +64,14 @@ function getDynamicProjects(): Project[] {
       files = fs.readdirSync(dirPath)
         .filter(file => /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i.test(file))
         .sort((a, b) => {
-          const numA = parseInt(a.replace(/[^\d]/g, ''), 10)
-          const numB = parseInt(b.replace(/[^\d]/g, ''), 10)
-          if (!isNaN(numA) && !isNaN(numB) && numA !== numB) return numA - numB
-          return a.localeCompare(b)
+          const matchA = a.match(/^(?:imgi_)?(\d+)/i)
+          const matchB = b.match(/^(?:imgi_)?(\d+)/i)
+          if (matchA && matchB) {
+            const nA = parseInt(matchA[1], 10)
+            const nB = parseInt(matchB[1], 10)
+            if (nA !== nB) return nA - nB
+          }
+          return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
         })
     } catch {
       // ignore
