@@ -1193,3 +1193,49 @@
     cursor: not-allowed !important;
 }
 
+.portfolio-body .ips-modal-card .searchable-dropdown-btn {
+    width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+}
+
+.portfolio-body .ips-otp-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 100001 !important;
+    background-color: rgba(15, 23, 42, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+}
+
+.portfolio-body .ips-otp-card {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 440px !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 24px !important;
+    padding: 32px 28px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+    margin: auto !important;
+    text-align: center !important;
+}
+

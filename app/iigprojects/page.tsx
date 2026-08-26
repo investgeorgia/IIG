@@ -185,12 +185,12 @@ function SearchableDropdown({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left bg-slate-50 hover:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none flex justify-between items-center cursor-pointer select-none"
+        className="searchable-dropdown-btn"
       >
         <span className="truncate">
           {selectedItem ? displayFormat(selectedItem) : placeholder}
         </span>
-        <span className="text-slate-400 text-xs ml-1">▼</span>
+        <span style={{ color: '#94a3b8', fontSize: '10px', marginLeft: '4px' }}>▼</span>
       </button>
 
       {isOpen && (
@@ -829,7 +829,8 @@ export default function IIGProjectsPage() {
             <img 
               src="/logo.svg" 
               alt="Invest Georgia UAE Logo" 
-              className="w-48 h-auto mb-8 animate-pulse"
+              className="w-48 h-auto animate-pulse"
+              style={{ marginBottom: '52px' }}
             />
             
             <div className="w-full bg-white/10 rounded-full h-1.5 mb-4 overflow-hidden p-0.5 border border-white/10">
@@ -856,12 +857,12 @@ export default function IIGProjectsPage() {
           loop
           muted
           playsInline
-          className="hero-bg object-cover"
+          className="hero-background object-cover"
           style={{ opacity: bgOpacity }}
         />
       ) : (
         <div 
-          className="hero-bg"
+          className="hero-background"
           style={{ 
             backgroundImage: bgImage ? `url("${bgImage}")` : 'none',
             opacity: bgOpacity
@@ -1094,10 +1095,8 @@ export default function IIGProjectsPage() {
         </div>
       </main>
 
-
-
       {/* IPS Registration Form Modal Popup (For visitors without agent referral link) */}
-      {isInquiryOpen && (
+      {isInquiryOpen && !showOtpModal && (
         <div className="ips-modal-overlay">
           <div className="ips-modal-card">
             {/* Close Button */}
@@ -1356,33 +1355,34 @@ export default function IIGProjectsPage() {
 
       {/* EMAIL OTP VERIFICATION MODAL */}
       {showOtpModal && (
-        <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden text-slate-900">
+        <div className="ips-otp-overlay">
+          <div className="ips-otp-card">
             <button
               onClick={() => setShowOtpModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors p-2 cursor-pointer"
+              style={{ background: 'transparent', border: 'none' }}
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 rounded-2xl border bg-slate-50 border-slate-200 text-[#ca2d39] flex items-center justify-center mb-3 shadow-xs">
+              <div className="w-14 h-14 rounded-2xl border bg-slate-50 border-slate-200 text-[#ca2d39] flex items-center justify-center mb-3 shadow-xs" style={{ margin: '0 auto 12px auto' }}>
                 <Mail className="w-7 h-7" />
               </div>
 
-              <span className="text-[10px] uppercase tracking-widest text-[#ca2d39] font-bold mb-1">
+              <span className="text-[10px] uppercase tracking-widest text-[#ca2d39] font-bold mb-1 block" style={{ marginBottom: '4px' }}>
                 Invest Georgia UAE
               </span>
 
-              <h3 className={`${cormorant.className} text-2xl font-bold text-slate-900 mb-2`}>
+              <h3 className={`${cormorant.className} text-2xl font-bold text-slate-900 mb-2`} style={{ fontSize: '22px', margin: '0 0 8px 0' }}>
                 Email Verification Code
               </h3>
 
-              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-xs mb-6">
-                Enter the 4-digit code sent to your email address <span className="font-bold text-slate-900">{formEmail}</span>
+              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-xs mb-6" style={{ fontSize: '13px', margin: '0 0 20px 0' }}>
+                Enter the 4-digit code sent to your email address <strong style={{ color: '#0f172a' }}>{formEmail}</strong>
               </p>
 
-              <div className="flex gap-3 justify-center mb-6" onPaste={handleOtpPaste}>
+              <div className="flex gap-3 justify-center mb-6" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '20px' }} onPaste={handleOtpPaste}>
                 {otpDigits.map((digit, idx) => (
                   <input
                     key={idx}
@@ -1394,13 +1394,13 @@ export default function IIGProjectsPage() {
                     onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                     disabled={isVerifyingOtp || isSendingOtp}
-                    className="w-12 h-14 text-center text-xl font-bold text-slate-900 bg-slate-50 border border-slate-200 focus:border-zinc-500 rounded-xl outline-none transition-colors shadow-xs"
+                    style={{ width: '48px', height: '56px', textAlign: 'center', fontSize: '20px', fontWeight: 700, color: '#0f172a', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', outline: 'none' }}
                   />
                 ))}
               </div>
 
               {failedAttempts > 0 && (
-                <div className="w-full bg-amber-50 border border-amber-200 text-amber-800 rounded-xl py-2 px-3 text-xs mb-4 text-center font-medium">
+                <div style={{ backgroundColor: '#fffbebeb', border: '1px solid #fde68a', color: '#92400e', borderRadius: '12px', padding: '8px 12px', fontSize: '12px', marginBottom: '16px' }}>
                   ⚠️ {5 - failedAttempts} attempt{5 - failedAttempts === 1 ? '' : 's'} remaining.
                 </div>
               )}
@@ -1409,7 +1409,8 @@ export default function IIGProjectsPage() {
                 type="button"
                 onClick={() => verifyOtpCode()}
                 disabled={isVerifyingOtp || isSendingOtp || otpDigits.some(d => d === '')}
-                className="w-full py-3 bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 mb-4 cursor-pointer shadow-md"
+                className="submit-btn-primary"
+                style={{ marginTop: '0', marginBottom: '16px' }}
               >
                 {isVerifyingOtp ? (
                   <>
@@ -1430,12 +1431,12 @@ export default function IIGProjectsPage() {
                     type="button"
                     onClick={() => sendOtpCode()}
                     disabled={isSendingOtp}
-                    className="text-slate-900 hover:underline inline-flex items-center gap-1 font-semibold cursor-pointer"
+                    style={{ color: '#0f172a', background: 'transparent', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                   >
                     <RefreshCw className="w-3.5 h-3.5 text-[#ca2d39]" /> Resend Code
                   </button>
                 ) : (
-                  <span>Resend code in {resendTimer}s</span>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>Resend code in {resendTimer}s</span>
                 )}
               </div>
             </div>
