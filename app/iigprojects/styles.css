@@ -329,6 +329,12 @@
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
+.portfolio-body .projects-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .portfolio-body .carousel-nav {
     display: flex;
     gap: 10px;

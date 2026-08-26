@@ -653,7 +653,7 @@ export default function IIGProjectsPage() {
           <section className="projects-section">
             <div className="projects-header">
               <h3 className="section-title">Projects</h3>
-              <div className="flex items-center gap-2">
+              <div className="projects-header-actions">
                 <button 
                   className="ui-toggle-btn"
                   onClick={() => setIsUIHidden(!isUIHidden)}

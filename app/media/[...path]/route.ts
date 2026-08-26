@@ -33,7 +33,7 @@ export async function GET(
     
     // Determine where media is stored
     let baseDir = ''
-    if (envPath) {
+    if (envPath && existsSync(envPath)) {
       baseDir = envPath
     } else {
       // Local dev fallback
