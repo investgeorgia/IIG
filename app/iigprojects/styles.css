@@ -1063,3 +1063,133 @@
     to { transform: translateY(0); opacity: 1; }
 }
 
+/* IPS Registration Modal Styling Fixes */
+.portfolio-body .ips-modal-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 100000 !important;
+    background-color: rgba(15, 23, 42, 0.75) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+}
+
+.portfolio-body .ips-modal-card {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-radius: 20px !important;
+    padding: 28px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    margin: auto !important;
+}
+
+.portfolio-body .ips-modal-card *,
+.portfolio-body .ips-otp-card * {
+    box-sizing: border-box !important;
+}
+
+.portfolio-body .ips-modal-card label {
+    display: block !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #475569 !important;
+    margin: 0 0 6px 0 !important;
+    padding: 0 !important;
+}
+
+.portfolio-body .ips-modal-card input[type="text"],
+.portfolio-body .ips-modal-card input[type="email"],
+.portfolio-body .ips-modal-card input[type="tel"],
+.portfolio-body .ips-modal-card select {
+    width: 100% !important;
+    height: 44px !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    padding: 0 14px !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    outline: none !important;
+    margin: 0 !important;
+    transition: border-color 0.15s ease !important;
+}
+
+.portfolio-body .ips-modal-card input:focus,
+.portfolio-body .ips-modal-card select:focus {
+    background-color: #ffffff !important;
+    border-color: #0f172a !important;
+}
+
+.portfolio-body .ips-modal-card .form-row {
+    margin-bottom: 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.portfolio-body .ips-modal-card .role-btn {
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 14px !important;
+    border-radius: 12px !important;
+    border: 1px solid #cbd5e1 !important;
+    background: #f8fafc !important;
+    color: #334155 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+}
+
+.portfolio-body .ips-modal-card .role-btn.active {
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #ffffff !important;
+}
+
+.portfolio-body .ips-modal-card .submit-btn-primary {
+    width: 100% !important;
+    height: 48px !important;
+    margin-top: 18px !important;
+    background: #ca2d39 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    transition: background-color 0.15s ease !important;
+}
+
+.portfolio-body .ips-modal-card .submit-btn-primary:hover {
+    background: #b02530 !important;
+}
+
+.portfolio-body .ips-modal-card .submit-btn-primary:disabled {
+    background: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    border: 1px solid #cbd5e1 !important;
+    cursor: not-allowed !important;
+}
+

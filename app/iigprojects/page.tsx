@@ -541,42 +541,58 @@ export default function IIGProjectsPage() {
         }
       })
 
-      if (urlsToPreload.length === 0) {
-        if (isMounted) {
-          setLoadProgress(100)
-          setTimeout(() => setIsInitialLoading(false), 300)
-        }
-        return
-      }
-
       let loadedCount = 0
-      const totalCount = urlsToPreload.length
+      const totalCount = urlsToPreload.length || 1
 
       const updateProgress = () => {
         loadedCount++
-        const percentage = Math.min(Math.round((loadedCount / totalCount) * 100), 100)
-        if (isMounted) setLoadProgress(percentage)
-
+        const targetPercent = Math.min(Math.round((loadedCount / totalCount) * 100), 100)
+        if (isMounted) {
+          setLoadProgress(prev => Math.max(prev, targetPercent))
+        }
         if (loadedCount >= totalCount) {
-          setTimeout(() => {
-            if (isMounted) setIsInitialLoading(false)
-          }, 300)
+          if (isMounted) {
+            setLoadProgress(100)
+            setTimeout(() => setIsInitialLoading(false), 250)
+          }
         }
       }
 
+      // Preload every image with 1000ms max per-image timeout to prevent hanging
       urlsToPreload.forEach(url => {
         const img = new Image()
-        img.onload = updateProgress
-        img.onerror = updateProgress
+        let resolved = false
+        const handleDone = () => {
+          if (!resolved) {
+            resolved = true
+            updateProgress()
+          }
+        }
+        img.onload = handleDone
+        img.onerror = handleDone
         img.src = url
+
+        setTimeout(handleDone, 1000)
       })
 
-      setTimeout(() => {
-        if (isMounted) {
-          setLoadProgress(100)
-          setTimeout(() => setIsInitialLoading(false), 200)
+      // Smooth ticker fallback so preloader continuously advances up to 100% within ~1.8 seconds max
+      let currentP = 0
+      const interval = setInterval(() => {
+        if (!isMounted) {
+          clearInterval(interval)
+          return
         }
-      }, 3500)
+        currentP += 6
+        const nextP = Math.min(currentP, 100)
+        setLoadProgress(prev => Math.max(prev, nextP))
+
+        if (nextP >= 100) {
+          clearInterval(interval)
+          setTimeout(() => {
+            if (isMounted) setIsInitialLoading(false)
+          }, 250)
+        }
+      }, 70)
     }
 
     loadAllDataAndAssets()
@@ -1082,43 +1098,46 @@ export default function IIGProjectsPage() {
 
       {/* IPS Registration Form Modal Popup (For visitors without agent referral link) */}
       {isInquiryOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150 overflow-y-auto">
-          <div className="relative w-full max-w-lg bg-white border border-slate-200 shadow-2xl rounded-2xl p-6 sm:p-8 my-8 text-slate-900">
+        <div className="ips-modal-overlay">
+          <div className="ips-modal-card">
             {/* Close Button */}
             <button
               onClick={() => setIsInquiryOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors p-2 cursor-pointer z-10"
+              style={{ background: 'transparent', border: 'none' }}
             >
               <X className="w-5 h-5" />
             </button>
 
             {submitSuccess ? (
               <div className="flex flex-col items-center justify-center text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-5 shadow-xs">
+                <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-5 shadow-xs" style={{ margin: '0 auto 20px auto' }}>
                   <UserCheck className="w-8 h-8" />
                 </div>
                 
-                <h2 className={`${cormorant.className} text-3xl font-bold text-slate-900 mb-3 tracking-wide`}>
+                <h2 className={`${cormorant.className} text-3xl font-bold text-slate-900 mb-3 tracking-wide`} style={{ fontSize: '24px', margin: '0 0 12px 0' }}>
                   Registration Received
                 </h2>
                 
-                <p className="text-slate-600 text-xs sm:text-sm max-w-sm leading-relaxed font-normal mb-6">
+                <p className="text-slate-600 text-xs sm:text-sm max-w-sm leading-relaxed font-normal mb-6" style={{ fontSize: '13px', color: '#475569', margin: '0 0 20px 0' }}>
                   Thank you for registering with <strong>Invest Georgia UAE</strong>. Our team will get in touch with you shortly.
                 </p>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                   <button
                     onClick={() => {
                       setSubmitSuccess(false)
                       setIsEmailVerified(false)
                     }}
-                    className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase transition-colors shadow-sm cursor-pointer"
+                    className="role-btn active"
+                    style={{ height: '40px', padding: '0 18px' }}
                   >
                     Submit Another
                   </button>
                   <button
                     onClick={() => setIsInquiryOpen(false)}
-                    className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-semibold tracking-wider uppercase transition-colors cursor-pointer"
+                    className="role-btn"
+                    style={{ height: '40px', padding: '0 18px' }}
                   >
                     Close
                   </button>
@@ -1127,27 +1146,27 @@ export default function IIGProjectsPage() {
             ) : (
               <div className="w-full">
                 {/* Form Header */}
-                <div className="mb-5">
-                  <span className="text-[10px] uppercase tracking-[0.25em] text-[#ca2d39] font-bold mb-1 block">
+                <div style={{ marginBottom: '18px' }}>
+                  <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#ca2d39', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
                     Invest Georgia UAE
                   </span>
-                  <h2 className={`${cormorant.className} text-2xl sm:text-3xl font-bold tracking-wide text-slate-900`}>
+                  <h2 className={`${cormorant.className}`} style={{ fontSize: '26px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
                     Register Your Interest
                   </h2>
                   {activeProject && (
-                    <p className="text-slate-500 text-xs mt-1">
-                      Inquiring about: <strong className="text-slate-800">{activeProject.name}</strong>
+                    <p style={{ color: '#64748b', fontSize: '12px', marginTop: '4px', margin: '4px 0 0 0' }}>
+                      Inquiring about: <strong style={{ color: '#0f172a' }}>{activeProject.name}</strong>
                     </p>
                   )}
                 </div>
 
                 {/* Form Fields */}
-                <form onSubmit={handleFinalSubmit} className="space-y-4">
+                <form onSubmit={handleFinalSubmit}>
                   
                   {/* Name Input */}
-                  <div className="space-y-1">
-                    <label htmlFor="modal-name" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
-                      Full Name <span className="text-slate-400">*</span>
+                  <div className="form-row">
+                    <label htmlFor="modal-name">
+                      Full Name <span style={{ color: '#94a3b8' }}>*</span>
                     </label>
                     <input
                       type="text"
@@ -1156,17 +1175,16 @@ export default function IIGProjectsPage() {
                       onChange={(e) => setFormName(e.target.value)}
                       placeholder="Enter your full name"
                       disabled={isSubmitting}
-                      className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400"
                       required
                     />
                   </div>
 
                   {/* Email Input with Inline Verification */}
-                  <div className="space-y-1">
-                    <label htmlFor="modal-email" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
-                      Email Address <span className="text-slate-400">*</span>
+                  <div className="form-row">
+                    <label htmlFor="modal-email">
+                      Email Address <span style={{ color: '#94a3b8' }}>*</span>
                     </label>
-                    <div className="flex gap-2 items-center">
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <input
                         type="email"
                         id="modal-email"
@@ -1177,11 +1195,11 @@ export default function IIGProjectsPage() {
                         }}
                         placeholder="name@domain.com"
                         disabled={isSubmitting}
-                        className="flex-1 bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400 min-w-0"
+                        style={{ flex: 1, minWidth: 0 }}
                         required
                       />
                       {isEmailVerified ? (
-                        <div className="shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
+                        <div style={{ flexShrink: 0, height: '44px', padding: '0 12px', background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', fontWeight: 600, fontSize: '11px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                           <span>Verified</span>
                         </div>
@@ -1190,7 +1208,7 @@ export default function IIGProjectsPage() {
                           type="button"
                           onClick={handleVerifyEmailClick}
                           disabled={isSendingOtp || !formEmail.trim()}
-                          className="shrink-0 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          style={{ flexShrink: 0, height: '44px', padding: '0 14px', borderRadius: '12px', background: '#0f172a', color: '#ffffff', fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', border: 'none' }}
                         >
                           {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5 text-[#ca2d39]" />}
                           <span>Verify Email</span>
@@ -1200,12 +1218,12 @@ export default function IIGProjectsPage() {
                   </div>
 
                   {/* Phone / WhatsApp Input */}
-                  <div className="space-y-1">
-                    <label htmlFor="modal-phone" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
-                      Phone / WhatsApp Number <span className="text-slate-400">*</span>
+                  <div className="form-row">
+                    <label htmlFor="modal-phone">
+                      Phone / WhatsApp Number <span style={{ color: '#94a3b8' }}>*</span>
                     </label>
-                    <div className="flex gap-2 items-center">
-                      <div className="w-[105px] shrink-0">
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ width: '110px', flexShrink: 0 }}>
                         <SearchableDropdown
                           items={COUNTRY_LIST}
                           value={formCountryCode}
@@ -1224,82 +1242,74 @@ export default function IIGProjectsPage() {
                         onChange={(e) => setFormPhone(e.target.value.replace(/[^0-9]/g, ''))}
                         placeholder="50 123 4567"
                         disabled={isSubmitting}
-                        className="flex-1 bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400 min-w-0"
+                        style={{ flex: 1, minWidth: 0 }}
                         required
                       />
                     </div>
                   </div>
 
                   {/* Preferred Mode of Contact Dropdown */}
-                  <div className="space-y-1">
-                    <label htmlFor="modal-preferredContactMode" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
-                      Preferred Mode of Contact <span className="text-slate-400">*</span>
+                  <div className="form-row">
+                    <label htmlFor="modal-preferredContactMode">
+                      Preferred Mode of Contact <span style={{ color: '#94a3b8' }}>*</span>
                     </label>
-                    <div className="relative w-full">
+                    <div style={{ position: 'relative', width: '100%' }}>
                       <select
                         id="modal-preferredContactMode"
                         value={formPreferredContactMode}
                         onChange={(e) => setFormPreferredContactMode(e.target.value)}
                         disabled={isSubmitting}
-                        className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none appearance-none cursor-pointer"
                       >
-                        <option value="WhatsApp" className="bg-white text-slate-900">WhatsApp</option>
-                        <option value="Call" className="bg-white text-slate-900">Call</option>
-                        <option value="Email" className="bg-white text-slate-900">Email</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="Call">Call</option>
+                        <option value="Email">Email</option>
                       </select>
-                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
+                      <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '10px' }}>
                         ▼
                       </div>
                     </div>
                   </div>
 
                   {/* Preferred Language Dropdown */}
-                  <div className="space-y-1">
-                    <label htmlFor="modal-language" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
-                      Preferred Language <span className="text-slate-400">*</span>
+                  <div className="form-row">
+                    <label htmlFor="modal-language">
+                      Preferred Language <span style={{ color: '#94a3b8' }}>*</span>
                     </label>
-                    <div className="relative w-full">
+                    <div style={{ position: 'relative', width: '100%' }}>
                       <select
                         id="modal-language"
                         value={formLanguage}
                         onChange={(e) => setFormLanguage(e.target.value)}
                         disabled={isSubmitting}
-                        className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none appearance-none cursor-pointer"
                       >
-                        <option value="English" className="bg-white text-slate-900">English</option>
-                        <option value="Arabic" className="bg-white text-slate-900">Arabic</option>
-                        <option value="Hindi" className="bg-white text-slate-900">Hindi</option>
-                        <option value="Other" className="bg-white text-slate-900">Other</option>
+                        <option value="English">English</option>
+                        <option value="Arabic">Arabic</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Other">Other</option>
                       </select>
-                      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
+                      <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: '10px' }}>
                         ▼
                       </div>
                     </div>
                   </div>
 
                   {/* Role Selection */}
-                  <div className="space-y-2 pt-1">
-                    <label className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
-                      I am a: <span className="text-slate-400">*</span>
+                  <div className="form-row" style={{ marginTop: '2px' }}>
+                    <label>
+                      I am a: <span style={{ color: '#94a3b8' }}>*</span>
                     </label>
                     
-                    <div className="grid grid-cols-2 gap-3">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '4px' }}>
                       {/* Investor Option */}
                       <button
                         type="button"
                         onClick={() => setFormRole('investor')}
                         disabled={isSubmitting}
-                        className={`relative py-2.5 px-3 rounded-xl border text-left transition-all duration-150 flex items-center justify-between cursor-pointer ${
-                          formRole === 'investor'
-                            ? 'bg-slate-900 border-slate-900 text-white font-semibold shadow-xs'
-                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 text-slate-700'
-                        }`}
+                        className={`role-btn ${formRole === 'investor' ? 'active' : ''}`}
                       >
-                        <span className="text-xs uppercase tracking-wider">Investor</span>
-                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                          formRole === 'investor' ? 'border-[#ca2d39] bg-[#ca2d39]' : 'border-slate-300 bg-white'
-                        }`}>
-                          {formRole === 'investor' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        <span>Investor</span>
+                        <div style={{ width: '14px', height: '14px', borderRadius: '50%', border: formRole === 'investor' ? '1px solid #ca2d39' : '1px solid #cbd5e1', background: formRole === 'investor' ? '#ca2d39' : '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {formRole === 'investor' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ffffff', margin: 'auto' }} />}
                         </div>
                       </button>
 
@@ -1308,17 +1318,11 @@ export default function IIGProjectsPage() {
                         type="button"
                         onClick={() => setFormRole('broker')}
                         disabled={isSubmitting}
-                        className={`relative py-2.5 px-3 rounded-xl border text-left transition-all duration-150 flex items-center justify-between cursor-pointer ${
-                          formRole === 'broker'
-                            ? 'bg-slate-900 border-slate-900 text-white font-semibold shadow-xs'
-                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 text-slate-700'
-                        }`}
+                        className={`role-btn ${formRole === 'broker' ? 'active' : ''}`}
                       >
-                        <span className="text-xs uppercase tracking-wider truncate">Broker / Agent</span>
-                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
-                          formRole === 'broker' ? 'border-[#ca2d39] bg-[#ca2d39]' : 'border-slate-300 bg-white'
-                        }`}>
-                          {formRole === 'broker' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        <span>Broker / Agent</span>
+                        <div style={{ width: '14px', height: '14px', borderRadius: '50%', border: formRole === 'broker' ? '1px solid #ca2d39' : '1px solid #cbd5e1', background: formRole === 'broker' ? '#ca2d39' : '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {formRole === 'broker' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ffffff', margin: 'auto' }} />}
                         </div>
                       </button>
                     </div>
@@ -1327,12 +1331,8 @@ export default function IIGProjectsPage() {
                   {/* Primary Submit Button */}
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className={`w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-3.5 rounded-xl transition-all ${
-                      isEmailVerified
-                        ? 'bg-[#ca2d39] hover:bg-[#b02530] text-white cursor-pointer shadow-md'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300/60'
-                    }`}
+                    disabled={isSubmitting || !isEmailVerified}
+                    className="submit-btn-primary"
                   >
                     {isSubmitting ? (
                       <>
