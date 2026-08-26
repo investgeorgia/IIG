@@ -9,7 +9,9 @@ import {
   Calendar, 
   Maximize, 
   TrendingUp, 
-  Clock 
+  Clock,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import { projectsData, Project } from './data'
 
@@ -21,6 +23,8 @@ export default function IIGProjectsPage() {
   const [bgOpacity, setBgOpacity] = useState<number>(1)
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false)
   const [imageNameOpacity, setImageNameOpacity] = useState<number>(1)
+
+  const [isUIHidden, setIsUIHidden] = useState<boolean>(false)
 
   const [isInitialLoading, setIsInitialLoading] = useState<boolean>(true)
   const [loadProgress, setLoadProgress] = useState<number>(0)
@@ -516,7 +520,7 @@ export default function IIGProjectsPage() {
         </div>
 
         {/* Bottom Layout Wrapper */}
-        <div className="bottom-wrapper" ref={bottomWrapperRef}>
+        <div className={`bottom-wrapper ${isUIHidden ? 'ui-hidden' : ''}`} ref={bottomWrapperRef}>
 
           {/* Left Column: VR QR Code + Property Details Card */}
           <div className="left-details-column">
@@ -637,13 +641,23 @@ export default function IIGProjectsPage() {
           <section className="projects-section">
             <div className="projects-header">
               <h3 className="section-title">Projects</h3>
-              <div className="carousel-nav">
-                <button className="carousel-nav-btn" onClick={() => scrollCarousel('left')}>
-                  <ChevronLeft size={16} />
+              <div className="flex items-center gap-2">
+                <button 
+                  className="ui-toggle-btn"
+                  onClick={() => setIsUIHidden(!isUIHidden)}
+                  title={isUIHidden ? "Show Thumbnails & Details" : "Hide Thumbnails (Full Image View)"}
+                >
+                  {isUIHidden ? <Eye size={14} /> : <EyeOff size={14} />}
+                  <span>{isUIHidden ? "Show Thumbnails" : "Hide Thumbnails"}</span>
                 </button>
-                <button className="carousel-nav-btn" onClick={() => scrollCarousel('right')}>
-                  <ChevronRight size={16} />
-                </button>
+                <div className="carousel-nav">
+                  <button className="carousel-nav-btn" onClick={() => scrollCarousel('left')}>
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button className="carousel-nav-btn" onClick={() => scrollCarousel('right')}>
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -690,6 +704,20 @@ export default function IIGProjectsPage() {
 
         </div>
       </main>
+
+      {/* Floating Toggle Button (Appears when UI elements are hidden) */}
+      {isUIHidden && (
+        <div className="floating-toggle-container">
+          <button 
+            className="ui-toggle-btn"
+            onClick={() => setIsUIHidden(false)}
+            title="Show Thumbnails & Details"
+          >
+            <Eye size={16} />
+            <span>Show Thumbnails</span>
+          </button>
+        </div>
+      )}
 
       {/* Inquiry Modal */}
       {isInquiryOpen && (
