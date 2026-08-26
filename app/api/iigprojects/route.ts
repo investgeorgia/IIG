@@ -77,21 +77,26 @@ function getDynamicProjects(): Project[] {
       // ignore
     }
 
-    const nonThumbImages = files
-      .filter(f => !f.toLowerCase().startsWith('thumb'))
-      .map(f => `/media/${folder}/${f}`)
-
+    const allImages = files.map(f => `/media/${folder}/${f}`)
+    const nonThumbImages = files.filter(f => !f.toLowerCase().startsWith('thumb')).map(f => `/media/${folder}/${f}`)
+    
     const thumbFile = files.find(f => f.toLowerCase().startsWith('thumb'))
-    const thumbnail = thumbFile ? `/media/${folder}/${thumbFile}` : (nonThumbImages[0] || '')
-
     const key = folder.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     const baseProj = knownMetaMap.get(folder.toLowerCase()) || knownMetaMap.get(key)
+
+    const thumbnail = thumbFile 
+      ? `/media/${folder}/${thumbFile}` 
+      : (nonThumbImages[0] || allImages[0] || baseProj?.thumbnail || baseProj?.images?.[0] || '')
+
+    const finalImages = nonThumbImages.length > 0 
+      ? nonThumbImages 
+      : (allImages.length > 0 ? allImages : baseProj?.images || [])
 
     if (baseProj) {
       result.push({
         ...baseProj,
-        images: nonThumbImages.length > 0 ? nonThumbImages : baseProj.images,
-        thumbnail: thumbnail || baseProj.thumbnail
+        images: finalImages.length > 0 ? finalImages : baseProj.images,
+        thumbnail: thumbnail || baseProj.thumbnail || (finalImages[0] || '')
       })
     } else {
       const name = folder.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
@@ -105,8 +110,8 @@ function getDynamicProjects(): Project[] {
         size: "From 45 m²",
         roi: "12%",
         completion: "Q4 2027",
-        images: nonThumbImages,
-        thumbnail
+        images: finalImages,
+        thumbnail: thumbnail || (finalImages[0] || '')
       })
     }
   }

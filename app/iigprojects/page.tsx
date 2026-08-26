@@ -1090,6 +1090,15 @@ export default function IIGProjectsPage() {
                         width={200}
                         height={112}
                         loading={project.id === activeProjectId ? 'eager' : 'lazy'}
+                        onError={(e) => {
+                          const firstImg = project.images?.[0]
+                          if (firstImg) {
+                            const formatted = firstImg.startsWith('/') ? firstImg : `/${firstImg}`
+                            if (!e.currentTarget.src.endsWith(formatted)) {
+                              e.currentTarget.src = formatted
+                            }
+                          }
+                        }}
                       />
                     </div>
                   </div>
