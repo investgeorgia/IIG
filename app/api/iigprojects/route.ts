@@ -46,7 +46,8 @@ export async function GET() {
   }
 
   const mergedProjects = projectsData.map((p, index) => {
-    const slug = p.images[0] ? p.images[0].split('/')[1] : p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    // Derive slug from project name (reliable) — do NOT use images[0] path since it depends on path format
+    const slug = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
     const dbMatch = dbMap.get(String(p.id)) || dbMap.get(slug.toLowerCase()) || dbMap.get(p.name.toLowerCase())
     if (dbMatch) processedProjectIds.add(dbMatch.id)
 

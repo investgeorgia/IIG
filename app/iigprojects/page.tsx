@@ -76,6 +76,12 @@ export default function IIGProjectsPage() {
           if (isMounted) {
             setProjectsList(data)
             setActiveProjectId(data[0].id)
+            // Update background to reflect first image from CMS data (not hardcoded static data)
+            const firstImg = data[0].images?.[0] || data[0].thumbnail || ''
+            if (firstImg) {
+              const formatted = firstImg.startsWith('/') ? firstImg : `/${firstImg}`
+              setBgImage(formatted)
+            }
           }
         }
       } catch (err) {
@@ -716,20 +722,6 @@ export default function IIGProjectsPage() {
 
         </div>
       </main>
-
-      {/* Floating Toggle Button (Appears when UI elements are hidden) */}
-      {isUIHidden && (
-        <div className="floating-toggle-container">
-          <button 
-            className="ui-toggle-btn"
-            onClick={() => setIsUIHidden(false)}
-            title="Show Thumbnails & Details"
-          >
-            <Eye size={16} />
-            <span>Show Thumbnails</span>
-          </button>
-        </div>
-      )}
 
       {/* Small Clear Cache & Reload Text (Bottom Right Corner) */}
       <div className="clear-cache-wrapper">

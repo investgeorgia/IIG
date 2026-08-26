@@ -236,6 +236,8 @@ export default function CreateProposalPage() {
     const files = e.target.files
     if (!files || files.length === 0) return
     setFloorPlanUploading(true)
+    // Reset the input so the same file can be re-selected and onChange fires every time
+    e.target.value = ''
     try {
       const file = files[0]
       const formData = new FormData()
@@ -261,6 +263,8 @@ export default function CreateProposalPage() {
     const files = e.target.files
     if (!files || files.length === 0) return
     setFloorPlanUploading2(true)
+    // Reset the input so the same file can be re-selected and onChange fires every time
+    e.target.value = ''
     try {
       const file = files[0]
       const formData = new FormData()
