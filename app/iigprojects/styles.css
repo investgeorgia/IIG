@@ -141,13 +141,13 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 12px;
+    gap: 14px;
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
-    padding: 16px 20px;
+    padding: 22px 24px;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     cursor: pointer;
@@ -161,11 +161,11 @@
 }
 
 .portfolio-body .vr-qr-code-wrapper {
-    width: 140px;
-    height: 140px;
+    width: 190px;
+    height: 190px;
     background: #ffffff;
-    border-radius: 12px;
-    padding: 6px;
+    border-radius: 14px;
+    padding: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
