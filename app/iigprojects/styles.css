@@ -1162,11 +1162,12 @@
     color: #ffffff !important;
 }
 
-.portfolio-body .ips-modal-card .submit-btn-primary {
+.portfolio-body .ips-modal-card .submit-btn-primary,
+.portfolio-body .ips-otp-card .submit-btn-primary {
     width: 100% !important;
     height: 48px !important;
     margin-top: 18px !important;
-    background: #ca2d39 !important;
+    background-color: #ca2d39 !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 12px !important;
@@ -1182,12 +1183,15 @@
     transition: background-color 0.15s ease !important;
 }
 
-.portfolio-body .ips-modal-card .submit-btn-primary:hover {
-    background: #b02530 !important;
+.portfolio-body .ips-modal-card .submit-btn-primary:hover,
+.portfolio-body .ips-otp-card .submit-btn-primary:hover {
+    background-color: #b02530 !important;
+    color: #ffffff !important;
 }
 
-.portfolio-body .ips-modal-card .submit-btn-primary:disabled {
-    background: #e2e8f0 !important;
+.portfolio-body .ips-modal-card .submit-btn-primary:disabled,
+.portfolio-body .ips-otp-card .submit-btn-primary:disabled {
+    background-color: #e2e8f0 !important;
     color: #94a3b8 !important;
     border: 1px solid #cbd5e1 !important;
     cursor: not-allowed !important;

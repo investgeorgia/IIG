@@ -21,7 +21,8 @@ import {
   RefreshCw,
   X,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react'
 import { projectsData, Project } from './data'
 
@@ -267,6 +268,7 @@ export default function IIGProjectsPage() {
   const [formPreferredContactMode, setFormPreferredContactMode] = useState('WhatsApp')
   const [formLanguage, setFormLanguage] = useState('English')
   const [formRole, setFormRole] = useState('investor')
+  const [formError, setFormError] = useState<string | null>(null)
 
   // Email OTP verification state
   const [isEmailVerified, setIsEmailVerified] = useState(false)
@@ -423,25 +425,26 @@ export default function IIGProjectsPage() {
   // Handle final IPS registration submit (Posting directly to Bitrix24 via /api/ips-registration)
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormError(null)
 
     if (!formName.trim()) {
-      toast.error('Please enter your full name')
+      setFormError('Please enter your full name')
       return
     }
 
     const emailCheck = validateEmail(formEmail)
     if (!emailCheck.valid) {
-      toast.error(emailCheck.error || 'Please enter a valid email address')
+      setFormError(emailCheck.error || 'Please enter a valid email address')
       return
     }
 
     if (!formPhone.trim()) {
-      toast.error('Please enter your phone number')
+      setFormError('Please enter your phone number')
       return
     }
 
     if (!isEmailVerified) {
-      toast.error('Please click "Verify Email" to verify your email address before submitting.')
+      setFormError('Please click "Verify Email" to verify your email address before submitting.')
       return
     }
 
@@ -470,6 +473,7 @@ export default function IIGProjectsPage() {
 
       toast.success(data.message || 'Registration successful!')
       setSubmitSuccess(true)
+      setFormError(null)
 
       // Reset form
       setFormName('')
@@ -481,7 +485,9 @@ export default function IIGProjectsPage() {
       setFormRole('investor')
       setIsEmailVerified(false)
     } catch (error: any) {
-      toast.error(error.message || 'Failed to submit registration')
+      const msg = error.message || 'Failed to submit registration'
+      setFormError(msg)
+      toast.error(msg)
     } finally {
       setIsSubmitting(false)
     }
@@ -1158,6 +1164,14 @@ export default function IIGProjectsPage() {
                     </p>
                   )}
                 </div>
+
+                {/* Form Error Alert Banner */}
+                {formError && (
+                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', borderRadius: '12px', padding: '12px 14px', fontSize: '12px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertCircle style={{ color: '#dc2626', width: '16px', height: '16px', flexShrink: 0 }} />
+                    <span>{formError}</span>
+                  </div>
+                )}
 
                 {/* Form Fields */}
                 <form onSubmit={handleFinalSubmit}>
