@@ -133,20 +133,21 @@
     pointer-events: none;
 }
 
-/* VR 3D QR Code Card (QR code on top, text below) */
+/* VR 3D QR Code Card (Same width & styling as Property Details Card) */
 .portfolio-body .vr-qr-card {
+    width: 100%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    text-align: center;
-    gap: 10px;
+    justify-content: center;
+    gap: 16px;
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
-    padding: 12px 14px;
-    box-shadow: 0 10px 36px 0 rgba(0, 0, 0, 0.45);
+    padding: 14px 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
     cursor: pointer;
     text-decoration: none;
@@ -159,11 +160,11 @@
 }
 
 .portfolio-body .vr-qr-code-wrapper {
-    width: 110px;
-    height: 110px;
+    width: 75px;
+    height: 75px;
     background: #ffffff;
     border-radius: 10px;
-    padding: 6px;
+    padding: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -174,14 +175,14 @@
 .portfolio-body .vr-qr-text-group {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
 }
 
 .portfolio-body .vr-qr-title {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
     text-transform: uppercase;
     color: #ffffff;
     line-height: 1.35;
