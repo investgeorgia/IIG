@@ -36,7 +36,8 @@ export const projectsData: Project[] = [
       "/media/ortachala/11.jpg",
       "/media/ortachala/17.jpg",
       "/media/ortachala/19.jpg",
-      "/media/ortachala/20a.jpg"
+      "/media/ortachala/20a.jpg",
+      "/media/ortachala/thumb.jpg"
     ],
     "thumbnail": "/media/ortachala/1.jpg"
   },
