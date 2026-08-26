@@ -19,7 +19,10 @@ export default function IIGProjectsPage() {
   const [projectsList, setProjectsList] = useState<Project[]>(projectsData)
   const [activeProjectId, setActiveProjectId] = useState<number>(projectsData[0].id)
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0)
-  const [bgImage, setBgImage] = useState<string>('')
+  
+  const initialDefaultImg = projectsData[0].images[0]
+  const initialFormattedImg = initialDefaultImg.startsWith('/') ? initialDefaultImg : `/${initialDefaultImg}`
+  const [bgImage, setBgImage] = useState<string>(initialFormattedImg)
   const [bgOpacity, setBgOpacity] = useState<number>(1)
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false)
   const [imageNameOpacity, setImageNameOpacity] = useState<number>(1)
@@ -214,29 +217,15 @@ export default function IIGProjectsPage() {
     const formattedUrl = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`
     const isVid = formattedUrl.endsWith('.mp4') || formattedUrl.endsWith('.webm') || (activeProject as any)?.mediaDetails?.[activeImageIndex]?.type === 'VIDEO'
 
-    if (isVid) {
-      setBgImage(formattedUrl)
-      setBgOpacity(1)
-      setIsTransitioning(false)
-      return
-    }
-    
-    // Fast non-blocking load
+    // Set background image state immediately for instant rendering without waiting for onload
+    setBgImage(formattedUrl)
+    setBgOpacity(1)
+    setIsTransitioning(false)
+
+    if (isVid) return
+
+    // Preload image object into browser memory
     const img = new Image()
-    img.onload = () => {
-      setBgImage(formattedUrl)
-      setBgOpacity(1)
-      setIsTransitioning(false)
-    }
-    img.onerror = () => {
-      // Fallback check if needed
-      if (formattedUrl.endsWith('.jpg')) {
-        setBgImage(formattedUrl.replace('.jpg', '.png'))
-      } else {
-        setBgImage(formattedUrl)
-      }
-      setIsTransitioning(false)
-    }
     img.src = formattedUrl
   }, [activeProjectId, activeImageIndex, activeProject])
 
@@ -478,7 +467,7 @@ export default function IIGProjectsPage() {
         <div 
           className="hero-background" 
           style={{ 
-            backgroundImage: bgImage ? `url(${bgImage})` : 'none',
+            backgroundImage: bgImage ? `url("${encodeURI(bgImage)}")` : 'none',
             opacity: bgOpacity
           }}
         />
