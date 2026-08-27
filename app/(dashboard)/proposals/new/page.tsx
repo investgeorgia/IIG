@@ -233,11 +233,10 @@ export default function CreateProposalPage() {
   }
 
   const handleFloorPlanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
+    const input = e.target
+    const files = input.files
     if (!files || files.length === 0) return
     setFloorPlanUploading(true)
-    // Reset the input so the same file can be re-selected and onChange fires every time
-    e.target.value = ''
     try {
       const file = files[0]
       const formData = new FormData()
@@ -255,16 +254,16 @@ export default function CreateProposalPage() {
     } catch (err: any) {
       toast.error(err.message || 'Upload failed')
     } finally {
+      input.value = ''
       setFloorPlanUploading(false)
     }
   }
 
   const handleFloorPlanUpload2 = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
+    const input = e.target
+    const files = input.files
     if (!files || files.length === 0) return
     setFloorPlanUploading2(true)
-    // Reset the input so the same file can be re-selected and onChange fires every time
-    e.target.value = ''
     try {
       const file = files[0]
       const formData = new FormData()
@@ -282,6 +281,7 @@ export default function CreateProposalPage() {
     } catch (err: any) {
       toast.error(err.message || 'Upload failed')
     } finally {
+      input.value = ''
       setFloorPlanUploading2(false)
     }
   }

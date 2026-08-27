@@ -10,9 +10,9 @@ export const runtime = 'nodejs'
 // All MIME types accepted per media category
 const ALLOWED_MIME_TYPES = [
   // Images
-  'image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif',
+  'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif', 'image/avif', 'image/heic', 'image/heif', 'image/bmp', 'image/tiff', 'image/x-icon', 'image/pjpeg', 'image/x-png',
   // Videos
-  'video/mp4', 'video/webm', 'video/quicktime',
+  'video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/mpeg',
   // PDFs
   'application/pdf',
   // Presentations
@@ -24,13 +24,42 @@ const ALLOWED_MIME_TYPES = [
   // Spreadsheets
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  // Generic binary fallback if extension matches
+  'application/octet-stream',
 ]
 
 const ALLOWED_EXTENSIONS = [
-  '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg',
-  '.mp4', '.webm', '.mov',
+  '.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.avif', '.heic', '.heif', '.bmp', '.tiff', '.ico',
+  '.mp4', '.webm', '.mov', '.avi', '.mpeg',
   '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'
 ]
+
+const EXTENSION_TO_MIME: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.avif': 'image/avif',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
+  '.bmp': 'image/bmp',
+  '.tiff': 'image/tiff',
+  '.ico': 'image/x-icon',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+  '.avi': 'video/x-msvideo',
+  '.mpeg': 'video/mpeg',
+  '.pdf': 'application/pdf',
+  '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.xls': 'application/vnd.ms-excel',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.ppt': 'application/vnd.ms-powerpoint',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+}
 
 /**
  * Returns the root directory for media storage.
@@ -67,19 +96,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Validate file type
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { error: `File type not allowed: ${file.type}` },
-        { status: 400 }
-      )
-    }
+    const ext = path.extname(file.name || '').toLowerCase()
+    const rawType = file.type || ''
+    const detectedMime = rawType || EXTENSION_TO_MIME[ext] || ''
 
-    // Validate file extension
-    const ext = path.extname(file.name).toLowerCase()
-    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+    // Validation: File is allowed if either its MIME type is allowed or its extension is allowed
+    const isMimeAllowed = (rawType && ALLOWED_MIME_TYPES.includes(rawType)) || (detectedMime && ALLOWED_MIME_TYPES.includes(detectedMime))
+    const isExtAllowed = ALLOWED_EXTENSIONS.includes(ext)
+
+    if (!isMimeAllowed && !isExtAllowed) {
+      const displayType = rawType || ext || 'unknown'
       return NextResponse.json(
-        { error: `File extension not allowed: ${ext}` },
+        { error: `File type not allowed: ${displayType}` },
         { status: 400 }
       )
     }
@@ -129,7 +157,7 @@ export async function POST(request: Request) {
       url,
       name: file.name,
       size: file.size,
-      mimeType: file.type
+      mimeType: detectedMime || rawType || 'application/octet-stream'
     }, { status: 201 })
 
   } catch (error: any) {
