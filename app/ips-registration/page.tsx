@@ -232,8 +232,34 @@ export default function IpsRegistrationPage() {
   const [preferredContactMode, setPreferredContactMode] = useState('WhatsApp')
   const [language, setLanguage] = useState('English')
   const [role, setRole] = useState<'investor' | 'broker'>('investor')
+  const [source, setSource] = useState<string>('website')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
+
+  // Capture lead source from URL query params or sessionStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const urlSource = params.get('source') || params.get('utm_source')
+      if (urlSource) {
+        setSource(urlSource)
+        try {
+          sessionStorage.setItem('lead_source', urlSource)
+        } catch (e) {
+          console.warn('Could not store lead source in sessionStorage:', e)
+        }
+      } else {
+        try {
+          const storedSource = sessionStorage.getItem('lead_source')
+          if (storedSource) {
+            setSource(storedSource)
+          }
+        } catch (e) {
+          console.warn('Could not read lead source from sessionStorage:', e)
+        }
+      }
+    }
+  }, [])
 
   // Email Verification State
   const [isEmailVerified, setIsEmailVerified] = useState(false)
@@ -446,7 +472,8 @@ export default function IpsRegistrationPage() {
           phone: fullPhone,
           preferredContactMode,
           language,
-          role
+          role,
+          source
         }),
       })
 

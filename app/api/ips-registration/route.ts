@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: Request) {
   try {
-    const { name, email, phone, preferredContactMode, country, language, role } = await request.json()
+    const { name, email, phone, preferredContactMode, country, language, role, source } = await request.json()
 
     // Server-side validation
     if (!name || !name.trim()) {
@@ -21,6 +21,7 @@ export async function POST(request: Request) {
 
     const cleanEmail = email.trim().toLowerCase()
     const cleanPhone = phone.trim()
+    const leadSource = source && typeof source === 'string' && source.trim() ? source.trim() : 'website'
 
     // Check if form has already been submitted with this email or phone number
     try {
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
           email: cleanEmail,
           phone: cleanPhone,
           source: 'IPS 2026 Registration',
-          notes: `Role: ${role}, Contact Mode: ${preferredContactMode || country || 'N/A'}, Language: ${language || 'English'}`
+          notes: `Role: ${role}, Contact Mode: ${preferredContactMode || country || 'N/A'}, Language: ${language || 'English'}, Lead Tracking: ${leadSource}`
         }
       })
     } catch (dbSaveErr) {
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         success: true, 
         message: 'Form submitted successfully (Simulated - Bitrix24 URL missing)',
-        data: { name, email, phone, preferredContactMode: preferredContactMode || country, language, role }
+        data: { name, email, phone, preferredContactMode: preferredContactMode || country, language, role, source: leadSource }
       })
     }
 
@@ -85,10 +86,10 @@ export async function POST(request: Request) {
 
     // Construct the lead comments
     const roleLabel = role === 'investor' ? 'Investor' : 'Real Estate Broker / Agent'
-    const leadTrackingText = role === 'investor' ? 'IPS 2026 Investor' : 'IPS 2026 Broker'
     const contactMode = preferredContactMode || country
     const commentsArray = [
       `Submitted via custom IPS Registration Form.`,
+      `Lead Tracking: ${leadSource}`,
       `Role Selected: ${roleLabel}`,
       phone ? `Phone Number: ${phone.trim()}` : null,
       contactMode ? `Preferred Mode of Contact: ${contactMode.trim()}` : null,
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
         UF_CRM_1746615728097: name.trim(),           // Full Name
         UF_CRM_65F049FADAF0F: email.trim(),          // Email
         UF_CRM_1708933298368: phone.trim(),          // [Phone No]
-        UF_CRM_1777284846883: leadTrackingText,      // lead_tracking: IPS 2026 Investor / IPS 2026 Broker
+        UF_CRM_1777284846883: leadSource,            // lead_tracking: string (giveawayqrcode, spinthewheelqrcode, ledvideoscreen, mockupscreen)
 
         EMAIL: [
           {

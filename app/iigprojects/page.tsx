@@ -268,7 +268,33 @@ export default function IIGProjectsPage() {
   const [formPreferredContactMode, setFormPreferredContactMode] = useState('WhatsApp')
   const [formLanguage, setFormLanguage] = useState('English')
   const [formRole, setFormRole] = useState('investor')
+  const [formSource, setFormSource] = useState('website')
   const [formError, setFormError] = useState<string | null>(null)
+
+  // Capture lead source from URL query params or sessionStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const urlSource = params.get('source') || params.get('utm_source')
+      if (urlSource) {
+        setFormSource(urlSource)
+        try {
+          sessionStorage.setItem('lead_source', urlSource)
+        } catch (e) {
+          console.warn('Could not store lead source in sessionStorage:', e)
+        }
+      } else {
+        try {
+          const storedSource = sessionStorage.getItem('lead_source')
+          if (storedSource) {
+            setFormSource(storedSource)
+          }
+        } catch (e) {
+          console.warn('Could not read lead source from sessionStorage:', e)
+        }
+      }
+    }
+  }, [])
 
   // Email OTP verification state
   const [isEmailVerified, setIsEmailVerified] = useState(false)
@@ -461,7 +487,8 @@ export default function IIGProjectsPage() {
           phone: fullPhone,
           preferredContactMode: formPreferredContactMode,
           language: formLanguage,
-          role: formRole
+          role: formRole,
+          source: formSource
         }),
       })
 
