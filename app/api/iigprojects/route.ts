@@ -64,6 +64,10 @@ function getDynamicProjects(): Project[] {
       files = fs.readdirSync(dirPath)
         .filter(file => /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i.test(file))
         .sort((a, b) => {
+          const isMainA = /main/i.test(a)
+          const isMainB = /main/i.test(b)
+          if (isMainA && !isMainB) return -1
+          if (!isMainA && isMainB) return 1
           const matchA = a.match(/^(?:imgi_)?(\d+)/i)
           const matchB = b.match(/^(?:imgi_)?(\d+)/i)
           if (matchA && matchB) {
@@ -80,13 +84,16 @@ function getDynamicProjects(): Project[] {
     const allImages = files.map(f => `/media/${folder}/${f}`)
     const nonThumbImages = files.filter(f => !f.toLowerCase().startsWith('thumb')).map(f => `/media/${folder}/${f}`)
     
+    const mainFile = files.find(f => /main/i.test(f))
     const thumbFile = files.find(f => f.toLowerCase().startsWith('thumb'))
     const key = folder.toLowerCase().replace(/[^a-z0-9]+/g, '-')
     const baseProj = knownMetaMap.get(folder.toLowerCase()) || knownMetaMap.get(key)
 
-    const thumbnail = thumbFile 
-      ? `/media/${folder}/${thumbFile}` 
-      : (nonThumbImages[0] || allImages[0] || baseProj?.thumbnail || baseProj?.images?.[0] || '')
+    const thumbnail = mainFile 
+      ? `/media/${folder}/${mainFile}` 
+      : (thumbFile 
+        ? `/media/${folder}/${thumbFile}` 
+        : (nonThumbImages[0] || allImages[0] || baseProj?.thumbnail || baseProj?.images?.[0] || ''))
 
     const finalImages = nonThumbImages.length > 0 
       ? nonThumbImages 

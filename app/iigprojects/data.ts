@@ -24,6 +24,7 @@ export const projectsData: Project[] = [
     "roi": "10%",
     "completion": "Q2 2028",
     "images": [
+      "/media/ortachala/Ortachala main image.jpg",
       "/media/ortachala/1.jpg",
       "/media/ortachala/2.jpg",
       "/media/ortachala/4.jpg",
@@ -39,7 +40,7 @@ export const projectsData: Project[] = [
       "/media/ortachala/20a.jpg",
       "/media/ortachala/thumb.jpg"
     ],
-    "thumbnail": "/media/ortachala/1.jpg"
+    "thumbnail": "/media/ortachala/Ortachala main image.jpg"
   },
   {
     "id": 16,
@@ -52,6 +53,7 @@ export const projectsData: Project[] = [
     "roi": "12%",
     "completion": "Q2 2027",
     "images": [
+      "/media/Kavtaradze/Kavatardaze main image.jpg",
       "/media/Kavtaradze/Kavtaradze (1).jpeg",
       "/media/Kavtaradze/Kavtaradze (1).jpg",
       "/media/Kavtaradze/Kavtaradze (1).png",
@@ -71,7 +73,7 @@ export const projectsData: Project[] = [
       "/media/Kavtaradze/Kavtaradze (14).png",
       "/media/Kavtaradze/Kavtaradze (15).png"
     ],
-    "thumbnail": "/media/Kavtaradze/Kavtaradze (1).jpeg"
+    "thumbnail": "/media/Kavtaradze/Kavatardaze main image.jpg"
   },
   {
     "id": 5,
