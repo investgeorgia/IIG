@@ -179,14 +179,23 @@ export default function SmsVerificationModal({
 
   if (!isOpen) return null
 
+  const isFormComplete = digits.every(d => d !== '')
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 text-slate-900">
+    <div 
+      className="fixed inset-0 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
+      style={{ zIndex: 100005 }}
+    >
+      <div 
+        className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 text-slate-900"
+        style={{ zIndex: 100006 }}
+      >
         
         {/* Close Button */}
         <button
           onClick={onClose}
           type="button"
+          aria-label="Close modal"
           className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
@@ -197,26 +206,29 @@ export default function SmsVerificationModal({
           <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 text-[#ca2d39] flex items-center justify-center mx-auto mb-3 shadow-xs">
             <Smartphone className="w-7 h-7" />
           </div>
+
           <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-serif">
             Verify Phone Number
           </h3>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-xs mx-auto">
+
+          <p className="text-xs sm:text-sm text-slate-500 font-normal max-w-xs mx-auto">
             We have sent a 6-digit SMS verification code.
           </p>
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[#ca2d39] font-mono text-sm font-bold mt-2">
+
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-50 border border-rose-200/80 text-[#ca2d39] font-mono text-sm font-bold mt-2 shadow-2xs">
             <span>{fullPhoneFormatted}</span>
           </div>
         </div>
 
         {devNotice && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs text-center font-medium">
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs text-center font-medium shadow-xs">
             ⚡ {devNotice}
           </div>
         )}
 
         {/* 6-Digit OTP Inputs */}
         <div className="space-y-6">
-          <div className="flex justify-center gap-2 sm:gap-2.5" onPaste={handlePaste}>
+          <div className="grid grid-cols-6 gap-2 sm:gap-2.5" onPaste={handlePaste}>
             {digits.map((digit, idx) => (
               <input
                 key={idx}
@@ -228,7 +240,11 @@ export default function SmsVerificationModal({
                 onChange={(e) => handleDigitChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
                 disabled={isVerifying || isSending}
-                className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono bg-slate-50 border border-slate-200 focus:border-[#ca2d39] focus:ring-2 focus:ring-[#ca2d39]/20 text-slate-900 rounded-xl outline-none transition-all disabled:opacity-50 shadow-xs"
+                className={`w-full h-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono rounded-xl outline-none transition-all border-2 shadow-xs ${
+                  digit 
+                    ? 'bg-rose-50/30 border-[#ca2d39] text-[#ca2d39]' 
+                    : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-[#ca2d39] focus:bg-white focus:ring-2 focus:ring-[#ca2d39]/20'
+                } disabled:opacity-50`}
               />
             ))}
           </div>
@@ -237,37 +253,41 @@ export default function SmsVerificationModal({
           <button
             type="button"
             onClick={() => handleVerifySmsCode()}
-            disabled={isVerifying || isSending || digits.some(d => d === '')}
-            className="w-full bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs sm:text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+            disabled={isVerifying || isSending || !isFormComplete}
+            className={`w-full font-bold text-xs sm:text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 ${
+              isFormComplete && !isVerifying && !isSending
+                ? 'bg-[#ca2d39] hover:bg-[#b02530] active:scale-[0.99] text-white cursor-pointer'
+                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+            }`}
           >
             {isVerifying ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Verifying Code...</span>
+                <Loader2 className="w-4 h-4 animate-spin text-[#ca2d39]" />
+                <span className="text-slate-600">Verifying Code...</span>
               </>
             ) : (
               <>
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className={`w-4 h-4 ${isFormComplete ? 'text-white' : 'text-slate-400'}`} />
                 <span>Verify & Confirm</span>
               </>
             )}
           </button>
 
           {/* Resend Cooldown */}
-          <div className="text-center">
+          <div className="text-center pt-1">
             {canResend ? (
               <button
                 type="button"
                 onClick={handleSendSmsCode}
                 disabled={isSending}
-                className="text-xs text-slate-800 hover:text-[#ca2d39] font-semibold inline-flex items-center gap-1.5 cursor-pointer hover:underline"
+                className="text-xs text-[#ca2d39] hover:text-[#b02530] font-bold inline-flex items-center gap-1.5 cursor-pointer hover:underline transition-colors"
               >
-                {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5 text-[#ca2d39]" />}
+                {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                 <span>Resend Code</span>
               </button>
             ) : (
-              <p className="text-xs text-slate-500">
-                Resend code in <span className="text-slate-800 font-mono font-semibold">{resendTimer}s</span>
+              <p className="text-xs text-slate-500 font-medium">
+                Resend code in <span className="text-[#ca2d39] font-mono font-bold">{resendTimer}s</span>
               </p>
             )}
           </div>
