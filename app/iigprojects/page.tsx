@@ -22,8 +22,10 @@ import {
   X,
   ShieldCheck,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Smartphone
 } from 'lucide-react'
+import SmsVerificationModal from '@/components/SmsVerificationModal'
 import { projectsData, Project } from './data'
 
 const cormorant = Cormorant_Garamond({
@@ -298,6 +300,10 @@ export default function IIGProjectsPage() {
 
   // Email OTP verification state
   const [isEmailVerified, setIsEmailVerified] = useState(false)
+
+  // SMS Phone Verification State
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false)
+  const [showSmsModal, setShowSmsModal] = useState(false)
   const [isSendingOtp, setIsSendingOtp] = useState(false)
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
   const [showOtpModal, setShowOtpModal] = useState(false)
@@ -474,6 +480,14 @@ export default function IIGProjectsPage() {
       return
     }
 
+    if (!isPhoneVerified) {
+      const msg = 'Please verify your phone number via SMS before submitting.'
+      setFormError(msg)
+      toast.error(msg)
+      setShowSmsModal(true)
+      return
+    }
+
     setIsSubmitting(true)
     const fullPhone = `${formCountryCode} ${formPhone.trim()}`
 
@@ -511,6 +525,8 @@ export default function IIGProjectsPage() {
       setFormLanguage('English')
       setFormRole('investor')
       setIsEmailVerified(false)
+      setIsPhoneVerified(false)
+
     } catch (error: any) {
       const msg = error.message || 'Failed to submit registration'
       setFormError(msg)
@@ -1276,7 +1292,10 @@ export default function IIGProjectsPage() {
                         <SearchableDropdown
                           items={COUNTRY_LIST}
                           value={formCountryCode}
-                          onChange={(item) => setFormCountryCode(item.code)}
+                          onChange={(item) => {
+                            setFormCountryCode(item.code)
+                            setIsPhoneVerified(false)
+                          }}
                           placeholder="+971"
                           displayFormat={(item) => `${item.flag} ${item.code}`}
                           matchKey="code"
@@ -1288,14 +1307,40 @@ export default function IIGProjectsPage() {
                         id="modal-phone"
                         pattern="[0-9]*"
                         value={formPhone}
-                        onChange={(e) => setFormPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                        onChange={(e) => {
+                          setFormPhone(e.target.value.replace(/[^0-9]/g, ''))
+                          setIsPhoneVerified(false)
+                        }}
                         placeholder="50 123 4567"
                         disabled={isSubmitting}
                         style={{ flex: 1, minWidth: 0 }}
                         required
                       />
+                      {isPhoneVerified ? (
+                        <div style={{ flexShrink: 0, height: '44px', padding: '0 12px', background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', fontWeight: 600, fontSize: '11px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!formPhone.trim()) {
+                              toast.error('Please enter your phone number first')
+                              return
+                            }
+                            setShowSmsModal(true)
+                          }}
+                          disabled={!formPhone.trim() || isSubmitting}
+                          style={{ flexShrink: 0, height: '44px', padding: '0 14px', borderRadius: '12px', background: '#d97706', color: '#ffffff', fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', border: 'none' }}
+                        >
+                          <Smartphone className="w-3.5 h-3.5 text-white" />
+                          <span>Verify SMS</span>
+                        </button>
+                      )}
                     </div>
                   </div>
+
 
                   {/* Preferred Mode of Contact Dropdown */}
                   <div className="form-row">
@@ -1493,6 +1538,16 @@ export default function IIGProjectsPage() {
           </div>
         </div>
       )}
+
+      {/* Twilio SMS Verification Modal */}
+      <SmsVerificationModal
+        isOpen={showSmsModal}
+        onClose={() => setShowSmsModal(false)}
+        countryCode={formCountryCode}
+        phone={formPhone}
+        onSuccess={() => setIsPhoneVerified(true)}
+      />
     </div>
   )
 }
+

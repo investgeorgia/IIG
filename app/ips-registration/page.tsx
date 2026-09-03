@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Cormorant_Garamond } from 'next/font/google'
 import { toast } from 'sonner'
-import { Loader2, ArrowRight, UserCheck, Mail, RefreshCw, X, ShieldCheck, CheckCircle2, Sparkles } from 'lucide-react'
+import { Loader2, ArrowRight, UserCheck, Mail, RefreshCw, X, ShieldCheck, CheckCircle2, Sparkles, Smartphone } from 'lucide-react'
+import SmsVerificationModal from '@/components/SmsVerificationModal'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -264,6 +265,10 @@ export default function IpsRegistrationPage() {
   // Email Verification State
   const [isEmailVerified, setIsEmailVerified] = useState(false)
 
+  // SMS Phone Verification State
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false)
+  const [showSmsModal, setShowSmsModal] = useState(false)
+
   // OTP Verification Modal States
   const [showOtpModal, setShowOtpModal] = useState(false)
   const [otpDigits, setOtpDigits] = useState(['', '', '', ''])
@@ -458,6 +463,12 @@ export default function IpsRegistrationPage() {
       return
     }
 
+    if (!isPhoneVerified) {
+      toast.error('Please verify your phone number via SMS before submitting.')
+      setShowSmsModal(true)
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -620,7 +631,10 @@ export default function IpsRegistrationPage() {
                         <SearchableDropdown
                           items={COUNTRY_LIST}
                           value={countryCode}
-                          onChange={(item) => setCountryCode(item.code)}
+                          onChange={(item) => {
+                            setCountryCode(item.code)
+                            setIsPhoneVerified(false)
+                          }}
                           placeholder="+971"
                           displayFormat={(item) => `${item.flag} ${item.code}`}
                           matchKey="code"
@@ -632,14 +646,40 @@ export default function IpsRegistrationPage() {
                         id="phone"
                         pattern="[0-9]*"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                        onChange={(e) => {
+                          setPhone(e.target.value.replace(/[^0-9]/g, ''))
+                          setIsPhoneVerified(false)
+                        }}
                         placeholder="50 123 4567"
                         disabled={isSubmitting}
                         className="flex-1 bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400 min-w-0"
                         required
                       />
+                      {isPhoneVerified ? (
+                        <div className="shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!phone.trim()) {
+                              toast.error('Please enter your phone number first')
+                              return
+                            }
+                            setShowSmsModal(true)
+                          }}
+                          disabled={!phone.trim() || isSubmitting}
+                          className="shrink-0 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        >
+                          <Smartphone className="w-3.5 h-3.5 text-white" />
+                          <span>Verify SMS</span>
+                        </button>
+                      )}
                     </div>
                   </div>
+
 
                   {/* Preferred Mode of Contact Dropdown */}
                   <div className="space-y-1">
@@ -893,6 +933,16 @@ export default function IpsRegistrationPage() {
         </div>
       )}
 
+      {/* Twilio SMS Verification Modal */}
+      <SmsVerificationModal
+        isOpen={showSmsModal}
+        onClose={() => setShowSmsModal(false)}
+        countryCode={countryCode}
+        phone={phone}
+        onSuccess={() => setIsPhoneVerified(true)}
+      />
+
     </div>
   )
 }
+
