@@ -262,181 +262,13 @@ export default function IpsRegistrationPage() {
     }
   }, [])
 
-  // Email Verification State
-  const [isEmailVerified, setIsEmailVerified] = useState(false)
-
   // SMS Phone Verification State
   const [isPhoneVerified, setIsPhoneVerified] = useState(false)
   const [showSmsModal, setShowSmsModal] = useState(false)
 
-  // OTP Verification Modal States
-  const [showOtpModal, setShowOtpModal] = useState(false)
-  const [otpDigits, setOtpDigits] = useState(['', '', '', ''])
-  const [isSendingOtp, setIsSendingOtp] = useState(false)
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
-  const [failedAttempts, setFailedAttempts] = useState(0)
-  const [resendTimer, setResendTimer] = useState(30)
-  const [canResend, setCanResend] = useState(false)
-
-  const otpInputRefs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null)
-  ]
-
-  // Countdown timer for OTP resend
-  useEffect(() => {
-    let timer: any
-    if (showOtpModal && resendTimer > 0) {
-      setCanResend(false)
-      timer = setInterval(() => {
-        setResendTimer((prev) => prev - 1)
-      }, 1000)
-    } else if (resendTimer === 0) {
-      setCanResend(true)
-    }
-    return () => clearInterval(timer)
-  }, [showOtpModal, resendTimer])
-
-  // Auto focus first OTP input when modal opens
-  useEffect(() => {
-    if (showOtpModal) {
-      setTimeout(() => {
-        otpInputRefs[0]?.current?.focus()
-      }, 150)
-    }
-  }, [showOtpModal])
-
   const cleanPhoneDigits = phone.trim().replace(/^0+/, '')
   const fullPhone = `${countryCode} ${cleanPhoneDigits}`
 
-  // Function to send Email OTP via API
-  const sendOtpCode = async () => {
-    setIsSendingOtp(true)
-    const targetEmail = email.trim().toLowerCase()
-    
-    try {
-      const res = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: targetEmail })
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to send verification email')
-      }
-
-      setResendTimer(30)
-      setCanResend(false)
-      setOtpDigits(['', '', '', ''])
-      
-      toast.success('Verification code sent to your Email address!')
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to send verification code')
-    } finally {
-      setIsSendingOtp(false)
-    }
-  }
-
-  // Handle clicking "Verify Email" button inline
-  const handleVerifyEmailClick = () => {
-    if (!name.trim()) {
-      toast.error('Please enter your full name first')
-      return
-    }
-
-    const emailCheck = validateEmail(email)
-    if (!emailCheck.valid) {
-      toast.error(emailCheck.error || 'Please enter a valid email address')
-      return
-    }
-
-    setFailedAttempts(0)
-    setShowOtpModal(true)
-    sendOtpCode()
-  }
-
-  // Handle OTP digit changes
-  const handleOtpDigitChange = (index: number, value: string) => {
-    const digit = value.replace(/[^0-9]/g, '').slice(-1)
-    const newDigits = [...otpDigits]
-    newDigits[index] = digit
-    setOtpDigits(newDigits)
-
-    if (digit && index < 3) {
-      otpInputRefs[index + 1]?.current?.focus()
-    }
-
-    if (digit && index === 3 && newDigits.every(d => d !== '')) {
-      verifyOtpCode(newDigits.join(''))
-    }
-  }
-
-  // Handle paste in OTP inputs
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4)
-    if (pastedData) {
-      const digits = pastedData.split('').concat(['', '', '', '']).slice(0, 4)
-      setOtpDigits(digits)
-      digits.forEach((d, idx) => {
-        if (otpInputRefs[idx]?.current) {
-          otpInputRefs[idx]!.current!.value = d
-        }
-      })
-      if (digits.every(d => d !== '')) {
-        verifyOtpCode(digits.join(''))
-      }
-    }
-  }
-
-  // Handle Backspace navigation
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      otpInputRefs[index - 1]?.current?.focus()
-    }
-  }
-
-  // Verify OTP code
-  const verifyOtpCode = async (enteredCode?: string) => {
-    const code = enteredCode || otpDigits.join('')
-    if (code.length < 4) {
-      toast.error('Please enter the full 4-digit code')
-      return
-    }
-
-    setIsVerifyingOtp(true)
-    const targetEmail = email.trim().toLowerCase()
-
-    try {
-      const verifyRes = await fetch('/api/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: targetEmail, code })
-      })
-
-      const verifyData = await verifyRes.json()
-
-      if (!verifyRes.ok) {
-        const attempts = (failedAttempts + 1)
-        setFailedAttempts(attempts)
-        throw new Error(verifyData.error || 'Incorrect verification code')
-      }
-
-      // Verification Success!
-      setIsEmailVerified(true)
-      setShowOtpModal(false)
-      toast.success('Email address verified successfully!')
-
-    } catch (err: any) {
-      toast.error(err.message || 'Verification failed')
-    } finally {
-      setIsVerifyingOtp(false)
-    }
-  }
 
   // Submit final registration form
   const handleFinalSubmit = async (e: React.FormEvent) => {
@@ -458,13 +290,8 @@ export default function IpsRegistrationPage() {
       return
     }
 
-    if (!isEmailVerified) {
-      toast.error('Please click "Verify Email" to verify your email address before submitting.')
-      return
-    }
-
     if (!isPhoneVerified) {
-      toast.error('Please verify your phone number via SMS before submitting.')
+      toast.error('Please verify your phone number before submitting.')
       setShowSmsModal(true)
       return
     }
@@ -505,7 +332,8 @@ export default function IpsRegistrationPage() {
       setPreferredContactMode('WhatsApp')
       setLanguage('English')
       setRole('investor')
-      setIsEmailVerified(false)
+      setIsPhoneVerified(false)
+
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit registration')
     } finally {
@@ -583,42 +411,21 @@ export default function IpsRegistrationPage() {
                     />
                   </div>
 
-                  {/* Email Input with Inline Verification */}
+                  {/* Email Input */}
                   <div className="space-y-1">
                     <label htmlFor="email" className="text-slate-700 text-[10px] font-bold uppercase tracking-wider block">
                       Email Address <span className="text-slate-400">*</span>
                     </label>
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value)
-                          setIsEmailVerified(false)
-                        }}
-                        placeholder="name@domain.com"
-                        disabled={isSubmitting}
-                        className="flex-1 bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400 min-w-0"
-                        required
-                      />
-                      {isEmailVerified ? (
-                        <div className="shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-xs px-3 py-2.5 rounded-xl flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Verified</span>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleVerifyEmailClick}
-                          disabled={isSendingOtp || !email.trim()}
-                          className="shrink-0 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-                        >
-                          {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5 text-[#ca2d39]" />}
-                          <span>Verify Email</span>
-                        </button>
-                      )}
-                    </div>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@domain.com"
+                      disabled={isSubmitting}
+                      className="w-full bg-slate-50/80 hover:bg-white focus:bg-white text-slate-900 border border-slate-200 focus:border-zinc-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-normal transition-colors outline-none placeholder-slate-400"
+                      required
+                    />
                   </div>
 
                   {/* Phone / WhatsApp Input */}
@@ -674,11 +481,12 @@ export default function IpsRegistrationPage() {
                           className="shrink-0 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                         >
                           <Smartphone className="w-3.5 h-3.5 text-white" />
-                          <span>Verify SMS</span>
+                          <span>Verify</span>
                         </button>
                       )}
                     </div>
                   </div>
+
 
 
                   {/* Preferred Mode of Contact Dropdown */}
@@ -775,16 +583,12 @@ export default function IpsRegistrationPage() {
                     </div>
                   </div>
 
-                  {/* Primary Submit Button (Brand Crimson Red #ca2d39) */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-3.5 rounded-xl transition-all ${
-                      isEmailVerified
-                        ? 'bg-[#ca2d39] hover:bg-[#b02530] text-white cursor-pointer shadow-md'
-                        : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300/60'
-                    }`}
+                    className="w-full mt-4 inline-flex items-center justify-center gap-2 font-semibold text-xs tracking-wider uppercase py-3.5 rounded-xl transition-all bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-slate-200 disabled:text-slate-400 text-white cursor-pointer shadow-md"
                   >
+
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -838,100 +642,7 @@ export default function IpsRegistrationPage() {
 
       </div>
 
-      {/* ─── EMAIL OTP VERIFICATION MODAL (LIGHT THEME) ─── */}
-      {showOtpModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden">
-            {/* Close Button */}
-            <button
-              onClick={() => setShowOtpModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors p-2 cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
 
-            {/* Modal Content */}
-            <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 rounded-2xl border bg-slate-50 border-slate-200 text-[#ca2d39] flex items-center justify-center mb-3 shadow-xs">
-                <Mail className="w-7 h-7" />
-              </div>
-
-              <span className="text-[10px] uppercase tracking-widest text-[#ca2d39] font-bold mb-1">
-                Invest Georgia UAE
-              </span>
-
-              <h3 className={`${cormorant.className} text-2xl font-bold text-slate-900 mb-2`}>
-                Email Verification Code
-              </h3>
-
-              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-xs mb-6">
-                Enter the 4-digit code sent to your email address <span className="font-bold text-slate-900">{email}</span>
-              </p>
-
-              {/* 4-Digit Inputs */}
-              <div className="flex gap-3 justify-center mb-6" onPaste={handleOtpPaste}>
-                {otpDigits.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    ref={otpInputRefs[idx]}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    disabled={isVerifyingOtp || isSendingOtp}
-                    className="w-12 h-14 text-center text-xl font-bold text-slate-900 bg-slate-50 border border-slate-200 focus:border-zinc-500 rounded-xl outline-none transition-colors shadow-xs"
-                  />
-                ))}
-              </div>
-
-              {/* Remaining Attempts Warning */}
-              {failedAttempts > 0 && (
-                <div className="w-full bg-amber-50 border border-amber-200 text-amber-800 rounded-xl py-2 px-3 text-xs mb-4 text-center font-medium">
-                  ⚠️ {5 - failedAttempts} attempt{5 - failedAttempts === 1 ? '' : 's'} remaining.
-                </div>
-              )}
-
-              {/* Verify Button */}
-              <button
-                type="button"
-                onClick={() => verifyOtpCode()}
-                disabled={isVerifyingOtp || isSendingOtp || otpDigits.some(d => d === '')}
-                className="w-full py-3 bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 mb-4 cursor-pointer shadow-md"
-              >
-                {isVerifyingOtp ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Verifying Code...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-4 h-4" />
-                    <span>Verify Email Address</span>
-                  </>
-                )}
-              </button>
-
-              {/* Resend Footer */}
-              <div className="flex flex-col gap-2 items-center text-xs text-slate-500">
-                {canResend ? (
-                  <button
-                    type="button"
-                    onClick={() => sendOtpCode()}
-                    disabled={isSendingOtp}
-                    className="text-slate-900 hover:underline inline-flex items-center gap-1 font-semibold cursor-pointer"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 text-[#ca2d39]" /> Resend Code
-                  </button>
-                ) : (
-                  <span>Resend code in {resendTimer}s</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Twilio SMS Verification Modal */}
       <SmsVerificationModal

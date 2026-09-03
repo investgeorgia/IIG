@@ -298,161 +298,9 @@ export default function IIGProjectsPage() {
     }
   }, [])
 
-  // Email OTP verification state
-  const [isEmailVerified, setIsEmailVerified] = useState(false)
-
   // SMS Phone Verification State
   const [isPhoneVerified, setIsPhoneVerified] = useState(false)
   const [showSmsModal, setShowSmsModal] = useState(false)
-  const [isSendingOtp, setIsSendingOtp] = useState(false)
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false)
-  const [showOtpModal, setShowOtpModal] = useState(false)
-  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', ''])
-  const [resendTimer, setResendTimer] = useState(60)
-  const [canResend, setCanResend] = useState(false)
-  const [failedAttempts, setFailedAttempts] = useState(0)
-
-  const otpInputRefs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null)
-  ]
-
-  // OTP Resend Countdown Timer
-  useEffect(() => {
-    let timer: NodeJS.Timeout
-    if (showOtpModal && resendTimer > 0) {
-      timer = setInterval(() => {
-        setResendTimer((prev) => {
-          if (prev <= 1) {
-            setCanResend(true)
-            clearInterval(timer)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    }
-    return () => clearInterval(timer)
-  }, [showOtpModal, resendTimer])
-
-  // OTP Handlers
-  const sendOtpCode = async (targetEmail?: string) => {
-    const emailToSend = targetEmail || formEmail.trim().toLowerCase()
-
-    const emailCheck = validateEmail(emailToSend)
-    if (!emailCheck.valid) {
-      toast.error(emailCheck.error || 'Please enter a valid email address')
-      return
-    }
-
-    setIsSendingOtp(true)
-    try {
-      const response = await fetch('/api/otp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: emailToSend, type: 'email' })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send verification code')
-      }
-
-      toast.success(data.message || `Verification code sent to ${emailToSend}`)
-      setShowOtpModal(true)
-      setOtpDigits(['', '', '', ''])
-      setFailedAttempts(0)
-      setResendTimer(60)
-      setCanResend(false)
-
-      setTimeout(() => {
-        otpInputRefs[0].current?.focus()
-      }, 100)
-
-    } catch (err: any) {
-      toast.error(err.message || 'Could not send verification code')
-    } finally {
-      setIsSendingOtp(false)
-    }
-  }
-
-  const verifyOtpCode = async () => {
-    const code = otpDigits.join('')
-    if (code.length !== 4) {
-      toast.error('Please enter the complete 4-digit code')
-      return
-    }
-
-    setIsVerifyingOtp(true)
-    const targetEmail = formEmail.trim().toLowerCase()
-
-    try {
-      const verifyRes = await fetch('/api/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target: targetEmail, code })
-      })
-
-      const verifyData = await verifyRes.json()
-
-      if (!verifyRes.ok) {
-        const attempts = (failedAttempts + 1)
-        setFailedAttempts(attempts)
-        throw new Error(verifyData.error || 'Incorrect verification code')
-      }
-
-      // Verification Success!
-      setIsEmailVerified(true)
-      setShowOtpModal(false)
-      toast.success('Email address verified successfully!')
-
-    } catch (err: any) {
-      toast.error(err.message || 'Verification failed')
-    } finally {
-      setIsVerifyingOtp(false)
-    }
-  }
-
-  const handleVerifyEmailClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    sendOtpCode()
-  }
-
-  const handleOtpDigitChange = (index: number, value: string) => {
-    const cleanValue = value.replace(/[^0-9]/g, '')
-    const newDigits = [...otpDigits]
-    newDigits[index] = cleanValue.slice(-1)
-    setOtpDigits(newDigits)
-
-    if (cleanValue && index < 3) {
-      otpInputRefs[index + 1].current?.focus()
-    }
-  }
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      otpInputRefs[index - 1].current?.focus()
-    }
-  }
-
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pasted = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4)
-    if (pasted) {
-      const digits = pasted.split('')
-      const newDigits = ['', '', '', '']
-      digits.forEach((d, i) => { if (i < 4) newDigits[i] = d })
-      setOtpDigits(newDigits)
-      if (digits.length === 4) {
-        otpInputRefs[3].current?.focus()
-      } else if (digits.length > 0) {
-        otpInputRefs[Math.min(digits.length, 3)].current?.focus()
-      }
-    }
-  }
 
   // Handle final IPS registration submit (Posting directly to Bitrix24 via /api/ips-registration)
   const handleFinalSubmit = async (e: React.FormEvent) => {
@@ -475,13 +323,8 @@ export default function IIGProjectsPage() {
       return
     }
 
-    if (!isEmailVerified) {
-      setFormError('Please click "Verify Email" to verify your email address before submitting.')
-      return
-    }
-
     if (!isPhoneVerified) {
-      const msg = 'Please verify your phone number via SMS before submitting.'
+      const msg = 'Please verify your phone number before submitting.'
       setFormError(msg)
       toast.error(msg)
       setShowSmsModal(true)
@@ -524,8 +367,8 @@ export default function IIGProjectsPage() {
       setFormPreferredContactMode('WhatsApp')
       setFormLanguage('English')
       setFormRole('investor')
-      setIsEmailVerified(false)
       setIsPhoneVerified(false)
+
 
     } catch (error: any) {
       const msg = error.message || 'Failed to submit registration'
@@ -1154,7 +997,7 @@ export default function IIGProjectsPage() {
       </main>
 
       {/* IPS Registration Form Modal Popup (For visitors without agent referral link) */}
-      {isInquiryOpen && !showOtpModal && (
+      {isInquiryOpen && (
         <div className="ips-modal-overlay">
           <div className="ips-modal-card">
             {/* Close Button */}
@@ -1184,8 +1027,9 @@ export default function IIGProjectsPage() {
                   <button
                     onClick={() => {
                       setSubmitSuccess(false)
-                      setIsEmailVerified(false)
+                      setIsPhoneVerified(false)
                     }}
+
                     className="role-btn active"
                     style={{ height: '40px', padding: '0 18px' }}
                   >
@@ -1244,42 +1088,20 @@ export default function IIGProjectsPage() {
                     />
                   </div>
 
-                  {/* Email Input with Inline Verification */}
+                  {/* Email Input */}
                   <div className="form-row">
                     <label htmlFor="modal-email">
                       Email Address <span style={{ color: '#94a3b8' }}>*</span>
                     </label>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <input
-                        type="email"
-                        id="modal-email"
-                        value={formEmail}
-                        onChange={(e) => {
-                          setFormEmail(e.target.value)
-                          setIsEmailVerified(false)
-                        }}
-                        placeholder="name@domain.com"
-                        disabled={isSubmitting}
-                        style={{ flex: 1, minWidth: 0 }}
-                        required
-                      />
-                      {isEmailVerified ? (
-                        <div style={{ flexShrink: 0, height: '44px', padding: '0 12px', background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', fontWeight: 600, fontSize: '11px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Verified</span>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleVerifyEmailClick}
-                          disabled={isSendingOtp || !formEmail.trim()}
-                          style={{ flexShrink: 0, height: '44px', padding: '0 14px', borderRadius: '12px', background: '#0f172a', color: '#ffffff', fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', border: 'none' }}
-                        >
-                          {isSendingOtp ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5 text-[#ca2d39]" />}
-                          <span>Verify Email</span>
-                        </button>
-                      )}
-                    </div>
+                    <input
+                      type="email"
+                      id="modal-email"
+                      value={formEmail}
+                      onChange={(e) => setFormEmail(e.target.value)}
+                      placeholder="name@domain.com"
+                      disabled={isSubmitting}
+                      required
+                    />
                   </div>
 
                   {/* Phone / WhatsApp Input */}
@@ -1335,7 +1157,7 @@ export default function IIGProjectsPage() {
                           style={{ flexShrink: 0, height: '44px', padding: '0 14px', borderRadius: '12px', background: '#d97706', color: '#ffffff', fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', border: 'none' }}
                         >
                           <Smartphone className="w-3.5 h-3.5 text-white" />
-                          <span>Verify SMS</span>
+                          <span>Verify</span>
                         </button>
                       )}
                     </div>
@@ -1425,7 +1247,7 @@ export default function IIGProjectsPage() {
                   {/* Primary Submit Button */}
                   <button
                     type="submit"
-                    disabled={isSubmitting || !isEmailVerified}
+                    disabled={isSubmitting}
                     className="submit-btn-primary"
                   >
                     {isSubmitting ? (
@@ -1448,96 +1270,8 @@ export default function IIGProjectsPage() {
         </div>
       )}
 
-      {/* EMAIL OTP VERIFICATION MODAL */}
-      {showOtpModal && (
-        <div className="ips-otp-overlay">
-          <div className="ips-otp-card">
-            <button
-              onClick={() => setShowOtpModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors p-2 cursor-pointer"
-              style={{ background: 'transparent', border: 'none' }}
-            >
-              <X className="w-5 h-5" />
-            </button>
 
-            <div className="flex flex-col items-center text-center">
-              <div className="w-14 h-14 rounded-2xl border bg-slate-50 border-slate-200 text-[#ca2d39] flex items-center justify-center mb-3 shadow-xs" style={{ margin: '0 auto 12px auto' }}>
-                <Mail className="w-7 h-7" />
-              </div>
 
-              <span className="text-[10px] uppercase tracking-widest text-[#ca2d39] font-bold mb-1 block" style={{ marginBottom: '4px' }}>
-                Invest Georgia UAE
-              </span>
-
-              <h3 className={`${cormorant.className} text-2xl font-bold text-slate-900 mb-2`} style={{ fontSize: '22px', margin: '0 0 8px 0' }}>
-                Email Verification Code
-              </h3>
-
-              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-xs mb-6" style={{ fontSize: '13px', margin: '0 0 20px 0' }}>
-                Enter the 4-digit code sent to your email address <strong style={{ color: '#0f172a' }}>{formEmail}</strong>
-              </p>
-
-              <div className="flex gap-3 justify-center mb-6" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '20px' }} onPaste={handleOtpPaste}>
-                {otpDigits.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    ref={otpInputRefs[idx]}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    disabled={isVerifyingOtp || isSendingOtp}
-                    style={{ width: '48px', height: '56px', textAlign: 'center', fontSize: '20px', fontWeight: 700, color: '#0f172a', backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', outline: 'none' }}
-                  />
-                ))}
-              </div>
-
-              {failedAttempts > 0 && (
-                <div style={{ backgroundColor: '#fffbebeb', border: '1px solid #fde68a', color: '#92400e', borderRadius: '12px', padding: '8px 12px', fontSize: '12px', marginBottom: '16px' }}>
-                  ⚠️ {5 - failedAttempts} attempt{5 - failedAttempts === 1 ? '' : 's'} remaining.
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => verifyOtpCode()}
-                disabled={isVerifyingOtp || isSendingOtp || otpDigits.some(d => d === '')}
-                className="submit-btn-primary"
-                style={{ marginTop: '0', marginBottom: '16px' }}
-              >
-                {isVerifyingOtp ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Verifying Code...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-4 h-4" />
-                    <span>Verify Email Address</span>
-                  </>
-                )}
-              </button>
-
-              <div className="flex flex-col gap-2 items-center text-xs text-slate-500">
-                {canResend ? (
-                  <button
-                    type="button"
-                    onClick={() => sendOtpCode()}
-                    disabled={isSendingOtp}
-                    style={{ color: '#0f172a', background: 'transparent', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 text-[#ca2d39]" /> Resend Code
-                  </button>
-                ) : (
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Resend code in {resendTimer}s</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Twilio SMS Verification Modal */}
       <SmsVerificationModal
