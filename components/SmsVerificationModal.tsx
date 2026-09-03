@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
-import { Loader2, X, ShieldCheck, Smartphone, RefreshCw, Sparkles, CheckCircle2 } from 'lucide-react'
+import { Loader2, X, ShieldCheck, Smartphone, RefreshCw } from 'lucide-react'
 
 interface SmsVerificationModalProps {
   isOpen: boolean
@@ -180,36 +180,36 @@ export default function SmsVerificationModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 text-white">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-8 text-slate-900">
         
         {/* Close Button */}
         <button
           onClick={onClose}
           type="button"
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-full transition-colors"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Modal Header */}
         <div className="text-center space-y-2 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-3">
-            <Smartphone className="w-6 h-6" />
+          <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 text-[#ca2d39] flex items-center justify-center mx-auto mb-3 shadow-xs">
+            <Smartphone className="w-7 h-7" />
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-serif">
+          <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-serif">
             Verify Phone Number
           </h3>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-xs mx-auto">
-            We sent a 6-digit SMS verification code via Twilio to:
+          <p className="text-xs sm:text-sm text-slate-600 max-w-xs mx-auto">
+            We have sent a 6-digit SMS verification code.
           </p>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-amber-400 font-mono text-sm font-semibold mt-1">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-[#ca2d39] font-mono text-sm font-bold mt-2">
             <span>{fullPhoneFormatted}</span>
           </div>
         </div>
 
         {devNotice && (
-          <div className="mb-4 p-3 bg-amber-950/50 border border-amber-500/30 rounded-xl text-amber-300 text-xs text-center font-medium">
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs text-center font-medium">
             ⚡ {devNotice}
           </div>
         )}
@@ -228,7 +228,7 @@ export default function SmsVerificationModal({
                 onChange={(e) => handleDigitChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
                 disabled={isVerifying || isSending}
-                className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono bg-slate-950 border border-slate-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-white rounded-xl outline-none transition-all disabled:opacity-50"
+                className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold font-mono bg-slate-50 border border-slate-200 focus:border-[#ca2d39] focus:ring-2 focus:ring-[#ca2d39]/20 text-slate-900 rounded-xl outline-none transition-all disabled:opacity-50 shadow-xs"
               />
             ))}
           </div>
@@ -238,12 +238,12 @@ export default function SmsVerificationModal({
             type="button"
             onClick={() => handleVerifySmsCode()}
             disabled={isVerifying || isSending || digits.some(d => d === '')}
-            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-50 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs sm:text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
           >
             {isVerifying ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Verifying SMS Code...</span>
+                <span>Verifying Code...</span>
               </>
             ) : (
               <>
@@ -260,14 +260,14 @@ export default function SmsVerificationModal({
                 type="button"
                 onClick={handleSendSmsCode}
                 disabled={isSending}
-                className="text-xs text-amber-400 hover:text-amber-300 font-semibold inline-flex items-center gap-1.5 cursor-pointer underline underline-offset-4"
+                className="text-xs text-slate-800 hover:text-[#ca2d39] font-semibold inline-flex items-center gap-1.5 cursor-pointer hover:underline"
               >
-                {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
-                <span>Resend SMS Code</span>
+                {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5 text-[#ca2d39]" />}
+                <span>Resend Code</span>
               </button>
             ) : (
               <p className="text-xs text-slate-500">
-                Resend SMS code in <span className="text-slate-300 font-mono font-medium">{resendTimer}s</span>
+                Resend code in <span className="text-slate-800 font-mono font-semibold">{resendTimer}s</span>
               </p>
             )}
           </div>

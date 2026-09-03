@@ -1154,11 +1154,12 @@ export default function IIGProjectsPage() {
                             setShowSmsModal(true)
                           }}
                           disabled={!formPhone.trim() || isSubmitting}
-                          style={{ flexShrink: 0, height: '44px', padding: '0 14px', borderRadius: '12px', background: '#d97706', color: '#ffffff', fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', border: 'none' }}
+                          style={{ flexShrink: 0, height: '44px', padding: '0 14px', borderRadius: '12px', background: '#ca2d39', color: '#ffffff', fontWeight: 600, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', border: 'none' }}
                         >
                           <Smartphone className="w-3.5 h-3.5 text-white" />
                           <span>Verify</span>
                         </button>
+
                       )}
                     </div>
                   </div>

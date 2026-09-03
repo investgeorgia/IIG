@@ -478,11 +478,12 @@ export default function IpsRegistrationPage() {
                             setShowSmsModal(true)
                           }}
                           disabled={!phone.trim() || isSubmitting}
-                          className="shrink-0 bg-amber-600 hover:bg-amber-500 disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          className="shrink-0 bg-[#ca2d39] hover:bg-[#b02530] disabled:bg-slate-200 disabled:text-slate-400 text-white font-semibold text-xs px-3.5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                         >
                           <Smartphone className="w-3.5 h-3.5 text-white" />
                           <span>Verify</span>
                         </button>
+
                       )}
                     </div>
                   </div>
