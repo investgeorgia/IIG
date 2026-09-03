@@ -75,8 +75,8 @@ export async function POST(request: Request) {
 
         if (!twilioRes.ok) {
           console.error('Twilio Verify Send Error:', twilioData)
-          const errorMsg = twilioData.message || twilioData.error_message || 'Twilio SMS failed'
-          return NextResponse.json({ error: `Twilio SMS Error: ${errorMsg}` }, { status: twilioRes.status || 400 })
+          const errorMsg = twilioData.message || twilioData.error_message || 'SMS send failed'
+          return NextResponse.json({ error: `SMS Verification Error: ${errorMsg}` }, { status: twilioRes.status || 400 })
         }
 
         return NextResponse.json({
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
 
       } catch (twilioErr: any) {
         console.error('Twilio API Exception:', twilioErr)
-        return NextResponse.json({ error: twilioErr.message || 'Failed to connect to Twilio SMS service' }, { status: 500 })
+        return NextResponse.json({ error: twilioErr.message || 'Failed to connect to SMS verification service' }, { status: 500 })
       }
     }
 

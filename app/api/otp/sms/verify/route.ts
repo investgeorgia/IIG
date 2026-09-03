@@ -83,7 +83,7 @@ export async function POST(request: Request) {
           return NextResponse.json({
             success: true,
             verified: true,
-            message: 'Phone number verified successfully via Twilio!'
+            message: 'Phone number verified successfully!'
           })
         } else {
           return NextResponse.json({
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
       } catch (twilioErr: any) {
         console.error('Twilio VerificationCheck Exception:', twilioErr)
-        return NextResponse.json({ error: twilioErr.message || 'Twilio verification check error' }, { status: 500 })
+        return NextResponse.json({ error: twilioErr.message || 'Verification check error' }, { status: 500 })
       }
     }
 

@@ -94,7 +94,7 @@ export default function SmsVerificationModal({
       setDigits(['', '', '', '', '', ''])
 
       if (data.devMode) {
-        setDevNotice('Twilio credentials not set in .env. Test OTP code: 123456')
+        setDevNotice('Demo Mode: Test OTP code is 123456')
         toast.success('Test SMS Code: 123456 (Dev Mode)')
       } else {
         toast.success(data.message || `SMS verification code sent to ${fullPhoneFormatted}`)
