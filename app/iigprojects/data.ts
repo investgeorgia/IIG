@@ -24,6 +24,7 @@ export const projectsData: Project[] = [
     "roi": "10%",
     "completion": "Q2 2028",
     "images": [
+      "/media/ortachala/Artchala Main image.jpg",
       "/media/ortachala/Ortachala main image.jpg",
       "/media/ortachala/1.jpg",
       "/media/ortachala/2.jpg",
@@ -40,7 +41,7 @@ export const projectsData: Project[] = [
       "/media/ortachala/20a.jpg",
       "/media/ortachala/thumb.jpg"
     ],
-    "thumbnail": "/media/ortachala/Ortachala main image.jpg"
+    "thumbnail": "/media/ortachala/Artchala Main image.jpg"
   },
   {
     "id": 16,
